@@ -1,20 +1,14 @@
 const express = require('express')
 const router = express.Router()
-const response = require('./../Response')
 const SiswaController = require('./../controller/SiswaController')
 
 router.route('/siswa')
     .get(SiswaController.allSiswa)
-    .post((req, res) => {
-
-    })
+    .post(SiswaController.storeSiswa)
 
 router.route('/siswa/:id_siswa')
-    .put((req, res) => {
-        response.send()
-    })
-    .delete((req, res) => {
-        response.send()
-    })
+    .get(SiswaController.detailSiswa)
+    .put(SiswaController.updateSiswa)
+    .delete(SiswaController.deleteSiswa)
 
 module.exports = router

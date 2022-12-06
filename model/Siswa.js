@@ -1,4 +1,4 @@
-const db = require('./Config')
+const db = require('./../Config')
 
 const sql = `SELECT * FROM siswa`
 const allSiswa = db.query(sql, (err, res) => {
