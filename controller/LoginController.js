@@ -12,6 +12,8 @@ const auth = (req, res) => {
             secret: 'detailUser',
             saveUninitialized: TRUE,
         })
-        response(200, field, 'Authenticated', res)
+        return response(200, field, 'Authenticated', res)
     })
 }
+
+module.exports = { auth }
