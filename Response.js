@@ -1,6 +1,5 @@
 const response = (code, data, message, res) => {
-    res.json(code, [
-        {
+    res.json(code, {
             payload: data,
             message,
             metadata: {
@@ -9,7 +8,7 @@ const response = (code, data, message, res) => {
                 current: ""
             }
         }
-    ])
+    )
 }
 
 module.exports = response
