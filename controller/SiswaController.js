@@ -1,49 +1,43 @@
 const db = require('./../Config')
 const response = require('./../Response')
 
-const allSiswa = (req, res) => {
-    const sql = `SELECT * FROM siswa`
-    db.query(sql, (err, field) => {
-        if (err) throw err
-        return response(200, field, 'Get Data Siswa', res)
-    })
+const allSiswa = async (req, res) => {
+    const dataSiswa = await db('siswa').select()
+    return response(200, dataSiswa, 'Get Data Siswa', res)
 }
 
-const detailSiswa = (req, res) => {
+const detailSiswa = async (req, res) => {
     const idSiswa = req.params.id_siswa
-    const sql = `SELECT * FROM siswa WHERE id_siswa = '${idSiswa}'`
-    db.query(sql, (err, field) => {
-        if (err) throw err
-        return response(200, field, 'Get Detail Siswa', res)
-    })
+    const detailSiswa = await db('siswa').where('id_siswa', idSiswa)
+    return response(200, detailSiswa, 'Get Detail Siswa', res)
 }
 
-const storeSiswa = (req, res) => {
+const storeSiswa = async (req, res) => {
     const { id_siswa, nama_siswa, kelas_id, alamat, telp, tempat_lahir, tanggal_lahir } = req.body
-    const sql = `INSERT INTO siswa (id_siswa, nama_siswa, kelas_id, alamat, telp, tempat_lahir, tanggal_lahir) VALUES ('${id_siswa}', '${nama_siswa}', ${kelas_id}, '${alamat}', '${telp}', '${tempat_lahir}', '${tanggal_lahir}')`
-    db.query(sql, (err, field) => {
-        if (err) throw err
-        return response(201, field, 'Berhasil menambahkan data siswa!', res)
-    })
+    const storeSiswa = await db('siswa')
+                                .insert({
+                                    id_siswa, nama_siswa, kelas_id, alamat, telp, tempat_lahir, tanggal_lahir
+                                })
+    return response(201, storeSiswa, 'Berhasil menambahkan data siswa!', res)
 }
 
-const updateSiswa = (req, res) => {
+const updateSiswa = async (req, res) => {
     const idSiswa = req.params.id_siswa
     const { idBaru, nama_siswa, kelas_id, alamat, telp, tempat_lahir, tanggal_lahir } = req.body
-    const sql = `UPDATE siswa SET id_siswa = '${idBaru}', nama_siswa = '${nama_siswa}', kelas_id = '${kelas_id}', alamat = '${alamat}', telp = '${telp}', tempat_lahir = '${tempat_lahir}', tanggal_lahir = '${tanggal_lahir}' WHERE id_siswa = '${idSiswa}'`
-    db.query(sql, (err, field) => {
-        if (err) throw err
-        return response(201, field, 'Berhasil update data siswa!', res)
-    })
+    const updateSiswa = await db('siswa')
+                                .where('id_siswa', idSiswa)
+                                .update({
+                                    idBaru, nama_siswa, kelas_id, alamat, telp, tempat_lahir, tanggal_lahir
+                                })
+    return response(201, updateSiswa, 'Berhasil update data siswa!', res)
 }
 
-const deleteSiswa = (req, res) => {
+const deleteSiswa = async (req, res) => {
     const idSiswa = req.params.id_siswa
-    const sql = `DELETE FROM siswa WHERE id_siswa = '${idSiswa}'`
-    db.query(sql, (err, field) => {
-        if (err) throw err
-        return response(200, field, 'Berhasil delete siswa!', res)
-    })
+    const deleteSiswa = await db('siswa').where('id_siswa', idSiswa).del()
+    return response(200, deleteSiswa, 'Berhasil delete siswa!', res)
 }
+
+
 
 module.exports = { allSiswa, detailSiswa, storeSiswa, updateSiswa, deleteSiswa }

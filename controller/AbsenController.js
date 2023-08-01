@@ -1,50 +1,35 @@
 const db = require('./../Config')
 const response = require('./../Response')
+const hari = require('../utils/Hari')
 const moment = require('moment')
 
 const tanggalSekarang = moment().format('YYYY-MM-DD');
 const waktuSekarang = moment().format('HH:mm:ss');
 
-const dataPresensi = (req, res) => {
-    const allDataAbsen = `SELECT * FROM absen JOIN siswa WHERE absen.id_siswa = siswa.id_siswa`
-    db.query(allDataAbsen, (err, field) => {
-        if (err) throw err
-        return response(200, field, 'Data presensi', res)
-    })
+const dataPresensi = async (req, res) => {
+    const dataPresensi = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').select('*')
+    return response(200, dataPresensi, 'Data presensi', res)
 }
 
-const dataAbsensi = (req, res) => {
-    const dataKetidakhadiran = `SELECT * FROM absen JOIN siswa WHERE absen.id_siswa = siswa.id_siswa AND absen.waktu_absen IS NULL`
-    db.query(dataKetidakhadiran, (err, field) => {
-        if (err) throw err
-        return response(200, field, 'Data absensi', res)
-    })
+const dataAbsensi = async (req, res) => {
+    const dataKetidakhadiran = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').select('*').whereNull('absen.waktu_absen')
+    return response(200, dataKetidakhadiran, 'Data absensi', res)
 }
 
-const engine = (req, res) => {
-    const idSiswa = req.body.idSiswa
-    const engineSQL = `UPDATE absen SET waktu_absen = '${waktuSekarang}' WHERE id_siswa = '${idSiswa}'` 
-    db.query(engineSQL, (err, field) => {
-        if (err) throw err
-        return response(201, field, 'Berhasil absen', res)
-    })
+const dataAbsensiKelas = async (req, res) => {
+    const kelasId = req.params.kelas_id
+    const dataKetidakhadiran = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').where('siswa.kelas_id', kelasId).whereNull('absen.waktu_absen')
+    return response(200, dataKetidakhadiran, 'Data absensi', res)
 }
 
-const updateAbsen = (req, res) => {
-    const { idSiswa, status } = req.body
-    const updateAbsenManual = `UPDATE absen SET waktu_absen = NULL, izin = '${tanggalSekarang}', keterangan = '${status}' WHERE id_siswa = '${idSiswa}'`
-    db.query(updateAbsenManual, (err, field) => {
-        if (err) throw err
-        return response(201, field, 'Berhasil update absen', res)
+const engineAbsenSiswa = async (req, res) => {
+    const userabsen = req.params.userabsen
+    const engine = await db('absen').where('id_siswa', userabsen).update({
+        waktu_absen: waktuSekarang,
+        izin: NULL,
+        keterangan: ''
     })
+    return response(201, engine, 'Berhasil Absen!', res)
 }
 
-const resetRekap = (req, res) => {
-    const deleteRekapitulasi = `DELETE FROM rekap_siswa`
-    db.query(deleteRekapitulasi, (err, field) => {
-        if (err) throw err
-        return response(201, field, 'Berhasil reset rekap absen', res)
-    })
-}
-
-module.exports = { dataPresensi, dataAbsensi, engine, updateAbsen, resetRekap }
+module.exports = { dataPresensi, dataAbsensi, dataAbsensiKelas, engineAbsenSiswa } 
