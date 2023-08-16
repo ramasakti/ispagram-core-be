@@ -7,8 +7,7 @@ const response = (code, data, message, res) => {
             next: "",
             current: ""
         }
-    }
-    )
+    })
 }
 
 module.exports = response

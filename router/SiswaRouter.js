@@ -6,6 +6,9 @@ router.route('/siswa')
     .get(SiswaController.allSiswa)
     .post(SiswaController.storeSiswa)
 
+router.route('/siswa/kelas/:kelas_id')
+    .get(SiswaController.siswaKelas)
+
 router.route('/siswa/:id_siswa')
     .get(SiswaController.detailSiswa)
     .put(SiswaController.updateSiswa)

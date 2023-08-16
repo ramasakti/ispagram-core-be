@@ -6,7 +6,7 @@ const db = knex({
         host: 'localhost',
         user: 'root',
         password: '',
-        database: 'express'
+        database: 'laravel'
     }
 });
 
