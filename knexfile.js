@@ -4,13 +4,14 @@
  * @type { Object.<string, import("knex").Knex.Config> }
  */
 module.exports = {
-
   development: {
     client: 'mysql',
     connection: {
-      database: 'express',
+      host: '127.0.0.1',
+      port: 3306,
       user: 'root',
-      password: ''
+      password: '',
+      database: 'laravel'
     },
     migrations: {
       tableName: 'knex_migrations'
@@ -18,15 +19,13 @@ module.exports = {
   },
 
   staging: {
-    client: 'postgresql',
+    client: 'mysql',
     connection: {
-      database: 'express',
+      host: '127.0.0.1',
+      port: 3306,
       user: 'root',
-      password: ''
-    },
-    pool: {
-      min: 2,
-      max: 10
+      password: '',
+      database: 'laravel'
     },
     migrations: {
       tableName: 'knex_migrations'
@@ -34,19 +33,16 @@ module.exports = {
   },
 
   production: {
-    client: 'postgresql',
+    client: 'mysql',
     connection: {
-      database: 'express',
+      host: '127.0.0.1',
+      port: 3306,
       user: 'root',
-      password: ''
-    },
-    pool: {
-      min: 2,
-      max: 10
+      password: '',
+      database: 'laravel'
     },
     migrations: {
       tableName: 'knex_migrations'
     }
   }
-
 };
