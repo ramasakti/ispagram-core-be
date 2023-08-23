@@ -6,12 +6,14 @@ const authRouter = require('./AuthRouter')
 const absenRouter = require('./AbsenRouter')
 const guruRouter = require('./GuruRouter')
 const hariRouter = require('./HariRouter')
+const jampelRouter = require('./JamPelajaranRouter')
 
 app.use(siswaRouter)
 app.use(kelasRouter)
 app.use(absenRouter)
 app.use(guruRouter)
 app.use(hariRouter)
+app.use(jampelRouter)
 app.use(authRouter)
 
 module.exports = app

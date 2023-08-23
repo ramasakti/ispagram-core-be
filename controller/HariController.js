@@ -10,15 +10,17 @@ const hari = async (req, res) => {
 
 const updateHari = async (req, res) => {
     let { id_hari, nama_hari, masuk, pulang, jampel, piket, status } = req.body
+
     masuk = moment(masuk, 'HH:mm:ss').format('HH:mm:ss')
     pulang = moment(pulang, 'HH:mm:ss').format('HH:mm:ss')
     jampel = moment(jampel, 'HH:mm:ss').format('HH:mm:ss')
-    if (!id_hari || !nama_hari || !masuk || !piket) {
-        return response(400, null, `Gagal! semua data wajib diisi`, res);
-    }    
+
+    if (!id_hari || !nama_hari || !masuk || !piket) return response(400, null, `Gagal! semua data wajib diisi`, res);
+
     if (!moment(masuk, 'HH:mm:ss', true).isValid()) return response(400, null, `Gagal! data masuk harus format waktu`, res)
     if (!moment(pulang, 'HH:mm:ss', true).isValid()) return response(400, null, `Gagal! data pulang harus format waktu`, res)
     if (!moment(jampel, 'HH:mm:ss', true).isValid()) return response(400, null, `Gagal! data jampel harus format waktu`, res)
+
     if (await guruUtils.existingGuru(piket) === null) return response(400, null, `Guru piket tidak terdaftar!`, res)
 
     const updateHari = await db('hari').where('id_hari', id_hari).update({
