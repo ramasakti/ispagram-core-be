@@ -24,24 +24,24 @@ const detailSiswa = async (req, res) => {
 
 const storeSiswa = async (req, res) => {
     try {
-        const { id_siswa, rfid, nama_siswa, kelas_id, alamat, telp, tempat_lahir, tanggal_lahir } = req.body;
+        const { id_siswa, rfid, nama_siswa, kelas_id, alamat, telp, tempat_lahir, tanggal_lahir } = req.body
         if (!id_siswa || !rfid || !nama_siswa || !kelas_id || !alamat || !tempat_lahir || !tanggal_lahir) {
-            return response(400, null, 'Semua data siswa harus diisi!', res);
+            return response(400, null, 'Semua data siswa harus diisi!', res)
         }
-        const existingSiswa = await db('siswa').where('id_siswa', id_siswa).first();
+        const existingSiswa = await db('siswa').where('id_siswa', id_siswa).first()
         if (existingSiswa) {
-            return response(409, null, 'ID siswa sudah ada dalam database!', res);
+            return response(409, null, 'ID siswa sudah ada dalam database!', res)
         }
         if (!moment(tanggal_lahir, 'YYYY-MM-DD', true).isValid()) {
-            return response(400, null, 'Tanggal lahir tidak valid! Format harus YYYY-MM-DD', res);
+            return response(400, null, 'Tanggal lahir tidak valid! Format harus YYYY-MM-DD', res)
         }
         const storeSiswa = await db('siswa').insert({
             id_siswa, nama_siswa, kelas_id, alamat, telp, tempat_lahir, tanggal_lahir
-        });
-        return response(201, storeSiswa, 'Berhasil menambahkan data siswa!', res);
+        })
+        return response(201, storeSiswa, 'Berhasil menambahkan data siswa!', res)
     } catch (error) {
-        console.error('Error storing data:', error);
-        return response(500, null, 'Terjadi kesalahan saat menyimpan data siswa!', res);
+        console.error('Error storing data:', error)
+        return response(500, null, 'Terjadi kesalahan saat menyimpan data siswa!', res)
     }
 }
 
@@ -50,10 +50,10 @@ const updateSiswa = async (req, res) => {
     const { rfid, nama_siswa, kelas_id, alamat, telp, tempat_lahir, tanggal_lahir } = req.body
     const tanggalLahirFormatted = moment(tanggal_lahir).format("YYYY-MM-DD")
     if (!idSiswa || !rfid || !nama_siswa || !kelas_id || !alamat || !tempat_lahir || !tanggal_lahir) {
-        return response(400, null, 'Semua data siswa harus diisi!', res);
+        return response(400, null, 'Semua data siswa harus diisi!', res)
     }
     if (!moment(tanggalLahirFormatted, 'YYYY-MM-DD', true).isValid()) {
-        return response(400, null, 'Tanggal lahir tidak valid! Format harus YYYY-MM-DD', res);
+        return response(400, null, 'Tanggal lahir tidak valid! Format harus YYYY-MM-DD', res)
     }
     const updateSiswa = await db('siswa')
         .where('id_siswa', idSiswa)
