@@ -33,7 +33,7 @@ const updateAbsen = async (req, res) => {
             keterangan: ''
         })
         return response(201, dataAbsen, `Berhasil absen!`, res)
-    }else if (keterangan === 'T') {
+    } else if (keterangan === 'T') {
         const updateAbsen = await db('absen').where('id_siswa', id_siswa).update({
             waktu_absen: moment().format('HH:mm:ss'),
             izin: null,
@@ -41,7 +41,7 @@ const updateAbsen = async (req, res) => {
         })
         absenSiswaUtils.absenTerlambat(id_siswa)
         return response(201, updateAbsen, `Berhasil absen!`, res)
-    }else{
+    } else {
         const updateAbsen = await db('absen').where('id_siswa', id_siswa).update({
             waktu_absen: null,
             izin: moment().format('YYYY-MM-DD'),
@@ -62,7 +62,7 @@ const engineAbsenSiswa = async (req, res) => {
     const dataAbsen = await absenSiswaUtils.dataAbsensiSiswaIndividu(userabsen)
     if (dataAbsen.length < 1) {
         return response(404, null, `ID Anda tidak terdaftar!`, res)
-    }else{
+    } else {
         const dataJamMasuk = await absenSiswaUtils.jamMasuk()
         const jam_masuk = moment(dataJamMasuk.masuk, 'HH:mm:ss').format('HH:mm:ss');
         if (jam_masuk < moment().format('HH:mm:ss')) {
@@ -108,50 +108,83 @@ const diagramAlfa = async (req, res) => {
 
 const grafikMingguan = async (req, res) => {
     const dataTerlambat = await db('rekap_siswa')
-                            .count('tanggal as terlambat')
-                            .where('tanggal', '<=', moment().format('YYYY-MM-DD'))
-                            .where('keterangan', 'T')
-                            .groupBy('tanggal')
-                            .orderBy('tanggal', 'desc')
-                            .limit(7);
+        .count('tanggal as terlambat')
+        .where('tanggal', '<=', moment().format('YYYY-MM-DD'))
+        .where('keterangan', 'T')
+        .groupBy('tanggal')
+        .orderBy('tanggal', 'desc')
+        .limit(7);
     const terlambat = dataTerlambat.map(item => item.terlambat);
 
     const dataSakit = await db('rekap_siswa')
-                            .count('tanggal as sakit')
-                            .where('tanggal', '<=', moment().format('YYYY-MM-DD'))
-                            .where('keterangan', 'S')
-                            .groupBy('tanggal')
-                            .orderBy('tanggal', 'desc')
-                            .limit(7);
+        .count('tanggal as sakit')
+        .where('tanggal', '<=', moment().format('YYYY-MM-DD'))
+        .where('keterangan', 'S')
+        .groupBy('tanggal')
+        .orderBy('tanggal', 'desc')
+        .limit(7);
     const sakit = dataSakit.map(item => item.sakit);
 
     const dataIzin = await db('rekap_siswa')
-                            .count('tanggal as izin')
-                            .where('tanggal', '<=', moment().format('YYYY-MM-DD'))
-                            .where('keterangan', 'I')
-                            .groupBy('tanggal')
-                            .orderBy('tanggal', 'desc')
-                            .limit(7);
+        .count('tanggal as izin')
+        .where('tanggal', '<=', moment().format('YYYY-MM-DD'))
+        .where('keterangan', 'I')
+        .groupBy('tanggal')
+        .orderBy('tanggal', 'desc')
+        .limit(7);
     const izin = dataIzin.map(item => item.izin);
 
     const dataAlfa = await db('rekap_siswa')
-                            .count('tanggal as alfa')
-                            .where('tanggal', '<=', moment().format('YYYY-MM-DD'))
-                            .where('keterangan', 'A')
-                            .groupBy('tanggal')
-                            .orderBy('tanggal', 'desc')
-                            .limit(7);
+        .count('tanggal as alfa')
+        .where('tanggal', '<=', moment().format('YYYY-MM-DD'))
+        .where('keterangan', 'A')
+        .groupBy('tanggal')
+        .orderBy('tanggal', 'desc')
+        .limit(7);
     const alfa = dataAlfa.map(item => item.alfa);
 
     const dataTanggal = await db('rekap_siswa')
-                        .select('tanggal')
-                        .groupBy('tanggal')
-                        .orderBy('tanggal', 'desc')
-                        .limit(7)
-                        
+        .select('tanggal')
+        .groupBy('tanggal')
+        .orderBy('tanggal', 'desc')
+        .limit(7)
+
     const tanggal = dataTanggal.map(item => moment(item.tanggal).format('YYYY-MM-DD'));
 
-    return response(200, {tanggal, terlambat, sakit, izin, alfa}, `Grafik`, res)
+    return response(200, { tanggal, terlambat, sakit, izin, alfa }, `Grafik`, res)
 }
 
-module.exports = { dataPresensi, dataAbsensi, dataAbsensiKelas, updateAbsen, engineAbsenSiswa, diagramHadir, diagramTerlambat, diagramAlfa, diagramSakit, diagramIzin, grafikMingguan } 
+const rekap = async (req, res) => {
+    const { kelas, dari, sampai } = req.query
+    if (!kelas || !dari || !sampai) return response(400, null, `Invalid request parameter!`, res)
+    const rekap = await db('siswa')
+        .select(
+            's.id_siswa',
+            's.nama_siswa',
+            db.raw('SUM(CASE WHEN rs.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
+            db.raw('SUM(CASE WHEN rs.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
+            db.raw('SUM(CASE WHEN rs.keterangan = "A" THEN 1 ELSE 0 END) AS A'),
+            db.raw('SUM(CASE WHEN rs.keterangan = "T" THEN 1 ELSE 0 END) AS T')
+        )
+        .from('siswa AS s')
+        .join('rekap_siswa AS rs', 's.id_siswa', 'rs.siswa_id')
+        .whereBetween('rs.tanggal', [dari, sampai])
+        .andWhere('s.kelas_id', kelas)
+        .groupBy('s.id_siswa', 's.nama_siswa')
+    return response(200, rekap, `Rekap`, res)
+}
+
+module.exports = {
+    dataPresensi,
+    dataAbsensi,
+    dataAbsensiKelas,
+    updateAbsen,
+    engineAbsenSiswa,
+    diagramHadir,
+    diagramTerlambat,
+    diagramAlfa,
+    diagramSakit,
+    diagramIzin,
+    grafikMingguan,
+    rekap
+} 

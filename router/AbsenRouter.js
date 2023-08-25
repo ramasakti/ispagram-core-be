@@ -35,4 +35,7 @@ router.route('/absen/data/alfa')
 router.route('/absen/data/grafik')
     .get(AbsenController.grafikMingguan)
 
+router.route('/rekap')
+    .get(AbsenController.rekap)
+
 module.exports = router
