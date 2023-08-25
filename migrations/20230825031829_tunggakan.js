@@ -3,12 +3,9 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-    knex.schema.createTable('rekap_siswa', function (table) {
-        table.increments();
-        table.date('tanggal');
-        table.string('siswa_id');
-        table.char('keterangan', 1);
-        table.time('waktu_absen').nullable();
+    knex.schema.createTable('tunggakan', function (table) {
+        table.string('siswa_id').primary();
+        table.integer('tunggakan');
 
         table.foreign('siswa_id').references('id_siswa').inTable('siswa').onDelete('cascade').onUpdate('cascade');
     });
@@ -19,5 +16,5 @@ exports.up = function (knex) {
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
-    knex.schema.dropTableIfExists('rekap_siswa');
+    knex.schema.dropTableIfExists('tunggakan');
 };

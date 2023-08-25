@@ -3,7 +3,13 @@
  * @returns { Promise<void> }
  */
 exports.up = function(knex) {
-  
+    knex.schema.createTable('kelas', function(table) {
+        table.increments('id_kelas');
+        table.string('tingkat');
+        table.string('jurusan');
+        table.string('walas');
+        table.foreign('walas').references('id_guru').inTable('guru');
+      });
 };
 
 /**
@@ -11,5 +17,5 @@ exports.up = function(knex) {
  * @returns { Promise<void> }
  */
 exports.down = function(knex) {
-  
+    knex.schema.dropTableIfExists('kelas');
 };

@@ -3,7 +3,10 @@
  * @returns { Promise<void> }
  */
 exports.up = function(knex) {
-  
+    knex.schema.createTable('pendidikan', function (table) {
+        table.increments('id_pendidikan');
+        table.string('pendidikan');
+    });
 };
 
 /**
@@ -11,5 +14,5 @@ exports.up = function(knex) {
  * @returns { Promise<void> }
  */
 exports.down = function(knex) {
-  
+    knex.schema.dropTableIfExists('pendidikan');
 };

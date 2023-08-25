@@ -3,10 +3,11 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-    knex.schema.createTable('nominal', function (table) {
-        table.increments('id');
-        table.string('jenis');
-        table.integer('harga');
+    knex.schema.createTable('home_page', function (table) {
+        table.bigIncrements('id');
+        table.string('judul');
+        table.json('foto');
+        table.text('konten');
     });
 };
 
@@ -15,5 +16,5 @@ exports.up = function (knex) {
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
-    knex.schema.dropTableIfExists('nominal');
+    knex.schema.dropTableIfExists('home_page');
 };
