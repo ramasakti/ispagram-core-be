@@ -2,8 +2,8 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.up = function(knex) {
-    knex.schema.createTable('detail_siswa', function(table) {
+exports.up = function (knex) {
+    return knex.schema.createTable('detail_siswa', function (table) {
         table.string('siswa_id').primary();
         table.string('nisn').nullable();
         table.string('nik').nullable();
@@ -28,13 +28,13 @@ exports.up = function(knex) {
         table.string('telp_ayah').nullable();
         table.integer('tinggi').nullable();
         table.integer('berat').nullable();
-      });
+    });
 };
 
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.down = function(knex) {
-    knex.schema.dropTableIfExists('detail_siswa');
+exports.down = function (knex) {
+    return knex.schema.dropTableIfExists('detail_siswa');
 };

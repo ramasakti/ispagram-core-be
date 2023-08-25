@@ -3,7 +3,7 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-    knex.schema.createTable('transaksi', function (table) {
+    return knex.schema.createTable('transaksi', function (table) {
         table.increments('id_transaksi');
         table.text('kwitansi');
         table.datetime('waktu_transaksi');
@@ -20,5 +20,5 @@ exports.up = function (knex) {
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
-    knex.schema.dropTableIfExists('transaksi');
+    return knex.schema.dropTableIfExists('transaksi');
 };

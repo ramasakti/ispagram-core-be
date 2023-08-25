@@ -11,7 +11,7 @@ module.exports = {
       port: 3306,
       user: 'root',
       password: '',
-      database: 'laravel'
+      database: 'parlaungan'
     },
     migrations: {
       tableName: 'knex_migrations'
@@ -25,7 +25,7 @@ module.exports = {
       port: 3306,
       user: 'root',
       password: '',
-      database: 'laravel'
+      database: 'parlaungan'
     },
     migrations: {
       tableName: 'knex_migrations'
@@ -39,7 +39,7 @@ module.exports = {
       port: 3306,
       user: 'root',
       password: '',
-      database: 'laravel'
+      database: 'parlaungan'
     },
     migrations: {
       tableName: 'knex_migrations'

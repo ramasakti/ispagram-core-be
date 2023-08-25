@@ -3,7 +3,7 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-    knex.schema.createTable('blog', function (table) {
+    return knex.schema.createTable('blog', function (table) {
         table.increments('id_blog').primary();
         table.string('slug');
         table.text('foto', 'longtext');
@@ -12,9 +12,7 @@ exports.up = function (knex) {
         table.dateTime('uploaded');
         table.string('uploader');
         table.boolean('publish');
-    })
 
-    knex.schema.table('blog', function (table) {
         table.foreign('uploader').references('username').inTable('user');
     });
 };
@@ -24,5 +22,5 @@ exports.up = function (knex) {
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
-    knex.schema.dropTableIfExists('blog');
+    return knex.schema.dropTableIfExists('blog');
 };

@@ -3,10 +3,10 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-    knex.schema.createTable('arsip_surat', function (table) {
+    return knex.schema.createTable('arsip_surat', function (table) {
         table.increments('id_arsip');
         table.date('tanggal');
-        table.char('jenis', 1);
+        table.string('jenis', 1);
         table.string('nomor');
         table.string('perihal');
         table.text('url');
@@ -18,5 +18,5 @@ exports.up = function (knex) {
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
-    knex.schema.dropTableIfExists('arsip_surat');
+    return knex.schema.dropTableIfExists('arsip_surat');
 };

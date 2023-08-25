@@ -3,7 +3,7 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-    knex.schema.createTable('siswa', function (table) {
+    return knex.schema.createTable('siswa', function (table) {
         table.string('id_siswa').primary();
         table.string('rfid').defaultTo('');
         table.string('nama_siswa');
@@ -21,5 +21,5 @@ exports.up = function (knex) {
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
-    knex.schema.dropTableIfExists('siswa');
+    return knex.schema.dropTableIfExists('siswa');
 };

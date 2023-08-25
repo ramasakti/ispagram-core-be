@@ -3,7 +3,7 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-    knex.schema.createTable('home_page', function (table) {
+    return knex.schema.createTable('home_page', function (table) {
         table.bigIncrements('id');
         table.string('judul');
         table.json('foto');
@@ -16,5 +16,5 @@ exports.up = function (knex) {
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
-    knex.schema.dropTableIfExists('home_page');
+    return knex.schema.dropTableIfExists('home_page');
 };
