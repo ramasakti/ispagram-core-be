@@ -2,14 +2,20 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.up = function(knex) {
-  
+exports.up = function (knex) {
+    knex.schema.createTable('user', function (table) {
+        table.string('username').primary();
+        table.text('password');
+        table.string('email').nullable();
+        table.text('avatar', 'longtext').nullable();
+        table.string('role');
+    })
 };
 
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.down = function(knex) {
-  
+exports.down = function (knex) {
+    knex.schema.dropTableIfExists('user')
 };
