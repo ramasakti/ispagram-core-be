@@ -8,18 +8,28 @@ exports.seed = async function (knex) {
   // Deletes ALL existing entries
   await knex('user').del();
   await knex('guru').del();
+  await knex('kelas').del();
+  await knex('hari').del();
+  await knex('nominal').del();
+  await knex('transportasi').del();
+  await knex('jenis_tinggal').del();
+  await knex('profesi').del();
+  await knex('pendidikan').del();
+  await knex('pembayaran').del();
 
   // Inserts seed entries for 'user' table
   await knex('user').insert([
     {
       username: 'ramasakti27',
       password: await bcrypt.hash('password', 10),
+      name: 'Rama Sakti Hafidz FA',
       avatar: '',
       role: 'Admin'
     },
     {
       username: 'arifubayd',
       password: await bcrypt.hash('arifubayd', 10),
+      name: 'Arif Ubaidillah, S.Si',
       avatar: '',
       role: 'Admin'
     },
@@ -50,15 +60,6 @@ exports.seed = async function (knex) {
       tanggal_lahir: '1986-11-21'
     }
   ]);
-
-  await knex('kelas').del();
-  await knex('hari').del();
-  await knex('nominal').del();
-  await knex('transportasi').del();
-  await knex('jenis_tinggal').del();
-  await knex('profesi').del();
-  await knex('pendidikan').del();
-  await knex('pembayaran').del();
 
   // Insert seed entries for 'kelas' table
   await knex('kelas').insert([
