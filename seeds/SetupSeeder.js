@@ -21,8 +21,9 @@ exports.seed = async function (knex) {
   await knex('user').insert([
     {
       username: 'ramasakti27',
-      password: await bcrypt.hash('password', 10),
+      password: await bcrypt.hash('ramasakti27', 10),
       name: 'Rama Sakti Hafidz FA',
+      email: 'ramasakti1337@gmail.com',
       avatar: '',
       role: 'Admin'
     },
