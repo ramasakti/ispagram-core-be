@@ -4,13 +4,12 @@ const moment = require('../utilities/moment')
 const absenSiswaUtils = require('../utilities/AbsenSiswaUtils')
 
 const dataPresensi = async (req, res) => {
-    const dataPresensi = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').select('*')
+    const dataPresensi = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').select()
     return response(200, dataPresensi, 'Data presensi', res)
 }
 
 const dataAbsensi = async (req, res) => {
-    console.log('asd')
-    const dataKetidakhadiran = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').select('*').whereNull('absen.waktu_absen')
+    const dataKetidakhadiran = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').select().whereNull('absen.waktu_absen')
     return response(200, dataKetidakhadiran, 'Data absenssi', res)
 }
 
@@ -24,6 +23,7 @@ const updateAbsen = async (req, res) => {
     const id_siswa = req.params.id_siswa
     const { keterangan } = req.body
     const dataAbsen = await absenSiswaUtils.dataAbsensiSiswaIndividu(id_siswa)
+    absenSiswaUtils.filterRekap(id_siswa)
     if (!dataAbsen) return response(404, null, `ID Anda tidak terdaftar!`, res)
     if (!keterangan) return response(404, null, `Keterangan wajib diisi!`, res)
     if (keterangan === 'H') {
@@ -47,7 +47,7 @@ const updateAbsen = async (req, res) => {
             izin: moment().format('YYYY-MM-DD'),
             keterangan
         })
-        const rekapAbsen = await db('rekap_siswa').insert({
+        await db('rekap_siswa').insert({
             tanggal: moment().format('YYYY-MM-DD'),
             siswa_id: id_siswa,
             keterangan,
@@ -64,7 +64,7 @@ const engineAbsenSiswa = async (req, res) => {
         return response(404, null, `ID Anda tidak terdaftar!`, res)
     } else {
         const dataJamMasuk = await absenSiswaUtils.jamMasuk()
-        const jam_masuk = moment(dataJamMasuk.masuk, 'HH:mm:ss').format('HH:mm:ss');
+        const jam_masuk = moment(dataJamMasuk.masuk, 'HH:mm:ss').format('HH:mm:ss')
         if (jam_masuk < moment().format('HH:mm:ss')) {
             absenSiswaUtils.absenTerlambat(userabsen)
         }
@@ -81,7 +81,7 @@ const engineAbsenSiswa = async (req, res) => {
 }
 
 const diagramHadir = async (req, res) => {
-    const diagramHadir = await db('absen').whereNotNull('waktu_absen').select()
+    const diagramHadir = await db('absen').where('keterangan', '!=', 'T').whereNotNull('waktu_absen').select()
     return response(200, diagramHadir, `Data Kehadiran`, res)
 }
 
@@ -113,8 +113,8 @@ const grafikMingguan = async (req, res) => {
         .where('keterangan', 'T')
         .groupBy('tanggal')
         .orderBy('tanggal', 'desc')
-        .limit(7);
-    const terlambat = dataTerlambat.map(item => item.terlambat);
+        .limit(7)
+    const terlambat = dataTerlambat.map(item => item.terlambat)
 
     const dataSakit = await db('rekap_siswa')
         .count('tanggal as sakit')
@@ -122,8 +122,8 @@ const grafikMingguan = async (req, res) => {
         .where('keterangan', 'S')
         .groupBy('tanggal')
         .orderBy('tanggal', 'desc')
-        .limit(7);
-    const sakit = dataSakit.map(item => item.sakit);
+        .limit(7)
+    const sakit = dataSakit.map(item => item.sakit)
 
     const dataIzin = await db('rekap_siswa')
         .count('tanggal as izin')
@@ -131,8 +131,8 @@ const grafikMingguan = async (req, res) => {
         .where('keterangan', 'I')
         .groupBy('tanggal')
         .orderBy('tanggal', 'desc')
-        .limit(7);
-    const izin = dataIzin.map(item => item.izin);
+        .limit(7)
+    const izin = dataIzin.map(item => item.izin)
 
     const dataAlfa = await db('rekap_siswa')
         .count('tanggal as alfa')
@@ -140,8 +140,8 @@ const grafikMingguan = async (req, res) => {
         .where('keterangan', 'A')
         .groupBy('tanggal')
         .orderBy('tanggal', 'desc')
-        .limit(7);
-    const alfa = dataAlfa.map(item => item.alfa);
+        .limit(7)
+    const alfa = dataAlfa.map(item => item.alfa)
 
     const dataTanggal = await db('rekap_siswa')
         .select('tanggal')
@@ -149,7 +149,7 @@ const grafikMingguan = async (req, res) => {
         .orderBy('tanggal', 'desc')
         .limit(7)
 
-    const tanggal = dataTanggal.map(item => moment(item.tanggal).format('YYYY-MM-DD'));
+    const tanggal = dataTanggal.map(item => moment(item.tanggal).format('YYYY-MM-DD'))
 
     return response(200, { tanggal, terlambat, sakit, izin, alfa }, `Grafik`, res)
 }

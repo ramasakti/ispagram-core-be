@@ -40,4 +40,10 @@ const jamMasuk = async () => {
     return jamMasuk
 }
 
-module.exports = { dataAbsensiSiswaIndividu, jamMasuk, absenTerlambat, rekapAbsen }
+const filterRekap = async (id_siswa) => {
+    const rekapSiswa = await db('rekap_siswa').where('siswa_id', id_siswa).where('tanggal', moment().format('YYYY-MM-DD')).first()
+    if (rekapSiswa) await db('rekap_siswa').where('siswa_id', id_siswa).where('tanggal', moment().format('YYYY-MM-DD')).del()
+    return
+}
+
+module.exports = { dataAbsensiSiswaIndividu, jamMasuk, absenTerlambat, rekapAbsen, filterRekap }

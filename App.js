@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const cron = require('node-cron')
+const path = require('path')
 const session = require('express-session')
 const passport = require('passport')
 const db = require('./Config')
@@ -20,6 +21,7 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session())
 
+app.use('/upload', express.static(path.join(__dirname, 'upload')))
 // Node Cron
 //  ┌────────────── second (optional)
 //  │ ┌──────────── minute

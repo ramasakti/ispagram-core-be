@@ -25,16 +25,20 @@ const updateUser = async (req, res) => {
             return response(400, null, `File yang diunggah bukan gambar!`, res)
         }
         const avatarData = fs.readFileSync(req.file.path)
-        const avatarBase64 = avatarData.toString('base64')
-    
-        await db('user').where('username', username).update({ avatar: avatarBase64 })
         
-        fs.unlinkSync(req.file.path)
+        await db('user').where('username', username).update({ avatar: req.file.path })
     }
 
-    await db('user').where('username', username).update({
-        email, password: await bcrypt.hash(password, 10), role
-    })
+    if (password != 'undefined') {
+        await db('user').where('username', username).update({
+            email, password: await bcrypt.hash(password, 10), role
+        })
+    }else[
+        await db('user').where('username', username).update({
+            email, role
+        })
+    ]
+
     return response(201, {}, `Berhasil update user!`, res)
 }
 
