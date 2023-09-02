@@ -22,4 +22,7 @@ router.route('/user/:username')
     .get(UserController.detailUser)
     .put(upload.single('avatar'), UserController.updateUser)
 
+router.route('/reset')
+    .post(UserController.forgetPassword)
+
 module.exports = router

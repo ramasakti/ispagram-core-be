@@ -1,7 +1,8 @@
 const db = require('./../Config')
 const response = require('./../Response')
-const fs = require('fs')
 const bcrypt = require('bcryptjs')
+const crypto = require('crypto')
+const sendMail = require('./../utilities/UserUtils')
 
 const users = async (req, res) => {
     const users = await db('user').where('username', '!=', 'adminabsen').select('username', 'name', 'email', 'avatar', 'role')
@@ -15,31 +16,38 @@ const detailUser = async (req, res) => {
 }
 
 const updateUser = async (req, res) => {
-    const { email, password, role } = req.body
+    const { email, role } = req.body
     const username = req.params.username
     const detailUser = await db('user').where('username', username).first()
     if (!detailUser) return response(400, null, `User tidak terdaftar!`, res)
+
+    const existingEmail = await UserUtils.existingEmail(email)
+    if (existingEmail != null) return response(400, null, `Email telah digunakan!`, res)
 
     if (req.file) {
         if (!req.file.mimetype.startsWith('image/')) {
             return response(400, null, `File yang diunggah bukan gambar!`, res)
         }
-        const avatarData = fs.readFileSync(req.file.path)
-        
+
         await db('user').where('username', username).update({ avatar: req.file.path })
     }
 
-    if (password != 'undefined') {
-        await db('user').where('username', username).update({
-            email, password: await bcrypt.hash(password, 10), role
-        })
-    }else[
-        await db('user').where('username', username).update({
-            email, role
-        })
-    ]
+    await db('user').where('username', username).update({
+        email, role
+    })
 
     return response(201, {}, `Berhasil update user!`, res)
 }
 
-module.exports = { users, detailUser, updateUser }
+const forgetPassword = async (req, res) => {
+    const { email } = req.body
+    const detailUser = await db('user').where('email', email).first()
+    if (!detailUser) return response(400, null, `Email tidak terdaftar!`, res)
+    const randomPassword = crypto.randomBytes(Math.ceil(8 / 2)).toString('hex').slice(0, 8)
+    await db('user').where('email', email).update('password', await bcrypt.hash(randomPassword, 10))
+    const text = `Assalamualaikum Yth. Bapak/Ibu ${detailUser.name}\n\nSesuai dengan permintaah Bapak/Ibu perihal reset password, berikut adalah detail akun yang digunakan untuk login di aplikasi Ispagram\nUsername: ${detailUser.username}\nPassword: ${randomPassword}\n\nNote: Segera ganti password anda agar mudah diingat`
+    sendMail.credentialInfo(email, `Informasi Reset Password`, text)
+    return response(200, null, `Berhasil reset password! Cek kotak masuk email untuk mengetahui password baru anda!`, res)
+}
+
+module.exports = { users, detailUser, updateUser, forgetPassword }
