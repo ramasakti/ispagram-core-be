@@ -3,6 +3,7 @@ const response = require('./../Response')
 const bcrypt = require('bcryptjs')
 const crypto = require('crypto')
 const sendMail = require('./../utilities/UserUtils')
+const moment = require('../utilities/moment')
 
 const users = async (req, res) => {
     const users = await db('user').where('username', '!=', 'adminabsen').select('username', 'name', 'email', 'avatar', 'role')
@@ -12,6 +13,41 @@ const users = async (req, res) => {
 const detailUser = async (req, res) => {
     const detailUser = await db('user').where('username', req.params.username).first()
     if (!detailUser) return response(400, null, `User tidak terdaftar!`, res)
+
+    if (detailUser.role === 'Guru') {
+        const piket = await db('hari').where('nama_hari', moment().format('dddd')).where('piket', detailUser.username).first()
+        const walas = await db('kelas').where('walas', detailUser.username).first()
+        if (piket) {
+            const dataUser = {
+                username: detailUser.username,
+                name: detailUser.name,
+                email: detailUser.email,
+                avatar: detailUser.avatar,
+                role: 'Piket',
+            }
+
+            if (walas) {
+                dataUser.walas = true
+                dataUser.kelas_id = walas.id_kelas
+            }
+
+            return response(200, dataUser, 'Authenticated', res)
+        }
+        if (walas) {
+            const dataUser = {
+                username: detailUser.username,
+                name: detailUser.name,
+                email: detailUser.email,
+                avatar: detailUser.avatar,
+                role: 'Walas',
+                walas: true,
+                kelas_id: walas.id_kelas
+            }
+            return response(200, dataUser, 'Authenticated', res)
+        }
+    }
+
+    delete detailUser.password
     return response(200, detailUser, `Detail User ${detailUser.username}`, res)
 }
 
