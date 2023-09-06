@@ -7,9 +7,9 @@ const bcrypt = require('bcryptjs')
 exports.seed = async function (knex) {
   // Deletes ALL existing entries
   await knex('user').del();
-  await knex('guru').del();
-  await knex('kelas').del();
   await knex('hari').del();
+  await knex('kelas').del();
+  await knex('guru').del();
   await knex('nominal').del();
   await knex('transportasi').del();
   await knex('jenis_tinggal').del();
@@ -140,7 +140,6 @@ exports.seed = async function (knex) {
 
   // Insert seed entries for 'pembayaran' table
   await knex('pembayaran').insert([
-    { nama_pembayaran: 'Tunggakan', nominal: null, kelas: '' },
-    // Insert other 'pembayaran' entries here...
+    { nama_pembayaran: 'Tunggakan', nominal: null, kelas: { kelas: [] } },
   ]);
 };

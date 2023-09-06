@@ -9,6 +9,7 @@ const hariRouter = require('./HariRouter')
 const jampelRouter = require('./JamPelajaranRouter')
 const liburRouter = require('./LiburRouter')
 const userRouter = require('./UserRouter')
+const pembayaranRouter = require('./PembayaranRouter')
 
 app.use(siswaRouter)
 app.use(kelasRouter)
@@ -18,6 +19,7 @@ app.use(hariRouter)
 app.use(jampelRouter)
 app.use(liburRouter)
 app.use(userRouter)
+app.use(pembayaranRouter)
 app.use(authRouter)
 
 module.exports = app

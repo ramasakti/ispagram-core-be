@@ -7,7 +7,7 @@ exports.up = function (knex) {
         table.increments('id_pembayaran');
         table.string('nama_pembayaran');
         table.integer('nominal').nullable();
-        table.text('kelas');
+        table.json('kelas');
     });
 };
 
