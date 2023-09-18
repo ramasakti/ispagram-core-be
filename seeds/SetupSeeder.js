@@ -3,6 +3,7 @@
  * @returns { Promise<void> } 
  */
 const bcrypt = require('bcryptjs')
+const moment = require('../utilities/moment')
 
 exports.seed = async function (knex) {
   // Deletes ALL existing entries
@@ -74,13 +75,88 @@ exports.seed = async function (knex) {
 
   // Insert seed entries for 'hari' table
   const days = [
-    { nama_hari: 'Senin', masuk: '06:50:00', pulang: '14:40:00', jampel: '00:40:00', piket: 'arifubayd', status: true },
-    { nama_hari: 'Selasa', masuk: '06:50:00', pulang: '14:40:00', jampel: '00:40:00', piket: 'arifubayd', status: true },
-    { nama_hari: 'Rabu', masuk: '06:50:00', pulang: '14:40:00', jampel: '00:40:00', piket: 'arifubayd', status: true },
-    { nama_hari: 'Kamis', masuk: '06:50:00', pulang: '14:40:00', jampel: '00:40:00', piket: 'arifubayd', status: true },
-    { nama_hari: 'Jumat', masuk: '06:30:00', pulang: '14:40:00', jampel: '00:40:00', piket: 'arifubayd', status: true },
-    { nama_hari: 'Sabtu', masuk: '06:30:00', pulang: '14:40:00', jampel: '00:40:00', piket: 'arifubayd', status: true },
-    { nama_hari: 'Minggu', masuk: '06:50:00', pulang: '14:40:00', jampel: '00:40:00', piket: 'arifubayd', status: false },
+    {
+      nama_hari: 'Senin',
+      diniyah: true,
+      jam_diniyah: { mulai: '06:50:00', sampai: '07:59:59' },
+      masuk: '06:50:00',
+      "istirahat": JSON.stringify([
+        { mulai: '09:20:00', selesai: '10:00:00' },
+        { mulai: '11:20:00', selesai: '11:50:00' }
+      ]),
+      pulang: '14:40:00', jampel: '00:40:00',
+      piket: 'arifubayd',
+      status: true
+    },
+    {
+      nama_hari: 'Selasa',
+      diniyah: true,
+      jam_diniyah: { mulai: '06:50:00', sampai: '07:59:59' },
+      masuk: '06:50:00',
+      "istirahat": JSON.stringify([
+        { mulai: '09:20:00', selesai: '10:00:00' },
+        { mulai: '11:20:00', selesai: '11:50:00' }
+      ]),
+      pulang: '14:40:00',
+      jampel: '00:40:00',
+      piket: 'arifubayd',
+      status: true
+    },
+    {
+      nama_hari: 'Rabu',
+      diniyah: true,
+      jam_diniyah: { mulai: '06:50:00', sampai: '07:59:59' },
+      masuk: '06:50:00',
+      "istirahat": JSON.stringify([
+        { mulai: '09:20:00', selesai: '10:00:00' },
+        { mulai: '11:20:00', selesai: '11:50:00' }
+      ]),
+      pulang: '14:40:00',
+      jampel: '00:40:00',
+      piket: 'arifubayd',
+      status: true
+    },
+    {
+      nama_hari: 'Kamis',
+      diniyah: true,
+      jam_diniyah: { mulai: '06:50:00', sampai: '07:59:59' },
+      masuk: '06:50:00',
+      "istirahat": JSON.stringify([
+        { mulai: '09:20:00', selesai: '10:00:00' },
+        { mulai: '11:20:00', selesai: '11:50:00' }
+      ]),
+      pulang: '14:40:00',
+      jampel: '00:40:00',
+      piket: 'arifubayd',
+      status: true
+    },
+    {
+      nama_hari: 'Jumat',
+      diniyah: false,
+      masuk: '06:50:00',
+      "istirahat": JSON.stringify([
+        { mulai: '09:30:00', selesai: '09:50:00' },
+      ]),
+      pulang: '14:40:00',
+      jampel: '00:40:00',
+      piket: 'arifubayd',
+      status: true
+    },
+    {
+      nama_hari: 'Sabtu',
+      diniyah: false,
+      masuk: '06:50:00',
+      "istirahat": JSON.stringify([
+        { mulai: '09:30:00', selesai: '09:50:00' },
+      ]),
+      pulang: '14:40:00',
+      jampel: '00:40:00',
+      piket: 'arifubayd',
+      status: true
+    },
+    {
+      nama_hari: 'Minggu', diniyah: false, masuk: '06:50:00', pulang: '14:40:00', jampel: '00:40:00', piket: 'arifubayd', status: false
+    },
   ];
   await knex('hari').insert(days);
 

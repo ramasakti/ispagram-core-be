@@ -10,6 +10,7 @@ const jampelRouter = require('./JamPelajaranRouter')
 const liburRouter = require('./LiburRouter')
 const userRouter = require('./UserRouter')
 const pembayaranRouter = require('./PembayaranRouter')
+const transaksiRouter = require('./TransaksiRouter')
 
 app.use(siswaRouter)
 app.use(kelasRouter)
@@ -20,6 +21,7 @@ app.use(jampelRouter)
 app.use(liburRouter)
 app.use(userRouter)
 app.use(pembayaranRouter)
+app.use(transaksiRouter)
 app.use(authRouter)
 
 module.exports = app

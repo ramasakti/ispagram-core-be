@@ -4,7 +4,7 @@ const moment = require('../utilities/moment')
 const guruUtils = require('../utilities/GuruUtils')
 
 const hari = async (req, res) => {
-    const hari = await db('hari').join('guru', 'hari.piket', '=', 'guru.id_guru').select('id_hari', 'nama_hari', 'masuk', 'pulang', 'jampel', 'piket', 'status', 'nama_guru')
+    const hari = await db('hari').join('guru', 'hari.piket', '=', 'guru.id_guru').select('id_hari', 'nama_hari', 'diniyah', 'jam_diniyah', 'masuk', 'istirahat', 'pulang', 'jampel', 'piket', 'status', 'nama_guru')
     return response(200, hari, `Berhasil get data hari!`, res)
 }
 
