@@ -16,14 +16,22 @@ const libur = async (req, res) => {
 }
 
 const storeLibur = async (req, res) => {
-    const { keterangan, mulai, sampai } = req.body
-    if (!keterangan || !mulai || !sampai) return response(400, null, `Gagal! Semua field wajib diisi`, res)
-    if (!moment(mulai, 'YYYY-MM-DD', true).isValid()) return response(400, null, `Gagal! data mulai harus format waktu`, res)
-    if (!moment(sampai, 'YYYY-MM-DD', true).isValid()) return response(400, null, `Gagal! data mulai harus format waktu`, res)
+    const { keterangan, libur } = req.body
+    if (!keterangan || !libur) return response(400, null, `Gagal! Semua field wajib diisi`, res)
 
-    const storeLibur = await db('libur').insert({
-        keterangan, mulai, sampai
-    })
+    if (libur.length === 10) {
+        const storeLibur = await db('libur').insert({
+            keterangan, mulai: libur, sampai: libur
+        })
+    } else {
+        const mulai = libur.substring(0, 10)
+        const sampai = libur.substring(14, 24)
+
+        const storeLibur = await db('libur').insert({
+            keterangan, mulai, sampai
+        })
+    }
+
     return response(201, {}, `Berhasil menambahkan data libur!`, res)
 }
 
