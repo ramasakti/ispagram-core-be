@@ -155,8 +155,20 @@ const grafikMingguan = async (req, res) => {
 }
 
 const rekap = async (req, res) => {
-    const { kelas, dari, sampai } = req.query
-    if (!kelas || !dari || !sampai) return response(400, null, `Invalid request parameter!`, res)
+    const { kelas, range } = req.query
+    let dari, sampai = ''
+    if (!kelas || !range) return response(400, null, `Invalid request parameter!`, res)
+
+    if (kelas == undefined || range == undefined) return response(400, null, `Invalid request parameter!`, res)
+
+    if (range.length === 10) {
+        dari = range
+        sampai = range
+    }else{ 
+        dari = range.substring(0, 10)
+        sampai = range.substring(14, 24)
+    }
+
     const rekap = await db('siswa')
         .select(
             's.id_siswa',
@@ -171,6 +183,7 @@ const rekap = async (req, res) => {
         .whereBetween('rs.tanggal', [dari, sampai])
         .andWhere('s.kelas_id', kelas)
         .groupBy('s.id_siswa', 's.nama_siswa')
+
     return response(200, rekap, `Rekap`, res)
 }
 

@@ -36,13 +36,30 @@ const storeLibur = async (req, res) => {
 }
 
 const updateLibur = async (req, res) => {
-    const { id_libur, keterangan, mulai, sampai } = req.body
+    const { id_libur, keterangan, libur } = req.body
     if (!id_libur) return response(400, null, `Gagal! data libur tidak ditemukan`, res)
-    if (!moment(mulai, 'YYYY-MM-DD', true).isValid()) return response(400, null, `Gagal! data mulai harus format waktu`, res)
-    if (!moment(sampai, 'YYYY-MM-DD', true).isValid()) return response(400, null, `Gagal! data mulai harus format waktu`, res)
-    const updateLibur = await db('libur').where('id_libur', id_libur).update({
-        keterangan, mulai, sampai
-    })
+
+    if (!libur && keterangan) {
+        const updateLibur = await db('libur').where('id_libur', id_libur).update({
+            keterangan
+        })
+
+        return response(201, {}, `Berhasil mengubah data libur!`, res)
+    }
+
+    if (libur.length === 10) {
+        const updateLibur = await db('libur').where('id_libur', id_libur).update({
+            keterangan, mulai: libur, sampai: libur
+        })
+    } else {
+        const mulai = libur.substring(0, 10)
+        const sampai = libur.substring(14, 24)
+
+        const updateLibur = await db('libur').where('id_libur', id_libur).update({
+            keterangan, mulai, sampai
+        })
+    }
+    
     return response(201, {}, `Berhasil mengubah data libur!`, res)
 }
 

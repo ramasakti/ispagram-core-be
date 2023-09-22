@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs')
 const crypto = require('crypto')
 const sendMail = require('./../utilities/UserUtils')
 const moment = require('../utilities/moment')
+const UserUtils = require('../utilities/UserUtils')
 
 const users = async (req, res) => {
     const users = await db('user').where('username', '!=', 'adminabsen').select('username', 'name', 'email', 'avatar', 'role')
@@ -57,8 +58,10 @@ const updateUser = async (req, res) => {
     const detailUser = await db('user').where('username', username).first()
     if (!detailUser) return response(400, null, `User tidak terdaftar!`, res)
 
-    const existingEmail = await UserUtils.existingEmail(email)
-    if (existingEmail != null) return response(400, null, `Email telah digunakan!`, res)
+    if (detailUser.email != email) {
+        const existingEmail = await UserUtils.existingEmail(email)
+        if (existingEmail != null) return response(400, null, `Email telah digunakan!`, res)
+    }
 
     if (req.file) {
         if (!req.file.mimetype.startsWith('image/')) {

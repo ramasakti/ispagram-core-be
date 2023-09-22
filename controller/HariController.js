@@ -9,8 +9,10 @@ const hari = async (req, res) => {
 }
 
 const updateHari = async (req, res) => {
-    let { id_hari, nama_hari, masuk, pulang, jampel, piket, status } = req.body
+    let { id_hari, nama_hari, diniyah, jam_diniyah, masuk, istirahat, pulang, jampel, piket, status } = req.body
 
+    jam_diniyah.mulai = moment(jam_diniyah.mulai, 'HH:mm:ss').format('HH:mm:ss')
+    jam_diniyah.sampai = moment(jam_diniyah.sampai, 'HH:mm:ss').format('HH:mm:ss')
     masuk = moment(masuk, 'HH:mm:ss').format('HH:mm:ss')
     pulang = moment(pulang, 'HH:mm:ss').format('HH:mm:ss')
     jampel = moment(jampel, 'HH:mm:ss').format('HH:mm:ss')
@@ -24,7 +26,7 @@ const updateHari = async (req, res) => {
     if (await guruUtils.existingGuru(piket) === null) return response(400, null, `Guru piket tidak terdaftar!`, res)
 
     const updateHari = await db('hari').where('id_hari', id_hari).update({
-        nama_hari, masuk, piket, status
+        nama_hari, diniyah, jam_diniyah, masuk, istirahat, piket, status
     })
 
     return response(201, {}, `Berhasil edit hari!`, res)
