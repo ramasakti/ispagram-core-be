@@ -7,6 +7,7 @@ const passport = require('passport')
 const db = require('./Config')
 const router = require('./router/Router')
 const cors = require('cors')
+const moment = require('./utilities/moment')
 
 app.use(express.json())
 app.use(cors())

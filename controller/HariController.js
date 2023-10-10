@@ -4,32 +4,48 @@ const moment = require('../utilities/moment')
 const guruUtils = require('../utilities/GuruUtils')
 
 const hari = async (req, res) => {
-    const hari = await db('hari').join('guru', 'hari.piket', '=', 'guru.id_guru').select('id_hari', 'nama_hari', 'diniyah', 'jam_diniyah', 'masuk', 'istirahat', 'pulang', 'jampel', 'piket', 'status', 'nama_guru')
-    return response(200, hari, `Berhasil get data hari!`, res)
+    try {
+        const hari = await db('hari').join('guru', 'hari.piket', '=', 'guru.id_guru').select('id_hari', 'nama_hari', 'diniyah', 'jam_diniyah', 'masuk', 'istirahat', 'pulang', 'jampel', 'piket', 'status', 'nama_guru')
+        return response(200, hari, `Berhasil get data hari!`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
+    }
 }
 
 const updateHari = async (req, res) => {
-    let { id_hari, nama_hari, diniyah, jam_diniyah, masuk, istirahat, pulang, jampel, piket, status } = req.body
-
-    jam_diniyah.mulai = moment(jam_diniyah.mulai, 'HH:mm:ss').format('HH:mm:ss')
-    jam_diniyah.sampai = moment(jam_diniyah.sampai, 'HH:mm:ss').format('HH:mm:ss')
-    masuk = moment(masuk, 'HH:mm:ss').format('HH:mm:ss')
-    pulang = moment(pulang, 'HH:mm:ss').format('HH:mm:ss')
-    jampel = moment(jampel, 'HH:mm:ss').format('HH:mm:ss')
-
-    if (!id_hari || !nama_hari || !masuk || !piket) return response(400, null, `Gagal! semua data wajib diisi`, res);
-
-    if (!moment(masuk, 'HH:mm:ss', true).isValid()) return response(400, null, `Gagal! data masuk harus format waktu`, res)
-    if (!moment(pulang, 'HH:mm:ss', true).isValid()) return response(400, null, `Gagal! data pulang harus format waktu`, res)
-    if (!moment(jampel, 'HH:mm:ss', true).isValid()) return response(400, null, `Gagal! data jampel harus format waktu`, res)
-
-    if (await guruUtils.existingGuru(piket) === null) return response(400, null, `Guru piket tidak terdaftar!`, res)
-
-    const updateHari = await db('hari').where('id_hari', id_hari).update({
-        nama_hari, diniyah, jam_diniyah, masuk, istirahat, piket, status
-    })
-
-    return response(201, {}, `Berhasil edit hari!`, res)
+    try {
+        // Tangkap inputan
+        let { id_hari, nama_hari, diniyah, jam_diniyah, masuk, istirahat, pulang, jampel, piket, status } = req.body
+    
+        // Ubah format waktu
+        jam_diniyah.mulai = moment(jam_diniyah.mulai, 'HH:mm:ss').format('HH:mm:ss')
+        jam_diniyah.sampai = moment(jam_diniyah.sampai, 'HH:mm:ss').format('HH:mm:ss')
+        masuk = moment(masuk, 'HH:mm:ss').format('HH:mm:ss')
+        pulang = moment(pulang, 'HH:mm:ss').format('HH:mm:ss')
+        jampel = moment(jampel, 'HH:mm:ss').format('HH:mm:ss')
+    
+        // Filter inputan
+        if (!id_hari || !nama_hari || !masuk || !piket) return response(400, null, `Gagal! semua data wajib diisi`, res);
+    
+        // Filter format waktu
+        if (!moment(masuk, 'HH:mm:ss', true).isValid()) return response(400, null, `Gagal! data masuk harus format waktu`, res)
+        if (!moment(pulang, 'HH:mm:ss', true).isValid()) return response(400, null, `Gagal! data pulang harus format waktu`, res)
+        if (!moment(jampel, 'HH:mm:ss', true).isValid()) return response(400, null, `Gagal! data jampel harus format waktu`, res)
+    
+        // Cek apakah ID guru terdaftar
+        if (await guruUtils.existingGuru(piket) === null) return response(400, null, `Guru piket tidak terdaftar!`, res)
+    
+        // Update hari
+        const updateHari = await db('hari').where('id_hari', id_hari).update({
+            nama_hari, diniyah, jam_diniyah, masuk, istirahat, piket, status
+        })
+    
+        return response(201, {}, `Berhasil edit hari!`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
+    }
 }
 
 module.exports = { hari, updateHari }

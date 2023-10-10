@@ -4,106 +4,176 @@ const moment = require('../utilities/moment')
 const absenSiswaUtils = require('../utilities/AbsenSiswaUtils')
 
 const dataPresensi = async (req, res) => {
-    const dataPresensi = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').select()
-    return response(200, dataPresensi, 'Data presensi', res)
+    try {
+        const dataPresensi = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').select()
+        return response(200, dataPresensi, 'Data presensi', res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
+    }
 }
 
 const dataAbsensi = async (req, res) => {
-    const dataKetidakhadiran = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').select().whereNull('absen.waktu_absen')
-    return response(200, dataKetidakhadiran, 'Data absenssi', res)
+    try {
+        const dataKetidakhadiran = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').select().whereNull('absen.waktu_absen')
+        return response(200, dataKetidakhadiran, 'Data absenssi', res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
+    }
 }
 
 const dataAbsensiKelas = async (req, res) => {
-    const kelasId = req.params.kelas_id
-    const dataKetidakhadiran = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').where('siswa.kelas_id', kelasId)
-    return response(200, dataKetidakhadiran, 'Data absensi', res)
+    try {
+        const kelasId = req.params.kelas_id
+        const dataKetidakhadiran = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').where('siswa.kelas_id', kelasId)
+        return response(200, dataKetidakhadiran, 'Data absensi', res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
+    }
 }
 
 const updateAbsen = async (req, res) => {
-    const id_siswa = req.params.id_siswa
-    const { keterangan } = req.body
-    const dataAbsen = await absenSiswaUtils.dataAbsensiSiswaIndividu(id_siswa)
-    absenSiswaUtils.filterRekap(id_siswa)
-    if (!dataAbsen) return response(404, null, `ID Anda tidak terdaftar!`, res)
-    if (!keterangan) return response(404, null, `Keterangan wajib diisi!`, res)
-    if (keterangan === 'H') {
-        const updateAbsen = await db('absen').where('id_siswa', id_siswa).update({
-            waktu_absen: moment().format('HH:mm:ss'),
-            izin: null,
-            keterangan: ''
-        })
-        return response(201, dataAbsen, `Berhasil absen!`, res)
-    } else if (keterangan === 'T') {
-        const updateAbsen = await db('absen').where('id_siswa', id_siswa).update({
-            waktu_absen: moment().format('HH:mm:ss'),
-            izin: null,
-            keterangan
-        })
-        absenSiswaUtils.absenTerlambat(id_siswa)
-        return response(201, updateAbsen, `Berhasil absen!`, res)
-    } else {
-        const updateAbsen = await db('absen').where('id_siswa', id_siswa).update({
-            waktu_absen: null,
-            izin: moment().format('YYYY-MM-DD'),
-            keterangan
-        })
-        await db('rekap_siswa').insert({
-            tanggal: moment().format('YYYY-MM-DD'),
-            siswa_id: id_siswa,
-            keterangan,
-            waktu_absen: null
-        }).onConflict('tanggal').merge()
-        return response(201, null, `Berhasil absen!`, res)
+    try {
+        const id_siswa = req.params.id_siswa
+        const { keterangan } = req.body
+
+        // Cek absen individu
+        const dataAbsen = await absenSiswaUtils.dataAbsensiSiswaIndividu(id_siswa)
+        if (!dataAbsen) return response(404, null, `ID Anda tidak terdaftar!`, res)
+
+        // Jika sudah ada rekap hari ini dan ada rekap lagi maka update
+        absenSiswaUtils.filterRekap(id_siswa)
+
+        if (!keterangan) return response(404, null, `Keterangan wajib diisi!`, res)
+
+        // Jika keterangan hadir
+        if (keterangan === 'H') {
+            const updateAbsen = await db('absen').where('id_siswa', id_siswa).update({
+                waktu_absen: moment().format('HH:mm:ss'),
+                izin: null,
+                keterangan: ''
+            })
+            return response(201, dataAbsen, `Berhasil absen!`, res)
+        } 
+        // Jika terlambat
+        else if (keterangan === 'T') { 
+            const updateAbsen = await db('absen').where('id_siswa', id_siswa).update({
+                waktu_absen: moment().format('HH:mm:ss'),
+                izin: null,
+                keterangan
+            })
+            absenSiswaUtils.absenTerlambat(id_siswa)
+            return response(201, updateAbsen, `Berhasil absen!`, res)
+        } 
+        // Jika sakit atau izin atau alfa
+        else {
+            const updateAbsen = await db('absen').where('id_siswa', id_siswa).update({
+                waktu_absen: null,
+                izin: moment().format('YYYY-MM-DD'),
+                keterangan
+            })
+            await db('rekap_siswa').insert({
+                tanggal: moment().format('YYYY-MM-DD'),
+                siswa_id: id_siswa,
+                keterangan,
+                waktu_absen: null
+            }).onConflict('tanggal').merge()
+            return response(201, null, `Berhasil absen!`, res)
+        }
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
     }
 }
 
 const engineAbsenSiswa = async (req, res) => {
-    const { userabsen } = req.body
-    const dataAbsen = await absenSiswaUtils.dataAbsensiSiswaIndividu(userabsen)
-    if (dataAbsen.length < 1) {
-        return response(404, null, `ID Anda tidak terdaftar!`, res)
-    } else {
-        const dataJamMasuk = await absenSiswaUtils.jamMasuk()
-        const jam_masuk = moment(dataJamMasuk.masuk, 'HH:mm:ss').format('HH:mm:ss')
-        if (jam_masuk < moment().format('HH:mm:ss')) {
-            absenSiswaUtils.absenTerlambat(userabsen)
+    try {
+        const { userabsen } = req.body
+        const dataAbsen = await absenSiswaUtils.dataAbsensiSiswaIndividu(userabsen)
+    
+        // Jika ID user tidak terdaftar
+        if (dataAbsen.length < 1) {
+            return response(404, null, `ID Anda tidak terdaftar!`, res)
+        } else {
+            // Ambil informasi jam masuk hari ini
+            const dataJamMasuk = await absenSiswaUtils.jamMasuk()
+            const jam_masuk = moment(dataJamMasuk.masuk, 'HH:mm:ss').format('HH:mm:ss')
+    
+            // Jika melewati batas jam masuk
+            if (jam_masuk < moment().format('HH:mm:ss')) {
+                absenSiswaUtils.absenTerlambat(userabsen)
+            }
+    
+            // Jika sudah absen hari ini
+            if (dataAbsen.waktu_absen != null) {
+                return response(200, dataAbsen, `${dataAbsen.nama_siswa} Sudah Absen!`, res)
+            }
+    
+            // Update DB sesuai kondisi
+            const engine = await db('absen').where('id_siswa', userabsen).update({
+                waktu_absen: moment().format('HH:mm:ss'),
+                izin: null,
+                keterangan: ''
+            })
+            return response(201, engine, 'Berhasil Absen!', res)
         }
-        if (dataAbsen.waktu_absen != null) {
-            return response(200, dataAbsen, `${dataAbsen.nama_siswa} Sudah Absen!`, res)
-        }
-        const engine = await db('absen').where('id_siswa', userabsen).update({
-            waktu_absen: moment().format('HH:mm:ss'),
-            izin: null,
-            keterangan: ''
-        })
-        return response(201, engine, 'Berhasil Absen!', res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
     }
 }
 
 const diagramHadir = async (req, res) => {
-    const diagramHadir = await db('absen').where('keterangan', '!=', 'T').whereNotNull('waktu_absen').select()
-    return response(200, diagramHadir, `Data Kehadiran`, res)
+    try {
+        const diagramHadir = await db('absen').where('keterangan', '!=', 'T').whereNotNull('waktu_absen').select()
+        return response(200, diagramHadir, `Data Kehadiran`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
+    }
 }
 
 const diagramTerlambat = async (req, res) => {
-    const masuk = await absenSiswaUtils.jamMasuk()
-    const diagramTerlambat = await db('absen').where('waktu_absen', '>', moment(masuk.masuk, 'HH:mm:ss').format('HH:mm:ss')).select()
-    return response(200, diagramTerlambat, `Data Kehadiran`, res)
+    try {
+        const masuk = await absenSiswaUtils.jamMasuk()
+        const diagramTerlambat = await db('absen').where('waktu_absen', '>', moment(masuk.masuk, 'HH:mm:ss').format('HH:mm:ss')).select()
+        return response(200, diagramTerlambat, `Data Kehadiran`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
+    }
 }
 
 const diagramSakit = async (req, res) => {
-    const diagramSakit = await db('absen').where('keterangan', 'S').select()
-    return response(200, diagramSakit, `Data Sakit`, res)
+    try {
+        const diagramSakit = await db('absen').where('keterangan', 'S').select()
+        return response(200, diagramSakit, `Data Sakit`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
+    }
 }
 
 const diagramIzin = async (req, res) => {
-    const diagramIzin = await db('absen').where('keterangan', 'I').select()
-    return response(200, diagramIzin, `Data Sakit`, res)
+    try {
+        const diagramIzin = await db('absen').where('keterangan', 'I').select()
+        return response(200, diagramIzin, `Data Sakit`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
+    }
 }
 
 const diagramAlfa = async (req, res) => {
-    const diagramAlfa = await db('absen').whereNull('waktu_absen').select()
-    return response(200, diagramAlfa, `Data Alfa`, res)
+    try {
+        const diagramAlfa = await db('absen').whereNull('waktu_absen').select()
+        return response(200, diagramAlfa, `Data Alfa`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
+    }
 }
 
 const grafikMingguan = async (req, res) => {

@@ -30,13 +30,28 @@ const updateKelas = async (req, res) => {
 }
 
 const deleteKelas = async (req, res) => {
-    const id_kelas = req.params.kelas_id
-    const detailKelas = await db('kelas').where('id_kelas', id_kelas).first()
-    if (!detailKelas) {
-        return response(404, null, `Data kelas yang akan dihapus tidak teridentifikasi`, res)
+    try {
+        // Tangkap inputan id kelas dari request parameter
+        const id_kelas = req.params.kelas_id
+
+        // Ambil informasi kelas
+        const detailKelas = await db('kelas').where('id_kelas', id_kelas).first()
+
+        // Jika kelas tidak ditemukan
+        if (!detailKelas) return response(404, null, `Data kelas yang akan dihapus tidak teridentifikasi`, res)
+        
+        // Periksa apakah kelas memiliki siswa
+        const existingSiswa = await db('siswa').select().where('kelas_id', id_kelas)
+        if (existingSiswa) return response(400, null, `Gagal hapus kelas! Terdapat siswa yang terdaftar pada kelas yang akan dihapus`, res)
+
+        // Hapus kelas dari tabel kelas
+        const deleteKelas = await db('kelas').where('id_kelas', id_kelas).del()
+
+        response(202, deleteKelas, 'Berhasil hapus kelas', res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
     }
-    const deleteKelas = await db('kelas').where('id_kelas', id_kelas).del()
-    response(202, deleteKelas, 'Berhasil hapus kelas', res)
 }
 
 module.exports = { kelas, detailKelas, storeKelas, updateKelas, deleteKelas }
