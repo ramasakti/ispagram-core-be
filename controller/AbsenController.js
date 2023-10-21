@@ -225,20 +225,18 @@ const grafikMingguan = async (req, res) => {
 }
 
 const rekap = async (req, res) => {
-    const { kelas, range } = req.query
-    let dari, sampai = ''
-    if (!kelas || !range) return response(400, null, `Invalid request parameter!`, res)
+    const { kelas, range } = req.query;
 
-    if (kelas == undefined || range == undefined) return response(400, null, `Invalid request parameter!`, res)
+    if (!kelas || !range) return response(400, null, 'Form tidak lengkap!', res);
 
-    if (range.length === 10) {
-        dari = range
-        sampai = range
-    }else{ 
-        dari = range.substring(0, 10)
-        sampai = range.substring(14, 24)
-    }
+    // Memisahkan tanggal awal dan tanggal akhir dari range
+    const tanggalArray = range.split(' to ');
+    if (tanggalArray.length < 2) tanggalArray.push(tanggalArray[0])
 
+    const dari = tanggalArray[0];
+    const sampai = tanggalArray[1];
+
+    console.log(dari, sampai)
     const rekap = await db('siswa')
         .select(
             's.id_siswa',
@@ -252,10 +250,11 @@ const rekap = async (req, res) => {
         .join('rekap_siswa AS rs', 's.id_siswa', 'rs.siswa_id')
         .whereBetween('rs.tanggal', [dari, sampai])
         .andWhere('s.kelas_id', kelas)
-        .groupBy('s.id_siswa', 's.nama_siswa')
+        .groupBy('s.id_siswa', 's.nama_siswa');
 
-    return response(200, rekap, `Rekap`, res)
+    return response(200, rekap, 'Rekap', res);
 }
+
 
 module.exports = {
     dataPresensi,

@@ -4,8 +4,21 @@ const moment = require('../utilities/moment')
 const existingHari = require('../utilities/HariUtils')
 
 const jamPelajaran = async (req, res) => {
-    const jamPelajaran = await db('jam_pelajaran').select()
-    return response(200, jamPelajaran, `Berhasil get data jam pelajaran!`, res)
+    try {
+        const jamPelajaran = await db('jam_pelajaran').select()
+        return response(200, jamPelajaran, `Berhasil get data jam pelajaran!`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal Server Error`, res)
+    }
+}
+
+const jamPelajaranFree = async (req, res) => {
+    try {
+        //const jamPelajaranFree = await db('jam_pelajaran').whereNotIn('')
+    } catch (error) {
+        
+    }
 }
 
 const detailJampel = async (req, res) => {

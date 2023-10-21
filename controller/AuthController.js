@@ -5,31 +5,37 @@ const response = require('../Response')
 const moment = require('../utilities/moment')
 
 const auth = async (req, res) => {
-    const { username, password } = req.body
-
+    const { email, username, password } = req.body
     try {
+        let user = ''
+        let token = ''
         // Jangan kembalikan password
         // Manipulasi dulu untuk menentukan role karena kita butuh role dinamis yang tiap hari bisa ganti role
         // Buat variabel baru kemudian variabel baru itulah yang dikirim ke FE
-        
-        // Periksa apakah username terdaftar
-        const user = await db('user').where('username', username).first()
-        if (!user) {
-            return response(404, {}, 'Not Authorized', res)
-        }
 
-        // Periksa apakah password yang diinputkan sama dengan di database
-        const isPasswordValid = await bcrypt.compareSync(password, user.password)
-        if (!isPasswordValid) {
-            return response(401, {}, `Invalid Password ${password}`, res)
-        }
+        if (email) {
+            // Login dengan OAuth, langsung ambil detail user
+            user = await db('user').where('email', email).first()
+            if (!user) return response(404, null, `Not Authorized`, res)
 
-        // Buat token
-        const token = jwt.sign({ userId: user.username }, 'parlaungan1980', { expiresIn: '1h' })
+            // Buat token
+            token = jwt.sign({ userId: user.username }, 'parlaungan1980', { expiresIn: '1h' })
+        }else{
+            // Periksa apakah username terdaftar
+            user = await db('user').where('username', username).first()
+            if (!user) return response(404, {}, 'Not Authorized', res)
+    
+            // Periksa apakah password yang diinputkan sama dengan di database
+            const isPasswordValid = await bcrypt.compareSync(password, user.password)
+            if (!isPasswordValid) return response(401, {}, `Invalid Password ${password}`, res)
+    
+            // Buat token
+            token = jwt.sign({ userId: user.username }, 'parlaungan1980', { expiresIn: '1h' })
+        }
 
         // Manipulasi role
         if (user.role === 'Guru') {
-            const piket = await db('hari').where('nama_hari',  moment().format('dddd')).where('piket', user.username).first()
+            const piket = await db('hari').where('nama_hari', moment().format('dddd')).where('piket', user.username).first()
             const walas = await db('kelas').where('walas', user.username).first()
 
             // Jika terjadwal piket
@@ -77,4 +83,27 @@ const auth = async (req, res) => {
     }
 }
 
-module.exports = { auth }
+const middleware = (req, res, next) => {
+    const token = req.headers['authorization']
+    console.log(token)
+
+    if (token) {
+        jwt.verify(token, 'parlaungan1980', (err, user) => {
+            if (err) {
+                // Gunakan next(err) untuk menangani kesalahan
+                return next(err);
+            }
+            req.user = user; // Menyimpan data pengguna dalam objek permintaan
+            next(); // Lanjutkan ke middleware berikutnya
+        });
+    } else {
+        // Gunakan next untuk menangani kasus tanpa token
+        return next();
+    }
+}
+
+const protected = async (req, res) => {
+    return response(200, null, `Authenticated`, res)
+}
+
+module.exports = { auth, middleware, protected }
