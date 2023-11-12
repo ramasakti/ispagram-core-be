@@ -1,6 +1,7 @@
 const db = require('./../Config')
 const response = require('./../Response')
 const moment = require('../utilities/moment')
+const bcrypt = require('bcryptjs')
 const ExcelJS = require('exceljs')
 
 const allSiswa = async (req, res) => {
@@ -37,6 +38,8 @@ const storeSiswa = async (req, res) => {
         const storeSiswa = await db('siswa').insert({
             id_siswa, rfid, nama_siswa, kelas_id, alamat, telp, tempat_lahir, tanggal_lahir
         })
+
+        await db('detail_siswa').insert({ siswa_id: id_siswa })
         return response(201, storeSiswa, 'Berhasil menambahkan data siswa!', res)
     } catch (error) {
         console.error('Error storing data:', error)
@@ -72,7 +75,8 @@ const deleteSiswa = async (req, res) => {
     if (!detailSiswa) {
         return response(400, null, `ID siswa tidak terdaftar! Data siswa tidak ditemukan!`, res)
     }
-    const deleteSiswa = await db('siswa').where('id_siswa', idSiswa).del()
+    await db('siswa').where('id_siswa', idSiswa).del()
+    await db('detail_siswa').where('siswa_id', idSiswa).del()
     return response(201, deleteSiswa, 'Berhasil delete siswa!', res)
 }
 
@@ -88,12 +92,13 @@ const importSiswa = async (req, res) => {
         const data = rows.slice(1).map(row => ({
             id_siswa: row[1],
             rfid: row[2],
-            nama_siswa: row[3],
-            kelas_id: row[4],
-            alamat: row[5],
-            telp: row[6],
-            tempat_lahir: row[7],
-            tanggal_lahir: row[8]
+            email: row[3],
+            nama_siswa: row[4],
+            kelas_id: row[5],
+            alamat: row[6],
+            telp: row[7],
+            tempat_lahir: row[8],
+            tanggal_lahir: row[9]
         }))
 
         const kelas = await db('kelas').select('id_kelas')
@@ -112,7 +117,16 @@ const importSiswa = async (req, res) => {
         })
 
         for (const siswa of filteredData) {
-            await db('siswa').insert(siswa);
+            await db('siswa').insert({
+                id_siswa: siswa.id_siswa,
+                rfid: siswa.rfid,
+                nama_siswa: siswa.nama_siswa,
+                kelas_id: siswa.kelas_id,
+                alamat: siswa.alamat,
+                telp: siswa.telp,
+                tempat_lahir: siswa.tempat_lahir,
+                tanggal_lahir: siswa.tanggal_lahir,
+            });
 
             await db('absen').insert({
                 id_siswa: siswa.id_siswa,
@@ -124,13 +138,22 @@ const importSiswa = async (req, res) => {
             await db('detail_siswa').insert({
                 siswa_id: siswa.id_siswa
             });
+
+            await db('user').insert({
+                username: siswa.id_siswa,
+                password: await bcrypt.hash(siswa.id_siswa.toString(), 10),
+                name: siswa.nama_siswa,
+                email: siswa.email,
+                avatar: '',
+                role: 'Siswa'
+            })
         }
 
         return response(200, null, `Berhasil import siswa!`, res)
     }
     catch (error) {
         console.error(error)
-        return response(500, null, `An error occurred`, res)
+        return response(500, null, `Internal Server Error!`, res)
     }
 }
 

@@ -11,9 +11,9 @@ exports.up = function (knex) {
         table.string('mapel');
         table.string('status', 10).defaultTo('');
 
-        table.foreign('jampel').references('id_jampel').inTable('jam_pelajaran');
-        table.foreign('guru_id').references('id_guru').inTable('guru');
-        table.foreign('kelas_id').references('id_kelas').inTable('kelas');
+        table.foreign('jampel').references('id_jampel').inTable('jam_pelajaran').onDelete('cascade').onUpdate('cascade');
+        table.foreign('guru_id').references('id_guru').inTable('guru').onDelete('cascade').onUpdate('cascade');
+        table.foreign('kelas_id').references('id_kelas').inTable('kelas').onDelete('cascade').onUpdate('cascade');
     });
 };
 

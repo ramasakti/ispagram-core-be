@@ -47,9 +47,12 @@ const storeGuru = async (req, res) => {
         if (existingEmail != null) return response(400, null, `Email telah digunakan!`, res)
     
         // Insert ke tabel guru
-        const storeGuru = await db('guru').insert({
+        await db('guru').insert({
             id_guru, rfid, nama_guru, alamat, telp, tempat_lahir, tanggal_lahir
         })
+
+        // Insert ke tabel detail_guru
+        await db('detail_guru').insert({ guru_id: id_guru })
     
         // Buatkan random password
         const randomPassword = crypto.randomBytes(Math.ceil(8 / 2)).toString('hex').slice(0, 8)

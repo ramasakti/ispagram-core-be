@@ -6,6 +6,9 @@ router.route('/transaksi')
     .get(TransaksiController.dataTransaksi)
     .post(TransaksiController.transaksi)
 
+router.route('/transaksi/:id_siswa')
+    .get(TransaksiController.transaksiSiswa)
+
 router.route('/tagihan/kelas/:id_siswa')
     .get(TransaksiController.detailTagihanKelas)
 

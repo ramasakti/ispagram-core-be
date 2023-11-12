@@ -6,6 +6,9 @@ router.route('/jampel')
     .get(JamPelajaranController.jamPelajaran)
     .post(JamPelajaranController.storeJampel)
 
+router.route('/jampel/kelas/:id_kelas')
+    .get(JamPelajaranController.jamPelajaranFree)
+
 router.route('/jampel/generate')
     .get(JamPelajaranController.generateJampel)
     .post(JamPelajaranController.importJampel)

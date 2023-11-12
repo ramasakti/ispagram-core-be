@@ -53,29 +53,48 @@ const detailUser = async (req, res) => {
 }
 
 const updateUser = async (req, res) => {
-    const { email, role } = req.body
-    const username = req.params.username
-    const detailUser = await db('user').where('username', username).first()
-    if (!detailUser) return response(400, null, `User tidak terdaftar!`, res)
-
-    if (detailUser.email != email) {
-        const existingEmail = await UserUtils.existingEmail(email)
-        if (existingEmail != null) return response(400, null, `Email telah digunakan!`, res)
-    }
-
-    if (req.file) {
-        if (!req.file.mimetype.startsWith('image/')) {
-            return response(400, null, `File yang diunggah bukan gambar!`, res)
+    try {
+        const { name, email, passwordLama, passwordBaru, role } = req.body
+        const username = req.params.username
+        const detailUser = await db('user').where('username', username).first()
+        if (!detailUser) return response(400, null, `User tidak terdaftar!`, res)
+    
+        if (detailUser.email != email) {
+            const existingEmail = await UserUtils.existingEmail(email)
+            if (existingEmail != null) return response(400, null, `Email telah digunakan!`, res)
         }
-
-        await db('user').where('username', username).update({ avatar: req.file.path })
+    
+        if (req.file) {
+            if (!req.file.mimetype.startsWith('image/')) {
+                return response(400, null, `File yang diunggah bukan gambar!`, res)
+            }
+    
+            await db('user').where('username', username).update({ avatar: req.file.path })
+        }
+    
+        if (name && detailUser.role === 'Siswa') {
+            await db('siswa').where('id_siswa', username).update({ nama_siswa: name })
+        }
+    
+        if (passwordLama) {
+            const isPasswordValid = await bcrypt.compareSync(passwordLama, detailUser.password)
+    
+            if (isPasswordValid) {
+                await db('user').where('username', username).update({ password: await bcrypt.hash(passwordBaru, 10) })
+            }else{
+                return response(400, null, `Password salah!`, res)
+            }
+        }
+    
+        await db('user').where('username', username).update({
+            email, role
+        })
+    
+        return response(201, {}, `Berhasil update user!`, res)
+    } catch (error) {
+        console.error(error)
+        return response(400, null, `Internal Server Error!`, res)
     }
-
-    await db('user').where('username', username).update({
-        email, role
-    })
-
-    return response(201, {}, `Berhasil update user!`, res)
 }
 
 const forgetPassword = async (req, res) => {

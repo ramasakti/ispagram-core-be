@@ -5,7 +5,10 @@ const existingHari = require('../utilities/HariUtils')
 
 const jamPelajaran = async (req, res) => {
     try {
-        const jamPelajaran = await db('jam_pelajaran').select()
+        const jamPelajaran = await db('jam_pelajaran')
+            .whereNot('keterangan', 'like', '%Istirahat%')
+            .whereNot('keterangan', 'like', '%Diniyah%')
+            .select()
         return response(200, jamPelajaran, `Berhasil get data jam pelajaran!`, res)
     } catch (error) {
         console.error(error)
@@ -15,9 +18,25 @@ const jamPelajaran = async (req, res) => {
 
 const jamPelajaranFree = async (req, res) => {
     try {
-        //const jamPelajaranFree = await db('jam_pelajaran').whereNotIn('')
+        const kelas = req.params.id_kelas
+
+        const jamPelajaranFilled = await db('jadwal')
+            .select('jadwal.jampel')
+            .join('jam_pelajaran', 'jam_pelajaran.id_jampel', '=', 'jadwal.jampel')
+            .where('jadwal.kelas_id', kelas)
+
+        let idJamPelajaranFilled = []
+        jamPelajaranFilled.map(item => idJamPelajaranFilled.push(item.jampel))
+
+        const jamPelajaranFree = await db('jam_pelajaran')
+            .whereNotIn('id_jampel', idJamPelajaranFilled)
+            .whereNot('keterangan', 'like', '%Istirahat%')
+            .whereNot('keterangan', 'like', '%Diniyah%')
+
+        return response(200, jamPelajaranFree, `Data Jam Pelajaran`, res)
     } catch (error) {
-        
+        console.error(error)
+        return response(500, null, `Internal Server Error`, res)
     }
 }
 
@@ -95,12 +114,17 @@ const updateJampel = async (req, res) => {
 }
 
 const deleteJampel = async (req, res) => {
-    const id_jampel = req.params.id_jampel
-    const jampel = await db('jam_pelajaran').where('id_jampel', id_jampel).first()
-    if (!jampel) return response(400, null, `Gagal! Jam pelajaran tidak ditemukan`, res)
+    try {
+        const id_jampel = req.params.id_jampel
+        const jampel = await db('jam_pelajaran').where('id_jampel', id_jampel).first()
+        if (!jampel) return response(400, null, `Gagal! Jam pelajaran tidak ditemukan`, res)
 
-    const deleteJampel = await db('jam_pelajaran').where('id_jampel', id_jampel).del()
-    return response(201, null, `Berhasil hapus jam pelajaran`, res)
+        await db('jam_pelajaran').where('id_jampel', id_jampel).del()
+        return response(201, null, `Berhasil hapus jam pelajaran`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal Server Error!`, res)
+    }
 }
 
 const generateJampel = async (req, res) => {
@@ -116,7 +140,7 @@ const generateJampel = async (req, res) => {
             const jam_diniyah = JSON.parse(hari.jam_diniyah)
             let warning = false
             var jampelStart = moment(jam_diniyah.sampai, 'HH:mm:ss')
-            
+
             if (selesaiSebelumnya != null && selesaiSebelumnya != jampelStart) {
                 warning = true
             }
@@ -189,8 +213,13 @@ const generateJampel = async (req, res) => {
 }
 
 const importJampel = async (req, res) => {
-    await db('jam_pelajaran').insert(req.body)
-    return response(201, {}, `Berhasil generate jadwal`, res)
+    try {
+        await db('jam_pelajaran').insert(req.body)
+        return response(201, {}, `Berhasil generate jadwal`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal Server Error!`, res)
+    }
 }
 
-module.exports = { jamPelajaran, detailJampel, storeJampel, updateJampel, deleteJampel, generateJampel, importJampel }
+module.exports = { jamPelajaran, detailJampel, storeJampel, updateJampel, deleteJampel, generateJampel, importJampel, jamPelajaranFree }

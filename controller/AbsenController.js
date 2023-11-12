@@ -56,9 +56,9 @@ const updateAbsen = async (req, res) => {
                 keterangan: ''
             })
             return response(201, dataAbsen, `Berhasil absen!`, res)
-        } 
+        }
         // Jika terlambat
-        else if (keterangan === 'T') { 
+        else if (keterangan === 'T') {
             const updateAbsen = await db('absen').where('id_siswa', id_siswa).update({
                 waktu_absen: moment().format('HH:mm:ss'),
                 izin: null,
@@ -66,7 +66,7 @@ const updateAbsen = async (req, res) => {
             })
             absenSiswaUtils.absenTerlambat(id_siswa)
             return response(201, updateAbsen, `Berhasil absen!`, res)
-        } 
+        }
         // Jika sakit atau izin atau alfa
         else {
             const updateAbsen = await db('absen').where('id_siswa', id_siswa).update({
@@ -92,7 +92,7 @@ const engineAbsenSiswa = async (req, res) => {
     try {
         const { userabsen } = req.body
         const dataAbsen = await absenSiswaUtils.dataAbsensiSiswaIndividu(userabsen)
-    
+
         // Jika ID user tidak terdaftar
         if (dataAbsen.length < 1) {
             return response(404, null, `ID Anda tidak terdaftar!`, res)
@@ -100,17 +100,17 @@ const engineAbsenSiswa = async (req, res) => {
             // Ambil informasi jam masuk hari ini
             const dataJamMasuk = await absenSiswaUtils.jamMasuk()
             const jam_masuk = moment(dataJamMasuk.masuk, 'HH:mm:ss').format('HH:mm:ss')
-    
+
             // Jika melewati batas jam masuk
             if (jam_masuk < moment().format('HH:mm:ss')) {
-                absenSiswaUtils.absenTerlambat(userabsen)
+                await absenSiswaUtils.absenTerlambat(userabsen)
             }
-    
+
             // Jika sudah absen hari ini
             if (dataAbsen.waktu_absen != null) {
                 return response(200, dataAbsen, `${dataAbsen.nama_siswa} Sudah Absen!`, res)
             }
-    
+
             // Update DB sesuai kondisi
             const engine = await db('absen').where('id_siswa', userabsen).update({
                 waktu_absen: moment().format('HH:mm:ss'),
@@ -225,36 +225,83 @@ const grafikMingguan = async (req, res) => {
 }
 
 const rekap = async (req, res) => {
-    const { kelas, range } = req.query;
+    try {
+        const { kelas, range } = req.query;
+    
+        if (!kelas || !range || range === 'undefined') return response(400, null, 'Form tidak lengkap!', res);
 
-    if (!kelas || !range) return response(400, null, 'Form tidak lengkap!', res);
-
-    // Memisahkan tanggal awal dan tanggal akhir dari range
-    const tanggalArray = range.split(' to ');
-    if (tanggalArray.length < 2) tanggalArray.push(tanggalArray[0])
-
-    const dari = tanggalArray[0];
-    const sampai = tanggalArray[1];
-
-    console.log(dari, sampai)
-    const rekap = await db('siswa')
-        .select(
-            's.id_siswa',
-            's.nama_siswa',
-            db.raw('SUM(CASE WHEN rs.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
-            db.raw('SUM(CASE WHEN rs.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
-            db.raw('SUM(CASE WHEN rs.keterangan = "A" THEN 1 ELSE 0 END) AS A'),
-            db.raw('SUM(CASE WHEN rs.keterangan = "T" THEN 1 ELSE 0 END) AS T')
-        )
-        .from('siswa AS s')
-        .join('rekap_siswa AS rs', 's.id_siswa', 'rs.siswa_id')
-        .whereBetween('rs.tanggal', [dari, sampai])
-        .andWhere('s.kelas_id', kelas)
-        .groupBy('s.id_siswa', 's.nama_siswa');
-
-    return response(200, rekap, 'Rekap', res);
+        console.log(typeof(range))
+    
+        // Memisahkan tanggal awal dan tanggal akhir dari range
+        const tanggalArray = range.split(' to ');
+        if (tanggalArray.length < 2) tanggalArray.push(tanggalArray[0])
+    
+        const dari = tanggalArray[0];
+        const sampai = tanggalArray[1];
+    
+        const rekap = await db('siswa')
+            .select(
+                's.id_siswa',
+                's.nama_siswa',
+                db.raw('SUM(CASE WHEN rs.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
+                db.raw('SUM(CASE WHEN rs.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
+                db.raw('SUM(CASE WHEN rs.keterangan = "A" THEN 1 ELSE 0 END) AS A'),
+                db.raw('SUM(CASE WHEN rs.keterangan = "T" THEN 1 ELSE 0 END) AS T')
+            )
+            .from('siswa AS s')
+            .join('rekap_siswa AS rs', 's.id_siswa', 'rs.siswa_id')
+            .whereBetween('rs.tanggal', [dari, sampai])
+            .andWhere('s.kelas_id', kelas)
+            .groupBy('s.id_siswa', 's.nama_siswa');
+    
+        return response(200, rekap, 'Rekap', res);
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal Server Error!`, res)
+    }
 }
 
+const dataWA = async (req, res) => {
+    try {
+        const id_siswa = req.params.id_siswa
+        const detail = await db('siswa')
+            .select('siswa.id_siswa', 'siswa.telp', 'detail_siswa.ayah', 'detail_siswa.telp_ayah', 'detail_siswa.ibu', 'detail_siswa.telp_ibu')
+            .join('detail_siswa', 'detail_siswa.siswa_id', '=', 'siswa.id_siswa')
+            .where('id_siswa', id_siswa).first()
+
+        return response(200, detail, ``, res)
+    } catch (error) {
+        console.error(error)
+        return response(400, null, `Internal Server Error!`, res)
+    }
+}
+
+const diagramIndividu = async (req, res) => {
+    try {
+        const id_siswa = req.params.id_siswa
+        if (!id_siswa) return response(400, null, `ID Tidak Terdaftar!`, res)
+
+        const dataAbsen = await db('siswa')
+            .select(
+                's.id_siswa',
+                's.nama_siswa',
+                db.raw('SUM(CASE WHEN rs.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
+                db.raw('SUM(CASE WHEN rs.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
+                db.raw('SUM(CASE WHEN rs.keterangan = "A" THEN 1 ELSE 0 END) AS A'),
+                db.raw('SUM(CASE WHEN rs.keterangan = "T" THEN 1 ELSE 0 END) AS T')
+            )
+            .from('siswa AS s')
+            .join('rekap_siswa AS rs', 's.id_siswa', 'rs.siswa_id')
+            .where('s.id_siswa', id_siswa)
+            .groupBy('s.id_siswa', 's.nama_siswa')
+            .first()
+            
+        return response(200, dataAbsen, `Data Rekap Absensi ${id_siswa}`, res)
+    } catch (error) {
+        console.error(error)
+        return response(400, null, `Internal Server Error!`, res)
+    }
+}
 
 module.exports = {
     dataPresensi,
@@ -268,5 +315,7 @@ module.exports = {
     diagramSakit,
     diagramIzin,
     grafikMingguan,
-    rekap
+    rekap,
+    dataWA,
+    diagramIndividu
 } 

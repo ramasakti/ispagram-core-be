@@ -38,4 +38,10 @@ router.route('/absen/data/grafik')
 router.route('/rekap')
     .get(AbsenController.rekap)
 
+router.route('/absen/wa/:id_siswa')
+    .get(AbsenController.dataWA)
+
+router.route('/absen/individu/:id_siswa')
+    .get(AbsenController.diagramIndividu)
+
 module.exports = router

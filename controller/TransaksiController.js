@@ -9,14 +9,15 @@ const dataTransaksi = async (req, res) => {
         const dari = req.query.dari
         const sampai = req.query.sampai
 
+        if (!dari || !sampai) return response(400, null, `Semua form wajib diisi!`, res)
+
         // Query ke database
-        const transaksi = await db.select('transaksi.kwitansi', 'siswa.nama_siswa', 'transaksi.waktu_transaksi', db.raw('SUM(transaksi.terbayar) as terbayar'))
+        const transaksi = await db.select('transaksi.kwitansi', db.raw('MAX(siswa.nama_siswa) as nama_siswa'), 'transaksi.waktu_transaksi', db.raw('SUM(transaksi.terbayar) as terbayar'))
             .from('transaksi')
             .innerJoin('siswa', 'siswa.id_siswa', 'transaksi.siswa_id')
             .whereBetween('transaksi.waktu_transaksi', [`${dari} 00:00:00`, `${sampai} 23:59:59`])
-            .groupBy('transaksi.kwitansi')
+            .groupBy('transaksi.kwitansi', 'transaksi.waktu_transaksi')
             .orderBy('transaksi.waktu_transaksi', 'desc')
-            .orderByRaw('transaksi.waktu_transaksi COLLATE utf8mb4_unicode_ci DESC')
 
         // Destruktur sebelum mereturn
         const dataTransaksi = transaksi.map(item => {
@@ -117,6 +118,33 @@ const detailTagihanSiswa = async (req, res) => {
     }
 }
 
+const transaksiSiswa = async (req, res) => {
+    try {
+        const id_siswa = req.params.id_siswa
+
+        const transaksi = await db.select('transaksi.kwitansi', db.raw('MAX(siswa.nama_siswa) as nama_siswa'), 'transaksi.waktu_transaksi', db.raw('SUM(transaksi.terbayar) as terbayar'))
+            .from('transaksi')
+            .innerJoin('siswa', 'siswa.id_siswa', 'transaksi.siswa_id')
+            .where('transaksi.siswa_id', id_siswa)
+            .groupBy('transaksi.kwitansi', 'transaksi.waktu_transaksi')
+            .orderBy('transaksi.waktu_transaksi', 'desc')
+
+        const dataTransaksi = transaksi.map(item => {
+            return {
+                kwitansi: item.kwitansi,
+                nama_siswa: item.nama_siswa,
+                waktu_transaksi: moment(item.waktu_transaksi).format('YYYY-MM-DD HH:mm:ss'),
+                terbayar: item.terbayar
+            }
+        })
+
+        return response(200, dataTransaksi, `Data Riwayat Transaksi ${id_siswa}`, res)
+    } catch (error) {
+        console.error(error)
+        return response(400, null, `Internal Server Error!`, res)
+    }
+}
+
 const transaksi = async (req, res) => {
     try {
         const { siswa, dataPembayaranSiswa } = req.body
@@ -169,7 +197,7 @@ const transaksi = async (req, res) => {
         } else {
             dataPembayaranSiswa.map(async item => {
                 await db('transaksi').insert({
-                    kwitansi: `K${moment().format('YYYYMMDDhhmmss')}`,
+                    kwitansi: `K${moment().format('YYYYMMDDhhmmssms')}`,
                     waktu_transaksi: moment().format('YYYY-MM-DD hh:mm:ss'),
                     siswa_id: siswa,
                     pembayaran_id: item.id_pembayaran,
@@ -195,4 +223,4 @@ const detailTransaksi = async (req, res) => {
 }
 
 
-module.exports = { dataTransaksi, transaksi, detailTransaksi, detailTagihanKelas, detailTagihanSiswa }
+module.exports = { dataTransaksi, transaksi, detailTransaksi, detailTagihanKelas, detailTagihanSiswa, transaksiSiswa }

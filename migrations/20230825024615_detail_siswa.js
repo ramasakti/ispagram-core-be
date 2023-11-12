@@ -8,12 +8,12 @@ exports.up = function (knex) {
         table.string('nisn').nullable();
         table.string('nik').nullable();
         table.string('nokk').nullable();
-        table.text('scan_kk').nullable();
+        table.text('scan_kk', 'longtext').nullable();
         table.string('transportasi', 2).nullable();
         table.string('anak', 2).nullable();
         table.string('jenis_tinggal', 2).nullable();
         table.string('askol').nullable();
-        table.text('scan_ijazah').nullable();
+        table.text('scan_ijazah', 'longtext').nullable();
         table.string('ibu').nullable();
         table.string('nik_ibu').nullable();
         table.string('pendidikan_ibu').nullable();
