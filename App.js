@@ -7,7 +7,7 @@ const path = require('path')
 const session = require('express-session')
 const passport = require('passport')
 const db = require('./Config')
-const router = require('./router/Router')
+const router = require('./Router/Router')
 const cors = require('cors')
 const moment = require('./Utilities/Moment')
 
