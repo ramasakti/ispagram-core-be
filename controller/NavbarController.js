@@ -1,5 +1,5 @@
 const response = require('../Response')
-const NavbarModel = require('./../Model/NavbarModel')
+const NavbarModel = require('../Model/NavbarModel')
 
 const formatNavbarData = (navbarData, submenuData) => {
     const formattedData = [];

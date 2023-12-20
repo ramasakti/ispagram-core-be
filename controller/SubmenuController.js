@@ -1,5 +1,5 @@
 const response = require('../Response')
-const SubmenuModel = require('./../Model/SubmenuModel')
+const SubmenuModel = require('../Model/SubmenuModel')
 
 const submenu = async (req, res) => {
     try {

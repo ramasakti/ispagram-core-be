@@ -1,9 +1,9 @@
 const response = require('../Response')
 const moment = require('../Utilities/Moment')
-const UserModel = require('./../Model/UserModel')
-const GuruModel = require('./../Model/GuruModel')
-const SiswaModel = require('./../Model/SiswaModel')
-const BiodataModel = require('./../Model/BiodataModel')
+const UserModel = require('../Model/UserModel')
+const GuruModel = require('../Model/GuruModel')
+const SiswaModel = require('../Model/SiswaModel')
+const BiodataModel = require('../Model/BiodataModel')
 
 const biodata = async (req, res) => {
     try {

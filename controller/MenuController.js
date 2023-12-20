@@ -1,7 +1,7 @@
 const db = require('../Config')
 const response = require('../Response')
-const MenuModel = require('./../Model/MenuModel')
-const SubmenuModel = require('./../Model/SubmenuModel')
+const MenuModel = require('../Model/MenuModel')
+const SubmenuModel = require('../Model/SubmenuModel')
 
 const menu = async (req, res) => {
     try {

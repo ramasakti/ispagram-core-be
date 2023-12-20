@@ -1,7 +1,7 @@
 const db = require('../Config')
 const response = require('../Response')
 const moment = require('../Utilities/Moment')
-const LiburModel = require('./../Model/LiburModel')
+const LiburModel = require('../Model/LiburModel')
 
 const libur = async (req, res) => {
     try {

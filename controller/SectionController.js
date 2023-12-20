@@ -1,7 +1,7 @@
 const response = require('../Response')
 const fs = require('fs')
 const path = require('path')
-const SectionModel = require('./../Model/SectionModel')
+const SectionModel = require('../Model/SectionModel')
 
 const section = async (req, res) => {
     try {

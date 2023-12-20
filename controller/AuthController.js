@@ -2,9 +2,9 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const response = require('../Response')
 const moment = require('../Utilities/Moment')
-const UserModel = require('./../Model/UserModel')
-const KelasModel = require('./../Model/KelasModel')
-const HariModel = require('./../Model/HariModel')
+const UserModel = require('../Model/UserModel')
+const KelasModel = require('../Model/KelasModel')
+const HariModel = require('../Model/HariModel')
 
 const validTokens = {};
 

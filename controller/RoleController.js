@@ -1,5 +1,5 @@
 const response = require('../Response')
-const RoleModel = require('./../Model/RoleModel')
+const RoleModel = require('../Model/RoleModel')
 
 const role = async (req, res) => {
     try {

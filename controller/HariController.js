@@ -1,7 +1,7 @@
 const response = require('../Response')
 const moment = require('../Utilities/Moment')
 const guruUtils = require('../Utilities/GuruUtils')
-const HariModel = require('./../Model/HariModel')
+const HariModel = require('../Model/HariModel')
 
 const hari = async (req, res) => {
     try {

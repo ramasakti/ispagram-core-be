@@ -2,7 +2,7 @@ const db = require('../Config')
 const response = require('../Response')
 const moment = require('../Utilities/Moment')
 const jadwalUtils = require('../Utilities/JadwalUtils')
-const JadwalModel = require('./../Model/JadwalModel')
+const JadwalModel = require('../Model/JadwalModel')
 
 const jadwal = async (req, res) => {
     try {

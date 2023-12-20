@@ -1,7 +1,7 @@
 const db = require('../Config')
 const response = require('../Response')
-const KelasModel = require('./../Model/KelasModel')
-const SiswaModel = require('./../Model/SiswaModel')
+const KelasModel = require('../Model/KelasModel')
+const SiswaModel = require('../Model/SiswaModel')
 
 const kelas = async (req, res) => {
     try {
