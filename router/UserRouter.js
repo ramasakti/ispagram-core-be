@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const UserController = require('./../controller/UserController')
+const UserController = require('../Controller/UserController')
 
 const multer = require('multer')
 const path = require('path')
@@ -17,10 +17,11 @@ const upload = multer({ storage: storage })
 
 router.route('/users')
     .get(UserController.users)
+    .post(UserController.store)
 
 router.route('/user/:username')
-    .get(UserController.detailUser)
-    .put(upload.single('avatar'), UserController.updateUser)
+    .get(UserController.detail)
+    .put(upload.single('avatar'), UserController.update)
 
 router.route('/reset')
     .post(UserController.forgetPassword)

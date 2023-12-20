@@ -13,7 +13,7 @@ exports.up = function (knex) {
         table.string('uploader');
         table.boolean('publish');
 
-        table.foreign('uploader').references('username').inTable('user');
+        table.foreign('uploader').references('username').inTable('users');
     });
 };
 

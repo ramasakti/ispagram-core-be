@@ -1,0 +1,18 @@
+const db = require('../Config')
+const Moment = require('./../Utilities/Moment')
+
+const getAccessByRole = async (role) => {
+    return await db('access')
+        .select(
+            'access.*',
+            'menu.id_menu',
+            'menu.name as menu',
+            'menu.id_menu',
+        )
+        .join('menu', 'menu.id_menu', '=', 'access.menu_id')
+        .where('access.role_id', role)
+}
+
+module.exports = {
+    getAccessByRole
+};

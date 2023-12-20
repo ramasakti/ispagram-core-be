@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer')
-const db = require('./../Config')
+const db = require('../Config')
 
 const transporter = nodemailer.createTransport({
     host: "mail.smaispa.sch.id",
@@ -29,7 +29,7 @@ const credentialInfo = (to, subject, text) => {
 }
 
 const existingEmail = async (email) => {
-    const existingEmail = await db('user').where('email', email).first()
+    const existingEmail = await db('users').where('email', email).first()
     if (!existingEmail) return null
     return existingEmail
 }

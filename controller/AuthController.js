@@ -1,8 +1,12 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
-const db = require('../Config')
 const response = require('../Response')
-const moment = require('../utilities/moment')
+const moment = require('../Utilities/Moment')
+const UserModel = require('./../Model/UserModel')
+const KelasModel = require('./../Model/KelasModel')
+const HariModel = require('./../Model/HariModel')
+
+const validTokens = {};
 
 const auth = async (req, res) => {
     const { email, username, password } = req.body
@@ -15,28 +19,36 @@ const auth = async (req, res) => {
 
         if (email) {
             // Login dengan OAuth, langsung ambil detail user
-            user = await db('user').where('email', email).first()
+            user = await UserModel.getUserByEmail(email)
             if (!user) return response(404, null, `Not Authorized`, res)
 
             // Buat token
             token = jwt.sign({ userId: user.username }, 'parlaungan1980', { expiresIn: '1h' })
-        }else{
+            validTokens[token] = {
+                expiresAt: new Date().getTime() + 3600 * 1000, // Waktu kadaluarsa 1 jam
+                userData: { userId: user.username } // Informasi tambahan yang diperlukan
+            };
+        } else {
             // Periksa apakah username terdaftar
-            user = await db('user').where('username', username).first()
+            user = await UserModel.getUserByUsername(username)
             if (!user) return response(404, {}, 'Not Authorized', res)
-    
+
             // Periksa apakah password yang diinputkan sama dengan di database
             const isPasswordValid = await bcrypt.compareSync(password, user.password)
             if (!isPasswordValid) return response(401, {}, `Invalid Password ${password}`, res)
-    
+
             // Buat token
             token = jwt.sign({ userId: user.username }, 'parlaungan1980', { expiresIn: '1h' })
+            validTokens[token] = {
+                expiresAt: new Date().getTime() + 3600 * 1000, // Waktu kadaluarsa 1 jam
+                userData: { userId: user.username } // Informasi tambahan yang diperlukan
+            };
         }
 
         // Manipulasi role
         if (user.role === 'Guru') {
-            const piket = await db('hari').where('nama_hari', moment().format('dddd')).where('piket', user.username).first()
-            const walas = await db('kelas').where('walas', user.username).first()
+            const piket = await HariModel.getHariByHari(moment().format('dddd'))
+            const walas = await KelasModel.getKelasByWalas(username)
 
             // Jika terjadwal piket
             if (piket) {
@@ -84,26 +96,35 @@ const auth = async (req, res) => {
 }
 
 const middleware = (req, res, next) => {
-    const token = req.headers['authorization']
-    console.log(token)
+    const token = req.headers['authorization'];
 
-    if (token) {
-        jwt.verify(token, 'parlaungan1980', (err, user) => {
-            if (err) {
-                // Gunakan next(err) untuk menangani kesalahan
-                return next(err);
-            }
-            req.user = user; // Menyimpan data pengguna dalam objek permintaan
-            next(); // Lanjutkan ke middleware berikutnya
-        });
-    } else {
-        // Gunakan next untuk menangani kasus tanpa token
-        return next();
+    if (!token) {
+        return response(401, {}, 'Unauthenticated', res);
     }
+
+    // Hapus "Bearer " dari token yang diterima
+    const tokenWithoutBearer = token.replace('Bearer ', '');
+
+    if (!validTokens[tokenWithoutBearer]) {
+        return response(401, { valid: validTokens, tokenmu: token }, 'Token Tidak Valid', res);
+    }
+
+    jwt.verify(tokenWithoutBearer, 'parlaungan1980', (err, user) => {
+        if (err) {
+            return response(401, token, 'Token Tidak Valid', res);
+        }
+        req.user = user;
+        next();
+    });
+};
+
+const listValidToken = async (req, res) => {
+    const token = validTokens
+    return response(200, token, `Token`, res)
 }
 
 const protected = async (req, res) => {
-    return response(200, null, `Authenticated`, res)
+    return response(200, { user: req.user }, `Authenticated`, res)
 }
 
-module.exports = { auth, middleware, protected }
+module.exports = { auth, middleware, protected, listValidToken }

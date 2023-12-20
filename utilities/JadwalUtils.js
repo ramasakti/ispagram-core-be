@@ -1,5 +1,5 @@
 const db = require('../Config')
-const moment = require('./moment')
+const moment = require('./Moment')
 
 const existingJadwal = async (id_jampel, kelas) => {
     const existingJadwal = await db('jadwal').where('jampel', id_jampel).where('kelas_id', kelas).first()

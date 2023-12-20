@@ -13,7 +13,7 @@ exports.up = function (knex) {
         table.text('materi');
         table.string('created_by');
 
-        table.foreign('created_by').references('username').inTable('user');
+        table.foreign('created_by').references('username').inTable('users');
         table.foreign('guru_id').references('id_guru').inTable('guru').onDelete('cascade').onUpdate('cascade');
         table.foreign('jadwal_id').references('id_jadwal').inTable('jadwal').onDelete('cascade').onUpdate('cascade');
     });

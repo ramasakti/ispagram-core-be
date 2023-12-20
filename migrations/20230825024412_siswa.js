@@ -12,6 +12,7 @@ exports.up = function (knex) {
         table.text('telp');
         table.string('tempat_lahir');
         table.date('tanggal_lahir').nullable();
+        table.foreign('id_siswa').references('username').inTable('users')
         table.foreign('kelas_id').references('id_kelas').inTable('kelas');
     });
 };

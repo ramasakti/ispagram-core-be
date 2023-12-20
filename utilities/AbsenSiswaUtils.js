@@ -1,6 +1,6 @@
 const db = require('../Config')
-const response = require('./../Response')
-const moment = require('./moment')
+const response = require('../Response')
+const moment = require('./Moment')
 
 const dataAbsensiSiswaIndividu = async (id_siswa) => {
     const dataAbsensiSiswaIndividu = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').select('siswa.nama_siswa', 'absen.waktu_absen').where('siswa.id_siswa', id_siswa).first()

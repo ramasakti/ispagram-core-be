@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const KelasController = require('./../controller/KelasController')
+const KelasController = require('../Controller/KelasController')
 
 router.route('/kelas')
     .get(KelasController.kelas)

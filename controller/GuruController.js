@@ -1,19 +1,22 @@
-const db = require('./../Config')
-const response = require('./../Response')
-const moment = require('../utilities/moment')
+const response = require('../Response')
+const moment = require('../Utilities/Moment')
 const bcrypt = require('bcryptjs')
 const crypto = require('crypto')
-const UserUtils = require('./../utilities/UserUtils')
-const GuruUtils = require('./../utilities/GuruUtils')
+const GuruModel = require('./../Model/GuruModel')
+const UserModel = require('./../Model/UserModel')
+const DetailGuruModel = require('./../Model/DetailGuruModel')
+const UserUtils = require('../Utilities/UserUtils')
+const GuruUtils = require('../Utilities/GuruUtils')
 
 const guru = async (req, res) => {
     try {
         // Ambil data guru kemudian kembalikan tanggal lahir dengan format Y-m-d 
         // Hal ini dilakukan karena jika langsung dikembalikan dari database formatnya tidak sesuai
-        const guru = await db('guru').select()
+        const guru = await GuruModel.getAllGuru()
         const dataGuru = guru.map(item => {
             return {
                 id_guru: item.id_guru,
+                staf: item.staf,
                 rfid: item.rfid,
                 nama_guru: item.nama_guru,
                 alamat: item.alamat,
@@ -30,7 +33,17 @@ const guru = async (req, res) => {
     }
 }
 
-const storeGuru = async (req, res) => {
+const staf = async (req, res) => {
+    try {
+        const staf = await GuruModel.getAllGuruStaf()
+        return response(200, staf, `Data Staf`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
+    }
+}
+
+const store = async (req, res) => {
     try {
         // Tangkap inputan
         const { id_guru, email, rfid, nama_guru, alamat, telp, tempat_lahir, tanggal_lahir } = req.body
@@ -46,31 +59,30 @@ const storeGuru = async (req, res) => {
         const existingEmail = await UserUtils.existingEmail(email)
         if (existingEmail != null) return response(400, null, `Email telah digunakan!`, res)
     
+        // Buatkan random password
+        const randomPassword = crypto.randomBytes(Math.ceil(8 / 2)).toString('hex').slice(0, 8)
+
+        // Masukkan ke tabel users
+        await UserModel.insertUser({
+            username: id_guru,
+            password: await bcrypt.hash(randomPassword, 10),
+            email,
+            role: 6
+        })
+
         // Insert ke tabel guru
-        await db('guru').insert({
+        await GuruModel.insertGuru({
             id_guru, rfid, nama_guru, alamat, telp, tempat_lahir, tanggal_lahir
         })
 
         // Insert ke tabel detail_guru
-        await db('detail_guru').insert({ guru_id: id_guru })
-    
-        // Buatkan random password
-        const randomPassword = crypto.randomBytes(Math.ceil(8 / 2)).toString('hex').slice(0, 8)
+        await DetailGuruModel.insertDetailGuru(id_guru)
     
         // Teks yang akan dikirim ke email yang didaftarkan
-        const text = `Assalamualaikum Yth. Bapak/Ibu ${nama_guru} \n\n Berikut adalah detail akun yang digunakan untuk login di aplikasi Ispagram \n Username: ${id_guru} \n Password: ${randomPassword} \n\n Note: Segera ganti password anda agar mudah diingat`
+        const text = `Assalamualaikum ${nama_guru} \n\n Berikut adalah detail akun yang digunakan untuk login di aplikasi Ispagram \n Username: ${id_guru} \n Password: ${randomPassword} \n\n Note: Segera ganti password anda agar mudah diingat`
         
         // Kirim email
         UserUtils.credentialInfo(email, `Informasi Kredensial Login`, text)
-    
-        // Masukkan ke tabel user
-        await db('user').insert({
-            username: id_guru,
-            password: await bcrypt.hash(randomPassword, 10),
-            name: nama_guru,
-            email,
-            role: 'Guru'
-        })
         
         return response(201, {}, `Berhasil menambah data guru baru`, res)
     } catch (error) {
@@ -79,22 +91,32 @@ const storeGuru = async (req, res) => {
     }
 }
 
-const updateGuru = async (req, res) => {
+const update = async (req, res) => {
     try {
+        const id_guru = req.params.id_guru
         // Tangkap inputan
-        const { id_guru, rfid, nama_guru, alamat, telp, tempat_lahir, tanggal_lahir } = req.body
-    
+        const { staf, rfid, email, nama_guru, alamat, telp, tempat_lahir, tanggal_lahir } = req.body
+        if (!nama_guru || !alamat || !telp || !tempat_lahir || !tanggal_lahir ) {
+            return response(400, null, `Formulir yang dikirim tidak lengkap!`, res)
+        }
+
         // Periksa apakah ID guru terdaftar
-        const detailGuru = await db('guru').where('id_guru', id_guru).first()
-        if (!detailGuru) return response(400, null, `ID guru tidak terdaftar!`, res)
+        const existingGuru = await GuruModel.getGuruAndUserInfoByID(id_guru)
+        if (!existingGuru) return response(400, null, `ID guru tidak terdaftar!`, res)
+
+        // Periksa apakah guru pernah terdaftar
+        const detailGuru = await DetailGuruModel.getDetailGuruByID(id_guru)
+        if (!detailGuru) {
+            await DetailGuruModel.insertDetailGuru({ guru_id: id_guru })
+        }
     
         // Periksa apakah email sudah digunakan
         const existingEmail = await UserUtils.existingEmail(email)
-        if (existingEmail != null) return response(400, null, `Email telah digunakan!`, res)
+        if (existingEmail != null && existingEmail.email !== detailGuru.email) return response(400, null, `Email telah digunakan!`, res)
     
         // Update ke database
-        const updateGuru = await db('guru').where('id_guru', id_guru).update({
-            rfid, nama_guru, alamat, telp, tempat_lahir, tanggal_lahir
+        await GuruModel.updateGuru(id_guru, {
+            rfid, nama_guru, alamat, telp, tempat_lahir, tanggal_lahir, staf
         })
     
         return response(201, {}, `Berhasil update data guru baru!`, res)
@@ -104,20 +126,20 @@ const updateGuru = async (req, res) => {
     }
 }
 
-const deleteGuru = async (req, res) => {
+const destroy = async (req, res) => {
     try {
         // Tangkap id guru dari parameter
         const id_guru = req.params.id_guru
     
         // Periksa apakah id guru terdaftar
-        const detailGuru = await db('guru').where('id_guru', id_guru).first()
+        const detailGuru = GuruModel.getDetailGuruByID(id_guru)
         if (!detailGuru) return response(400, null, `ID guru tidak terdaftar!`, res)
-    
+        
         // Delete dari tabel guru
-        await db('guru').where('id_guru', id_guru).del()
-    
-        // Delete dari tabel user
-        await db('user').where('username', id_guru).del()
+        await GuruModel.deleteGuru(id_guru)
+        
+        // Delete dari tabel users
+        await UserModel.deleteUserByUsername(id_guru)
     
         return response(201, {}, `Berhasil delete guru`, res)
     } catch (error) {
@@ -126,4 +148,4 @@ const deleteGuru = async (req, res) => {
     }
 }
 
-module.exports = { guru, storeGuru, updateGuru, deleteGuru }
+module.exports = { guru, staf, store, update, destroy }

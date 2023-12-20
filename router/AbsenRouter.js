@@ -1,38 +1,26 @@
 const express = require('express')
 const router = express.Router()
-const AbsenController = require('./../controller/AbsenController')
+const AbsenController = require('../Controller/AbsenController')
 
 router.route('/absen')
     .get(AbsenController.dataAbsensi)
 
-router.route('/absen/:id_siswa')
-    .put(AbsenController.updateAbsen)
+router.route('/absen/siswa/:id_siswa')
+    .put(AbsenController.update)
 
-router.route('/absen/:kelas_id')
+router.route('/absen/kelas/:kelas_id')
     .get(AbsenController.dataAbsensiKelas)
 
 router.route('/absen/all')
-    .get(AbsenController.dataPresensi)
+    .get(AbsenController.dataAllAbsensiSiswa)
 
 router.route('/absen/engine')
     .put(AbsenController.engineAbsenSiswa)
 
-router.route('/absen/data/kehadiran')
-    .get(AbsenController.diagramHadir)
+router.route('/absen/data/harian')
+    .get(AbsenController.diagramHarian)
 
-router.route('/absen/data/keterlambatan')
-    .get(AbsenController.diagramTerlambat)
-
-router.route('/absen/data/sakit')
-    .get(AbsenController.diagramSakit)
-
-router.route('/absen/data/izin')
-    .get(AbsenController.diagramIzin)
-
-router.route('/absen/data/alfa')
-    .get(AbsenController.diagramAlfa)
-
-router.route('/absen/data/grafik')
+router.route('/absen/data/mingguan')
     .get(AbsenController.grafikMingguan)
 
 router.route('/rekap')
@@ -43,5 +31,8 @@ router.route('/absen/wa/:id_siswa')
 
 router.route('/absen/individu/:id_siswa')
     .get(AbsenController.diagramIndividu)
+
+router.route('/absen/reset')
+    .post(AbsenController.resetAbsenHarian)
 
 module.exports = router

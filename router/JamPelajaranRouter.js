@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const JamPelajaranController = require('./../controller/JamPelajaranController')
+const JamPelajaranController = require('../Controller/JamPelajaranController')
 
 router.route('/jampel')
     .get(JamPelajaranController.jamPelajaran)

@@ -8,7 +8,7 @@ exports.up = function (knex) {
         table.string('siswa_id');
         table.text('nama_walmur');
         table.text('telp');
-
+        table.foreign('id_walmur').references('username').inTable('users');
         table.foreign('siswa_id').references('id_siswa').inTable('siswa');
     });
 };

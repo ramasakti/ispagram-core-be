@@ -12,7 +12,7 @@ exports.up = function (knex) {
         table.time('sampai');
         table.string('penyelenggara');
         table.text('kategori_peserta');
-        table.text('peserta');
+        table.json('peserta');
     });
 };
 

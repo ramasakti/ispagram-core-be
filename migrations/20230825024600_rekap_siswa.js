@@ -9,8 +9,6 @@ exports.up = function (knex) {
         table.string('siswa_id');
         table.string('keterangan', 1);
         table.time('waktu_absen').nullable();
-
-        table.foreign('siswa_id').references('id_siswa').inTable('siswa').onDelete('cascade').onUpdate('cascade');
     });
 };
 

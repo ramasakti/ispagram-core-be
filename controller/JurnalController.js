@@ -1,6 +1,7 @@
-const db = require('./../Config')
-const response = require('./../Response')
-const moment = require('../utilities/moment')
+const db = require('../Config')
+const response = require('../Response')
+const moment = require('../Utilities/Moment')
+const JurnalModel = require('./../Model/JurnalModel')
 
 const insertingJurnal = async (req, res) => {
     try {
@@ -30,6 +31,22 @@ const insertingJurnal = async (req, res) => {
     }
 }
 
+const jurnal = async (req, res) => {
+    try {
+        const { tanggal, kelas } = req.query
+        if (!tanggal || !kelas) return response(400, null, `Form Tidak Lengkap!`, res)
+
+        const jurnal = await JurnalModel.getJurnalByDateAndKelas(tanggal, kelas)
+        if (jurnal.length < 1) return response(200, null, `Jurnal Kosong!`, res)
+        
+        return response(200, jurnal, `Data Jurnal Tanggal ${tanggal} kelas ${jurnal.tingkat}`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal Server Error!`, res)
+    }
+}
+
 module.exports = {
-    insertingJurnal
+    insertingJurnal,
+    jurnal
 };

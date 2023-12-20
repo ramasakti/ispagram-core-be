@@ -1,16 +1,38 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
+const response = require('./Response')
 const cron = require('node-cron')
 const path = require('path')
 const session = require('express-session')
 const passport = require('passport')
 const db = require('./Config')
-const router = require('./router/Router')
+const router = require('./Router/Router')
 const cors = require('cors')
-const moment = require('./utilities/moment')
+const moment = require('./Utilities/Moment')
+
+const acceptedHost = ['http://localhost:3000', 'https://smaispa.sch.id', 'http://127.0.0.1:5500']
+
+app.use((req, res, next) => {
+    const ipv6 = req.ip
+    const ipv4 = ipv6.includes('::ffff:') ? ipv6.split('::ffff:')[1] : ipv6
+    const modifiedIP = `http://${ipv4}:3000`
+    acceptedHost.push(modifiedIP)
+    next()
+})
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (acceptedHost.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback('403 Forbidden');
+        }
+    },
+}
 
 app.use(express.json())
-app.use(cors())
+app.use(cors(corsOptions))
 app.use(router)
 
 app.use(session({
@@ -61,8 +83,8 @@ const RekapAbsen = async () => {
 
                 // Ambil data keterangan absen siswa untuk direkap
                 const dataRekap = await db('absen')
-                    .select('id_siswa', 'keterangan')
-                    .whereNotNull('keterangan')
+                    .select('id_siswa', 'keterangan', 'waktu_absen')
+                    .whereNot('keterangan', 'H')
 
                 // Merekap absen siswa
                 for (const updateRekap of dataRekap) {
@@ -70,7 +92,7 @@ const RekapAbsen = async () => {
                         tanggal: moment().format('YYYY-MM-DD'),
                         siswa_id: updateRekap.id_siswa,
                         keterangan: updateRekap.keterangan,
-                        waktu_absen: null
+                        waktu_absen: (updateRekap.keterangan === 'T') ? updateRekap.waktu_absen : null
                     })
                 }
             } else {
@@ -124,7 +146,9 @@ cron.schedule('59 23 * * *', async () => {
 })
 
 cron.schedule('0 0 * * *', async () => {
-    await db('absen').update({ waktu_absen: null })
+    await db('absen')
+        .whereNull('izin')
+        .update({ waktu_absen: null, keterangan: '' })
     await db('jadwal').update({ status: '' })
 })
 

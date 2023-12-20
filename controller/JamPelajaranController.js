@@ -1,7 +1,7 @@
-const db = require('./../Config')
-const response = require('./../Response')
-const moment = require('../utilities/moment')
-const existingHari = require('../utilities/HariUtils')
+const db = require('../Config')
+const response = require('../Response')
+const moment = require('../Utilities/Moment')
+const existingHari = require('../Utilities/HariUtils')
 
 const jamPelajaran = async (req, res) => {
     try {

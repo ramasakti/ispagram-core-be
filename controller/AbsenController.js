@@ -1,12 +1,13 @@
-const db = require('./../Config')
-const response = require('./../Response')
-const moment = require('../utilities/moment')
-const absenSiswaUtils = require('../utilities/AbsenSiswaUtils')
+const db = require('../Config')
+const response = require('../Response')
+const moment = require('../Utilities/Moment')
+const absenSiswaUtils = require('../Utilities/AbsenSiswaUtils')
+const AbsenSiswaModel = require('./../Model/AbsenSiswaModel')
 
-const dataPresensi = async (req, res) => {
+const dataAllAbsensiSiswa = async (req, res) => {
     try {
-        const dataPresensi = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').select()
-        return response(200, dataPresensi, 'Data presensi', res)
+        const dataAllAbsensiSiswa = await AbsenSiswaModel.dataAllAbsensiSiswa()
+        return response(200, dataAllAbsensiSiswa, 'Data presensi', res)
     } catch (error) {
         console.error(error)
         return response(500, null, `Internal server error!`, res)
@@ -15,7 +16,7 @@ const dataPresensi = async (req, res) => {
 
 const dataAbsensi = async (req, res) => {
     try {
-        const dataKetidakhadiran = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').select().whereNull('absen.waktu_absen')
+        const dataKetidakhadiran = await AbsenSiswaModel.dataAllKetidakhadiranSiswa()
         return response(200, dataKetidakhadiran, 'Data absenssi', res)
     } catch (error) {
         console.error(error)
@@ -25,8 +26,8 @@ const dataAbsensi = async (req, res) => {
 
 const dataAbsensiKelas = async (req, res) => {
     try {
-        const kelasId = req.params.kelas_id
-        const dataKetidakhadiran = await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').where('siswa.kelas_id', kelasId)
+        const kelas_id = req.params.kelas_id
+        const dataKetidakhadiran = await AbsenSiswaModel.dataKetidakhadiranKelas(kelas_id)
         return response(200, dataKetidakhadiran, 'Data absensi', res)
     } catch (error) {
         console.error(error)
@@ -34,53 +35,24 @@ const dataAbsensiKelas = async (req, res) => {
     }
 }
 
-const updateAbsen = async (req, res) => {
+const update = async (req, res) => {
     try {
         const id_siswa = req.params.id_siswa
         const { keterangan } = req.body
 
+        if (!keterangan) return response(404, null, `Keterangan wajib diisi!`, res)
+        
         // Cek absen individu
-        const dataAbsen = await absenSiswaUtils.dataAbsensiSiswaIndividu(id_siswa)
+        const dataAbsen = await AbsenSiswaModel.dataAbsensiSiswaIndividu(id_siswa)
         if (!dataAbsen) return response(404, null, `ID Anda tidak terdaftar!`, res)
 
-        // Jika sudah ada rekap hari ini dan ada rekap lagi maka update
-        absenSiswaUtils.filterRekap(id_siswa)
-
-        if (!keterangan) return response(404, null, `Keterangan wajib diisi!`, res)
-
         // Jika keterangan hadir
-        if (keterangan === 'H') {
-            const updateAbsen = await db('absen').where('id_siswa', id_siswa).update({
-                waktu_absen: moment().format('HH:mm:ss'),
-                izin: null,
-                keterangan: ''
-            })
+        if (keterangan === 'H') { 
+            await AbsenSiswaModel.updateHadir(id_siswa)
             return response(201, dataAbsen, `Berhasil absen!`, res)
-        }
-        // Jika terlambat
-        else if (keterangan === 'T') {
-            const updateAbsen = await db('absen').where('id_siswa', id_siswa).update({
-                waktu_absen: moment().format('HH:mm:ss'),
-                izin: null,
-                keterangan
-            })
-            absenSiswaUtils.absenTerlambat(id_siswa)
-            return response(201, updateAbsen, `Berhasil absen!`, res)
-        }
-        // Jika sakit atau izin atau alfa
-        else {
-            const updateAbsen = await db('absen').where('id_siswa', id_siswa).update({
-                waktu_absen: null,
-                izin: moment().format('YYYY-MM-DD'),
-                keterangan
-            })
-            await db('rekap_siswa').insert({
-                tanggal: moment().format('YYYY-MM-DD'),
-                siswa_id: id_siswa,
-                keterangan,
-                waktu_absen: null
-            }).onConflict('tanggal').merge()
-            return response(201, null, `Berhasil absen!`, res)
+        }else{
+            await AbsenSiswaModel.updateAbsenOrTerlambat(id_siswa, keterangan)
+            return response(201, dataAbsen, `Berhasil absen!`, res)
         }
     } catch (error) {
         console.error(error)
@@ -117,6 +89,7 @@ const engineAbsenSiswa = async (req, res) => {
                 izin: null,
                 keterangan: ''
             })
+            
             return response(201, engine, 'Berhasil Absen!', res)
         }
     } catch (error) {
@@ -125,51 +98,10 @@ const engineAbsenSiswa = async (req, res) => {
     }
 }
 
-const diagramHadir = async (req, res) => {
+const diagramHarian = async (req, res) => {
     try {
-        const diagramHadir = await db('absen').where('keterangan', '!=', 'T').whereNotNull('waktu_absen').select()
-        return response(200, diagramHadir, `Data Kehadiran`, res)
-    } catch (error) {
-        console.error(error)
-        return response(500, null, `Internal server error!`, res)
-    }
-}
-
-const diagramTerlambat = async (req, res) => {
-    try {
-        const masuk = await absenSiswaUtils.jamMasuk()
-        const diagramTerlambat = await db('absen').where('waktu_absen', '>', moment(masuk.masuk, 'HH:mm:ss').format('HH:mm:ss')).select()
-        return response(200, diagramTerlambat, `Data Kehadiran`, res)
-    } catch (error) {
-        console.error(error)
-        return response(500, null, `Internal server error!`, res)
-    }
-}
-
-const diagramSakit = async (req, res) => {
-    try {
-        const diagramSakit = await db('absen').where('keterangan', 'S').select()
-        return response(200, diagramSakit, `Data Sakit`, res)
-    } catch (error) {
-        console.error(error)
-        return response(500, null, `Internal server error!`, res)
-    }
-}
-
-const diagramIzin = async (req, res) => {
-    try {
-        const diagramIzin = await db('absen').where('keterangan', 'I').select()
-        return response(200, diagramIzin, `Data Sakit`, res)
-    } catch (error) {
-        console.error(error)
-        return response(500, null, `Internal server error!`, res)
-    }
-}
-
-const diagramAlfa = async (req, res) => {
-    try {
-        const diagramAlfa = await db('absen').whereNull('waktu_absen').select()
-        return response(200, diagramAlfa, `Data Alfa`, res)
+        const diagramHarian = await AbsenSiswaModel.statistikHarian()
+        return response(200, [diagramHarian.H, diagramHarian.S, diagramHarian.I, diagramHarian.A, diagramHarian.T], 'Diagram Hari Ini!', res)
     } catch (error) {
         console.error(error)
         return response(500, null, `Internal server error!`, res)
@@ -177,84 +109,52 @@ const diagramAlfa = async (req, res) => {
 }
 
 const grafikMingguan = async (req, res) => {
-    const dataTerlambat = await db('rekap_siswa')
-        .count('tanggal as terlambat')
-        .where('tanggal', '<=', moment().format('YYYY-MM-DD'))
-        .where('keterangan', 'T')
-        .groupBy('tanggal')
-        .orderBy('tanggal', 'desc')
-        .limit(7)
-    const terlambat = dataTerlambat.map(item => item.terlambat)
+    const data = await AbsenSiswaModel.statistikMingguan()
+    const statistik = data.map(item => {
+        return {
+            Sakit: item.S,
+            Izin: item.I,
+            Alfa: item.A,
+            Terlambat: item.T,
+        }
+    })
+    let categories = ["Sakit", "Izin", "Alfa", "Terlambat"]
+    let series = []
 
-    const dataSakit = await db('rekap_siswa')
-        .count('tanggal as sakit')
-        .where('tanggal', '<=', moment().format('YYYY-MM-DD'))
-        .where('keterangan', 'S')
-        .groupBy('tanggal')
-        .orderBy('tanggal', 'desc')
-        .limit(7)
-    const sakit = dataSakit.map(item => item.sakit)
+    categories.forEach(category => {
+        let data = {
+            "name": category,
+            "data": []
+        }
 
-    const dataIzin = await db('rekap_siswa')
-        .count('tanggal as izin')
-        .where('tanggal', '<=', moment().format('YYYY-MM-DD'))
-        .where('keterangan', 'I')
-        .groupBy('tanggal')
-        .orderBy('tanggal', 'desc')
-        .limit(7)
-    const izin = dataIzin.map(item => item.izin)
+        statistik.forEach(stats => {
+            data.data.push(stats[category])
+        })
 
-    const dataAlfa = await db('rekap_siswa')
-        .count('tanggal as alfa')
-        .where('tanggal', '<=', moment().format('YYYY-MM-DD'))
-        .where('keterangan', 'A')
-        .groupBy('tanggal')
-        .orderBy('tanggal', 'desc')
-        .limit(7)
-    const alfa = dataAlfa.map(item => item.alfa)
+        series.push(data)
+    })
 
-    const dataTanggal = await db('rekap_siswa')
-        .select('tanggal')
-        .groupBy('tanggal')
-        .orderBy('tanggal', 'desc')
-        .limit(7)
+    const tanggal = data.map(item => moment(item.tanggal).format('YYYY-MM-DD'))
 
-    const tanggal = dataTanggal.map(item => moment(item.tanggal).format('YYYY-MM-DD'))
-
-    return response(200, { tanggal, terlambat, sakit, izin, alfa }, `Grafik`, res)
+    return response(200, { series, labels: tanggal }, `Grafik`, res)
 }
 
 const rekap = async (req, res) => {
     try {
         const { kelas, range } = req.query;
     
-        if (!kelas || !range || range === 'undefined') return response(400, null, 'Form tidak lengkap!', res);
-
-        console.log(typeof(range))
+        if (!kelas || !range || range === 'undefined') return response(400, null, 'Form tidak lengkap!', res)
     
         // Memisahkan tanggal awal dan tanggal akhir dari range
-        const tanggalArray = range.split(' to ');
+        const tanggalArray = range.split(' to ')
         if (tanggalArray.length < 2) tanggalArray.push(tanggalArray[0])
     
-        const dari = tanggalArray[0];
-        const sampai = tanggalArray[1];
+        const dari = tanggalArray[0]
+        const sampai = tanggalArray[1]
     
-        const rekap = await db('siswa')
-            .select(
-                's.id_siswa',
-                's.nama_siswa',
-                db.raw('SUM(CASE WHEN rs.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
-                db.raw('SUM(CASE WHEN rs.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
-                db.raw('SUM(CASE WHEN rs.keterangan = "A" THEN 1 ELSE 0 END) AS A'),
-                db.raw('SUM(CASE WHEN rs.keterangan = "T" THEN 1 ELSE 0 END) AS T')
-            )
-            .from('siswa AS s')
-            .join('rekap_siswa AS rs', 's.id_siswa', 'rs.siswa_id')
-            .whereBetween('rs.tanggal', [dari, sampai])
-            .andWhere('s.kelas_id', kelas)
-            .groupBy('s.id_siswa', 's.nama_siswa');
+        const rekap = await AbsenSiswaModel.rekap(kelas, dari, sampai)
     
-        return response(200, rekap, 'Rekap', res);
+        return response(200, rekap, `Rekap Absen Siswa dari ${dari} sampai ${sampai}`, res);
     } catch (error) {
         console.error(error)
         return response(500, null, `Internal Server Error!`, res)
@@ -264,10 +164,7 @@ const rekap = async (req, res) => {
 const dataWA = async (req, res) => {
     try {
         const id_siswa = req.params.id_siswa
-        const detail = await db('siswa')
-            .select('siswa.id_siswa', 'siswa.telp', 'detail_siswa.ayah', 'detail_siswa.telp_ayah', 'detail_siswa.ibu', 'detail_siswa.telp_ibu')
-            .join('detail_siswa', 'detail_siswa.siswa_id', '=', 'siswa.id_siswa')
-            .where('id_siswa', id_siswa).first()
+        const detail = await AbsenSiswaModel.whatsapp(id_siswa)
 
         return response(200, detail, ``, res)
     } catch (error) {
@@ -281,20 +178,7 @@ const diagramIndividu = async (req, res) => {
         const id_siswa = req.params.id_siswa
         if (!id_siswa) return response(400, null, `ID Tidak Terdaftar!`, res)
 
-        const dataAbsen = await db('siswa')
-            .select(
-                's.id_siswa',
-                's.nama_siswa',
-                db.raw('SUM(CASE WHEN rs.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
-                db.raw('SUM(CASE WHEN rs.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
-                db.raw('SUM(CASE WHEN rs.keterangan = "A" THEN 1 ELSE 0 END) AS A'),
-                db.raw('SUM(CASE WHEN rs.keterangan = "T" THEN 1 ELSE 0 END) AS T')
-            )
-            .from('siswa AS s')
-            .join('rekap_siswa AS rs', 's.id_siswa', 'rs.siswa_id')
-            .where('s.id_siswa', id_siswa)
-            .groupBy('s.id_siswa', 's.nama_siswa')
-            .first()
+        const dataAbsen = await AbsenSiswaModel.rekapIndividu()
             
         return response(200, dataAbsen, `Data Rekap Absensi ${id_siswa}`, res)
     } catch (error) {
@@ -303,19 +187,26 @@ const diagramIndividu = async (req, res) => {
     }
 }
 
+const resetAbsenHarian = async (req, res) => {
+    try {
+        await AbsenSiswaModel.updateAbsenToDefault()
+        return response(200, {}, `Berhasil Reset Absen!`, res)
+    } catch (error) {
+        console.error(error)
+        return response(400, null, `Internal Server Error!`, res)
+    }
+}
+
 module.exports = {
-    dataPresensi,
+    dataAllAbsensiSiswa,
     dataAbsensi,
     dataAbsensiKelas,
-    updateAbsen,
+    update,
     engineAbsenSiswa,
-    diagramHadir,
-    diagramTerlambat,
-    diagramAlfa,
-    diagramSakit,
-    diagramIzin,
+    diagramHarian,
     grafikMingguan,
     rekap,
     dataWA,
-    diagramIndividu
+    diagramIndividu,
+    resetAbsenHarian
 } 

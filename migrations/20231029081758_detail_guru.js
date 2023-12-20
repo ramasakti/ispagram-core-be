@@ -12,7 +12,6 @@ exports.up = function (knex) {
         table.text('scan_kk', 'longtext').nullable();
         table.string('bank').nullable();
         table.string('norek').nullable();
-        table.foreign('guru_id').references('id_guru').inTable('guru');
     });
 };
 

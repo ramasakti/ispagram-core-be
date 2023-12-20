@@ -1,4 +1,4 @@
-const moment = require('moment')
-moment.locale('id')
+const Moment = require('moment')
+Moment.locale('id')
 
-module.exports = moment
+module.exports = Moment
