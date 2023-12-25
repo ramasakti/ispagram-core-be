@@ -10,7 +10,7 @@ const path = require('path')
 const db = require('./Config')
 const router = require('./router/Router')
 const cors = require('cors')
-const moment = require('./Utilities/Moment')
+const moment = require('./utilities/Moment')
 
 const acceptedHost = ['http://localhost:3000', 'https://smaispa.sch.id', 'http://127.0.0.1:5500']
 
