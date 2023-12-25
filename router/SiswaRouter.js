@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const SiswaController = require('../controller/SiswaController')
-const middleware = require('../Utilities/Middleware')
+const middleware = require('../utilities/Middleware')
 
 const multer = require('multer')
 const storage = multer.memoryStorage()

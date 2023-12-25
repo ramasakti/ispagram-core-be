@@ -1,5 +1,5 @@
 const db = require('../Config')
-const Moment = require('./../utilities/Moment')
+const Moment = require('../utilities/Moment')
 
 const dataAllAbsensiSiswa = async () => await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa')
 
