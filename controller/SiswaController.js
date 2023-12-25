@@ -1,6 +1,6 @@
 const db = require('../Config')
 const response = require('../Response')
-const Moment = require('../Utilities/Moment')
+const Moment = require('../utilities/Moment')
 const SiswaModel = require('../Model/SiswaModel')
 const KelasModel = require('../Model/KelasModel')
 const UserModel = require('../Model/UserModel')

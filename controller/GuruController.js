@@ -1,12 +1,12 @@
 const response = require('../Response')
-const moment = require('../Utilities/Moment')
+const moment = require('../utilities/Moment')
 const bcrypt = require('bcryptjs')
 const crypto = require('crypto')
 const GuruModel = require('../Model/GuruModel')
 const UserModel = require('../Model/UserModel')
 const DetailGuruModel = require('../Model/DetailGuruModel')
-const UserUtils = require('../Utilities/UserUtils')
-const GuruUtils = require('../Utilities/GuruUtils')
+const UserUtils = require('../utilities/UserUtils')
+const GuruUtils = require('../utilities/GuruUtils')
 
 const guru = async (req, res) => {
     try {

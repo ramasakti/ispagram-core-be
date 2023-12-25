@@ -1,5 +1,5 @@
 const db = require('../Config')
-const Moment = require('./../Utilities/Moment')
+const Moment = require('./../utilities/Moment')
 
 const getNavbarByRole = async (role) => {
     return await db('navbar')

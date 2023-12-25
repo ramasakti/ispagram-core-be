@@ -1,7 +1,7 @@
 const db = require('../Config')
 const response = require('../Response')
-const moment = require('../Utilities/Moment')
-const absenSiswaUtils = require('../Utilities/AbsenSiswaUtils')
+const moment = require('../utilities/Moment')
+const absenSiswaUtils = require('../utilities/AbsenSiswaUtils')
 const AbsenSiswaModel = require('../Model/AbsenSiswaModel')
 
 const dataAllAbsensiSiswa = async (req, res) => {

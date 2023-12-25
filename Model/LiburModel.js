@@ -1,5 +1,5 @@
 const db = require('../Config')
-const moment = require('../Utilities/Moment')
+const moment = require('../utilities/Moment')
 
 const getAllLibur = async () => await db('libur')
 

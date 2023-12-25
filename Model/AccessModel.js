@@ -1,5 +1,5 @@
 const db = require('../Config')
-const Moment = require('./../Utilities/Moment')
+const Moment = require('./../utilities/Moment')
 
 const getAccessByRole = async (role) => {
     return await db('access')

@@ -1,6 +1,6 @@
 const db = require('../Config')
 const response = require('../Response')
-const moment = require('../Utilities/Moment')
+const moment = require('../utilities/Moment')
 moment().format('YYYY-MM-DD')
 
 const dataTransaksi = async (req, res) => {

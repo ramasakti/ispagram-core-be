@@ -1,5 +1,5 @@
 const response = require('../Response')
-const moment = require('../Utilities/Moment')
+const moment = require('../utilities/Moment')
 const UserModel = require('../Model/UserModel')
 const GuruModel = require('../Model/GuruModel')
 const SiswaModel = require('../Model/SiswaModel')

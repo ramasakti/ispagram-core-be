@@ -1,6 +1,6 @@
 const db = require('../Config')
 const response = require('../Response')
-const moment = require('../Utilities/Moment')
+const moment = require('../utilities/Moment')
 const AccessModel = require('../Model/AccessModel')
 
 const access = async (req, res) => {

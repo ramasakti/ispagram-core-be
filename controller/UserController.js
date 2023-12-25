@@ -1,12 +1,12 @@
 const response = require('../Response')
 const bcrypt = require('bcryptjs')
 const crypto = require('crypto')
-const sendMail = require('../Utilities/UserUtils')
-const moment = require('../Utilities/Moment')
+const sendMail = require('../utilities/UserUtils')
+const moment = require('../utilities/Moment')
 const UserModel = require('../Model/UserModel')
 const HariModel = require('../Model/HariModel')
 const KelasModel = require('../Model/KelasModel')
-const UserUtils = require('../Utilities/UserUtils')
+const UserUtils = require('../utilities/UserUtils')
 
 const users = async (req, res) => {
     try {
