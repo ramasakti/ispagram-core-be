@@ -56,11 +56,11 @@ const updateBiodata = async (req, res) => {
             const guru = await GuruModel.getGuruByID(username)
 
             await GuruModel.updateGuru(username, {
-                nama_guru: nama ?? guru.nama_guru,
-                alamat: alamat ?? guru.alamat,
-                telp: whatsapp ?? guru.telp,
-                tempat_lahir: tempat_lahir ?? guru.tempat_lahir,
-                tanggal_lahir: tanggal_lahir ?? guru.tanggal_lahir
+                nama_guru: nama ? nama : guru.nama_guru,
+                alamat: alamat ? alamat : guru.alamat,
+                telp: whatsapp ? whatsapp : guru.telp,
+                tempat_lahir: tempat_lahir ? tempat_lahir : guru.tempat_lahir,
+                tanggal_lahir: tanggal_lahir ? tanggal_lahir : guru.tanggal_lahir
             })
 
             await GuruModel.updateDetailGuru(username, {
@@ -74,11 +74,11 @@ const updateBiodata = async (req, res) => {
             const { nama_siswa, alamat, telp, tempat_lahir, tanggal_lahir, nisn, nik, nokk, scan_kk, transportasi, anak, jenis_tinggal, askol, scan_ijazah, ibu, nik_ibu, pendidikan_ibu, profesi_ibu, penghasilan_ibu, telp_ibu, ayah, nik_ayah, pendidikan_ayah, profesi_ayah, penghasilan_ayah, telp_ayah, tinggi, berat } = req.body
 
             await SiswaModel.updateSiswaByID(username, {
-                nama_siswa: nama_siswa ?? siswa.nama_siswa,
-                alamat: alamat ?? siswa.alamat,
-                telp: telp ?? siswa.telp,
-                tempat_lahir: tempat_lahir ?? siswa.tempat_lahir,
-                tanggal_lahir: tanggal_lahir ?? siswa.tanggal_lahir,
+                nama_siswa: nama_siswa ? nama_siswa : siswa.nama_siswa,
+                alamat: alamat ? alamat : siswa.alamat,
+                telp: telp ? telp : siswa.telp,
+                tempat_lahir: tempat_lahir ? tempat_lahir : siswa.tempat_lahir,
+                tanggal_lahir: tanggal_lahir ? tanggal_lahir : siswa.tanggal_lahir,
             })
 
             await SiswaModel.updateDetailSiswaByID(username, {
