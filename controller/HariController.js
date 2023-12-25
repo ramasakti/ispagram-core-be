@@ -15,8 +15,9 @@ const hari = async (req, res) => {
 
 const updateHari = async (req, res) => {
     try {
+        const id_hari = req.params.id_hari
         // Tangkap inputan
-        let { id_hari, nama_hari, diniyah, jam_diniyah, masuk, istirahat, pulang, jampel, piket, status } = req.body
+        let { nama_hari, diniyah, jam_diniyah, masuk, istirahat, pulang, jampel, piket, status } = req.body
 
         // Ubah format waktu
         jam_diniyah.mulai = moment(jam_diniyah.mulai, 'HH:mm:ss').format('HH:mm:ss')

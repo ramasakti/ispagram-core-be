@@ -1,6 +1,6 @@
 const db = require('../Config')
 const response = require('../Response')
-const moment = require('../Utilities/Moment')
+const Moment = require('../Utilities/Moment')
 const SiswaModel = require('../Model/SiswaModel')
 const KelasModel = require('../Model/KelasModel')
 const UserModel = require('../Model/UserModel')
@@ -53,7 +53,7 @@ const store = async (req, res) => {
         const existingSiswa = await SiswaModel.getDetailSiswaByID(id_siswa)
         if (existingSiswa) return response(409, null, 'ID siswa sudah ada dalam database!', res)
 
-        if (!moment(tanggal_lahir, 'YYYY-MM-DD', true).isValid()) {
+        if (!Moment(tanggal_lahir, 'YYYY-MM-DD', true).isValid()) {
             return response(400, null, 'Tanggal lahir tidak valid! Format harus YYYY-MM-DD', res)
         }
 
@@ -70,7 +70,7 @@ const store = async (req, res) => {
 
         await AbsenSiswaModel.insertAbsen(id_siswa)
 
-        const detailSiswa = await DetailSiswaModel.getDetailSiswaByID(id_siswa)
+        const detailSiswa = await SiswaModel.getDetailSiswaByID(id_siswa)
         if (!detailSiswa) {
             await DetailSiswaModel.insertDetailSiswa(id_siswa)
         }
@@ -93,8 +93,8 @@ const update = async (req, res) => {
         const detailSiswa = await SiswaModel.getSiswaByID(id_siswa)
         if (!detailSiswa) return response(400, null, `ID siswa tidak terdaftar! Data siswa tidak ditemukan!`, res)
 
-        const tanggalLahirFormatted = moment(tanggal_lahir).format("YYYY-MM-DD")
-        if (!moment(tanggalLahirFormatted, 'YYYY-MM-DD', true).isValid()) {
+        const tanggalLahirFormatted = Moment(tanggal_lahir).format("YYYY-MM-DD")
+        if (!Moment(tanggalLahirFormatted, 'YYYY-MM-DD', true).isValid()) {
             return response(400, null, 'Tanggal lahir tidak valid! Format harus YYYY-MM-DD', res)
         }
 

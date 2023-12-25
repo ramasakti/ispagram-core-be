@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const RoleController = require('../Controller/RoleController')
+const RoleController = require('../controller/RoleController')
 
 router.route('/role')
     .get(RoleController.role)

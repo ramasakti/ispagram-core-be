@@ -1,9 +1,10 @@
 const express = require('express')
 const router = express.Router()
-const MenuController = require('../Controller/MenuController')
+const MenuController = require('../controller/MenuController')
 
 router.route('/menu')
     .get(MenuController.getAllMenu)
+    .post(MenuController.store)
 
 router.route('/menu/update/:id_menu')
     .put(MenuController.update)

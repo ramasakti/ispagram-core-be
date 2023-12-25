@@ -105,7 +105,7 @@ const update = async (req, res) => {
         if (!existingGuru) return response(400, null, `ID guru tidak terdaftar!`, res)
 
         // Periksa apakah guru pernah terdaftar
-        const detailGuru = await DetailGuruModel.getDetailGuruByID(id_guru)
+        const detailGuru = await GuruModel.getDetailGuruByID(id_guru)
         if (!detailGuru) {
             await DetailGuruModel.insertDetailGuru({ guru_id: id_guru })
         }

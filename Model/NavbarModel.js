@@ -18,12 +18,15 @@ const getNavbarByRole = async (role) => {
         .where('navbar.role_id', role)
         .orderBy('section.order', 'ASC')
         .orderBy('menu.order', 'ASC')
-        // .orderBy('menu.order', 'ASC')
 }
 
 const deleteNavbarByID = async (id_navbar) => {
     return await db('navbar').where('id_navbar', id_navbar).del()
 }
+const deleteNavbarByMenu = async (menu) => {
+    return await db('navbar').where('menu_id', menu).del()
+}
+
 const deleteNavbarByMenuAndRole = async (menu, role) => {
     return await db('navbar').where('menu_id', menu).where('role_id', role).del()
 }
@@ -37,6 +40,7 @@ const getSubmenu = async () => await db('submenu').orderBy('order', 'ASC')
 module.exports = {
     getNavbarByRole,
     deleteNavbarByID,
+    deleteNavbarByMenu,
     deleteNavbarByMenuAndRole,
     insertNavbar,
     getSubmenu

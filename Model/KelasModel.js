@@ -19,7 +19,7 @@ const getKelasByTingkat = async (tingkat) => await db('kelas').where('tingkat', 
 
 const getKelasWithWalasByID = async (id_kelas) => {
     return await db('kelas')
-        .join('guru', 'guru.id_guru', '=', 'kelas.id_kelas')
+        .join('guru', 'guru.id_guru', '=', 'kelas.walas')
         .where('kelas.id_kelas', id_kelas)
         .first()
 }

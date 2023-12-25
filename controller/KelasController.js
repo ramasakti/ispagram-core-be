@@ -13,7 +13,7 @@ const kelas = async (req, res) => {
     }
 }
 
-const detailKelas = async (req, res) => {
+const detail = async (req, res) => {
     try {
         // Tangkap parameter dan periksa apa parameter dikirimkan
         const kelas_id = req.params.kelas_id
@@ -29,7 +29,7 @@ const detailKelas = async (req, res) => {
     }
 }
 
-const storeKelas = async (req, res) => {
+const store = async (req, res) => {
     try {
         // Tangkap inputan dan periksa
         const { tingkat, jurusan, walas } = req.body
@@ -45,24 +45,25 @@ const storeKelas = async (req, res) => {
     }
 }
 
-const updateKelas = async (req, res) => {
+const update = async (req, res) => {
     try {
+        const id_kelas = req.params.kelas_id
         // Tangkap inputan
-        const { id_kelas, tingkat, jurusan, walas } = req.body
+        const { tingkat, jurusan, walas } = req.body
 
         // Query ke database
-        const updateKelas = await KelasModel.updateKelas(id_kelas, {
+        await KelasModel.updateKelas(id_kelas, {
             tingkat, jurusan, walas
         })
 
-        return response(201, updateKelas, 'Berhasil update data kelas!', res)
+        return response(201, {}, 'Berhasil update data kelas!', res)
     } catch (error) {
         console.error(error)
         return response(500, {}, 'Internal Server Error', res)
     }
 }
 
-const deleteKelas = async (req, res) => {
+const destroy = async (req, res) => {
     try {
         // Tangkap inputan id kelas dari request parameter
         const id_kelas = req.params.kelas_id
@@ -80,11 +81,11 @@ const deleteKelas = async (req, res) => {
         // Hapus kelas dari tabel kelas
         await KelasModel.deleteKelas(id_kelas)
 
-        return response(202, deleteKelas, 'Berhasil hapus kelas', res)
+        return response(202, {}, 'Berhasil hapus kelas', res)
     } catch (error) {
         console.error(error)
         return response(500, null, `Internal server error!`, res)
     }
 }
 
-module.exports = { kelas, detailKelas, storeKelas, updateKelas, deleteKelas }
+module.exports = { kelas, detail, store, update, destroy }

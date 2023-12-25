@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const AccessController = require('../Controller/AccessController')
+const AccessController = require('../controller/AccessController')
 
 router.route('/access/:role')
     .get(AccessController.access)

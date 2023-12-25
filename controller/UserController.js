@@ -64,11 +64,10 @@ const detail = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        const { email, passwordLama, passwordBaru, role } = req.body
+        const { email, passwordLama, passwordBaru, id_role } = req.body
         const username = req.params.username
-        const avatar = req.file.path
 
-        const detailUser = await UserModel.getUserWithGuruByUsername(username)
+        const detailUser = await UserModel.getUserWithRoleByUsername(username)
         if (!detailUser) return response(400, null, `User tidak terdaftar!`, res)
     
         if (detailUser.email != email) {
@@ -77,6 +76,7 @@ const update = async (req, res) => {
         }
     
         if (req.file) {
+            const avatar = req.file.path
             if (!req.file.mimetype.startsWith('image/')) {
                 return response(400, null, `File yang diunggah bukan gambar!`, res)
             }
@@ -94,7 +94,7 @@ const update = async (req, res) => {
             }
         }
     
-        await UserModel.updateUserByUsername({ email, role })
+        await UserModel.updateUserByUsername(username, { email, role: id_role })
     
         return response(201, {}, `Berhasil update user!`, res)
     } catch (error) {
@@ -106,7 +106,7 @@ const update = async (req, res) => {
 const forgetPassword = async (req, res) => {
     try {
         const { email } = req.body
-        const detailUser = await UserModel.getUserWithGuruByUsername(username)
+        const detailUser = await UserModel.getUserWithGuruByEmail(email)
         if (!detailUser) return response(400, null, `Email tidak terdaftar!`, res)
 
         const randomPassword = crypto.randomBytes(Math.ceil(8 / 2)).toString('hex').slice(0, 8)

@@ -42,7 +42,7 @@ const store = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        
+        return response(202, {}, `Berhasil hapus!`, res)
     } catch (error) {
         console.error(error)
         return response(500, null, `Internal Server Error!`, res)
@@ -51,7 +51,7 @@ const update = async (req, res) => {
 
 const destroy = async (req, res) => {
     try {
-        
+        return response(202, {}, `Berhasil hapus!`, res)
     } catch (error) {
         console.error(error)
         return response(500, null, `Internal Server Error!`, res)

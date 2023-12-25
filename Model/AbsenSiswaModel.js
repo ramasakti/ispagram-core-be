@@ -61,24 +61,23 @@ const rekap = async (kelas, dari, sampai) => {
 const rekapIndividu = async (id_siswa) => {
     return await db('siswa')
         .select(
-            's.id_siswa',
-            's.nama_siswa',
-            db.raw('SUM(CASE WHEN rs.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
-            db.raw('SUM(CASE WHEN rs.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
-            db.raw('SUM(CASE WHEN rs.keterangan = "A" THEN 1 ELSE 0 END) AS A'),
-            db.raw('SUM(CASE WHEN rs.keterangan = "T" THEN 1 ELSE 0 END) AS T')
+            'siswa.id_siswa',
+            'siswa.nama_siswa',
+            db.raw('SUM(CASE WHEN rekap_siswa.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
+            db.raw('SUM(CASE WHEN rekap_siswa.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
+            db.raw('SUM(CASE WHEN rekap_siswa.keterangan = "A" THEN 1 ELSE 0 END) AS A'),
+            db.raw('SUM(CASE WHEN rekap_siswa.keterangan = "T" THEN 1 ELSE 0 END) AS T')
         )
-        .from('siswa AS s')
-        .join('rekap_siswa AS rs', 's.id_siswa', 'rs.siswa_id')
-        .where('s.id_siswa', id_siswa)
-        .groupBy('s.id_siswa', 's.nama_siswa')
+        .join('rekap_siswa', 'siswa.id_siswa', '=', 'rekap_siswa.siswa_id')
+        .where('siswa.id_siswa', id_siswa)
+        .groupBy('siswa.id_siswa', 'siswa.nama_siswa')
         .first()
 }
 
 const statistikHarian = async () => {
     return await db('absen')
         .select(
-            db.raw('SUM(CASE WHEN absen.waktu_absen IS NOT NULL AND absen.keterangan = "" THEN 1 ELSE 0 END) AS H'),
+            db.raw('SUM(CASE WHEN absen.waktu_absen IS NOT NULL AND absen.keterangan = "H" THEN 1 ELSE 0 END) AS H'),
             db.raw('SUM(CASE WHEN absen.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
             db.raw('SUM(CASE WHEN absen.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
             db.raw('SUM(CASE WHEN absen.keterangan = "A" OR absen.keterangan = "" OR absen.keterangan IS NULL AND absen.waktu_absen IS NULL THEN 1 ELSE 0 END) AS A'),

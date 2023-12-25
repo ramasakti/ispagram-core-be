@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const TransaksiController = require('../Controller/TransaksiController')
+const TransaksiController = require('../controller/TransaksiController')
 
 router.route('/transaksi')
     .get(TransaksiController.dataTransaksi)

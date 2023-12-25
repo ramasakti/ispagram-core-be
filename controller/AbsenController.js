@@ -60,44 +60,6 @@ const update = async (req, res) => {
     }
 }
 
-const engineAbsenSiswa = async (req, res) => {
-    try {
-        const { userabsen } = req.body
-        const dataAbsen = await absenSiswaUtils.dataAbsensiSiswaIndividu(userabsen)
-
-        // Jika ID user tidak terdaftar
-        if (dataAbsen.length < 1) {
-            return response(404, null, `ID Anda tidak terdaftar!`, res)
-        } else {
-            // Ambil informasi jam masuk hari ini
-            const dataJamMasuk = await absenSiswaUtils.jamMasuk()
-            const jam_masuk = moment(dataJamMasuk.masuk, 'HH:mm:ss').format('HH:mm:ss')
-
-            // Jika melewati batas jam masuk
-            if (jam_masuk < moment().format('HH:mm:ss')) {
-                await absenSiswaUtils.absenTerlambat(userabsen)
-            }
-
-            // Jika sudah absen hari ini
-            if (dataAbsen.waktu_absen != null) {
-                return response(200, dataAbsen, `${dataAbsen.nama_siswa} Sudah Absen!`, res)
-            }
-
-            // Update DB sesuai kondisi
-            const engine = await db('absen').where('id_siswa', userabsen).update({
-                waktu_absen: moment().format('HH:mm:ss'),
-                izin: null,
-                keterangan: ''
-            })
-            
-            return response(201, engine, 'Berhasil Absen!', res)
-        }
-    } catch (error) {
-        console.error(error)
-        return response(500, null, `Internal server error!`, res)
-    }
-}
-
 const diagramHarian = async (req, res) => {
     try {
         const diagramHarian = await AbsenSiswaModel.statistikHarian()
@@ -178,7 +140,7 @@ const diagramIndividu = async (req, res) => {
         const id_siswa = req.params.id_siswa
         if (!id_siswa) return response(400, null, `ID Tidak Terdaftar!`, res)
 
-        const dataAbsen = await AbsenSiswaModel.rekapIndividu()
+        const dataAbsen = await AbsenSiswaModel.rekapIndividu(id_siswa)
             
         return response(200, dataAbsen, `Data Rekap Absensi ${id_siswa}`, res)
     } catch (error) {
@@ -202,7 +164,6 @@ module.exports = {
     dataAbsensi,
     dataAbsensiKelas,
     update,
-    engineAbsenSiswa,
     diagramHarian,
     grafikMingguan,
     rekap,

@@ -32,7 +32,7 @@ const getHariByHariAndPiket = async (hari, piket) => {
 }
 
 const updateHariByID = async (id_hari, req) => {
-    return await db('id_hari').where('id_hari', id_hari).update(req)
+    return await db('hari').where('id_hari', id_hari).update(req)
 }
 
 const updateHariByHari = async (hari, req) => {

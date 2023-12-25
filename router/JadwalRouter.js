@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const JadwalController = require('../Controller/JadwalController')
+const JadwalController = require('../controller/JadwalController')
 
 router.route('/jadwal')
     .get(JadwalController.jadwal)

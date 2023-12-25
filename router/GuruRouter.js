@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const GuruController = require('../Controller/GuruController')
+const GuruController = require('../controller/GuruController')
 
 router.route('/guru')
     .get(GuruController.guru)

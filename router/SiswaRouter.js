@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const SiswaController = require('../Controller/SiswaController')
+const SiswaController = require('../controller/SiswaController')
 const middleware = require('../Utilities/Middleware')
 
 const multer = require('multer')

@@ -2,6 +2,7 @@ const db = require('../Config')
 const response = require('../Response')
 const MenuModel = require('../Model/MenuModel')
 const SubmenuModel = require('../Model/SubmenuModel')
+const NavbarModel = require('../Model/NavbarModel')
 
 const menu = async (req, res) => {
     try {
@@ -47,10 +48,10 @@ const getMenuByRole = async (req, res) => {
 
 const store = async (req, res) => {
     try {
-        const { name, route, section, order } = req.body
+        const { name, route, id_section, order } = req.body
         if (!name || !order) return response(400, null, `Form tidak lengkap!`, res)
 
-        await MenuModel.insertMenu({ name, route, section_id: section, order })
+        await MenuModel.insertMenu({ name, route, section_id: id_section, order })
         return response(201, {}, `Berhasil tambah data`, res)
     } catch (error) {
         console.error(error)
@@ -99,6 +100,7 @@ const destroy = async (req, res) => {
         const detailMenu = await MenuModel.getMenuByID(id_menu)
         if (!detailMenu) return response(400, null, `Menu tidak ditemukan!`, res)
 
+        await NavbarModel.deleteNavbarByMenu(id_menu)
         await MenuModel.deleteMenu(id_menu)
         return response(201, {}, `Berhasil delete menu!`, res)
     } catch (error) {

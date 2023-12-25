@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const HariController = require('../Controller/HariController')
+const HariController = require('../controller/HariController')
 
 router.route('/hari')
     .get(HariController.hari)

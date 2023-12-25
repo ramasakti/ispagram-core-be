@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const LiburController = require('../Controller/LiburController')
+const LiburController = require('../controller/LiburController')
 
 router.route('/libur')
     .get(LiburController.libur)

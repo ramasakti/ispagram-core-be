@@ -37,7 +37,6 @@ const update = async (req, res) => {
         const { name, icon, order } = req.body
         if (!name || !icon || !order) return response(400, null, `Semua form wajib diisi!`, res)
 
-        console.log(req.body)
         await SectionModel.updateSection(id_section, {
             name, icon, order
         })

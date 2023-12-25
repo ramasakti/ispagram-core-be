@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const SectionController = require('../Controller/SectionController')
+const SectionController = require('../controller/SectionController')
 
 router.route('/section')
     .get(SectionController.section)

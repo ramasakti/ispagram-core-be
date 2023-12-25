@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const AbsenController = require('../Controller/AbsenController')
+const AbsenController = require('../controller/AbsenController')
 
 router.route('/absen')
     .get(AbsenController.dataAbsensi)
@@ -13,9 +13,6 @@ router.route('/absen/kelas/:kelas_id')
 
 router.route('/absen/all')
     .get(AbsenController.dataAllAbsensiSiswa)
-
-router.route('/absen/engine')
-    .put(AbsenController.engineAbsenSiswa)
 
 router.route('/absen/data/harian')
     .get(AbsenController.diagramHarian)

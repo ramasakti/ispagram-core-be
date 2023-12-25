@@ -95,36 +95,4 @@ const auth = async (req, res) => {
     }
 }
 
-const middleware = (req, res, next) => {
-    const token = req.headers['authorization'];
-
-    if (!token) {
-        return response(401, {}, 'Unauthenticated', res);
-    }
-
-    // Hapus "Bearer " dari token yang diterima
-    const tokenWithoutBearer = token.replace('Bearer ', '');
-
-    if (!validTokens[tokenWithoutBearer]) {
-        return response(401, { valid: validTokens, tokenmu: token }, 'Token Tidak Valid', res);
-    }
-
-    jwt.verify(tokenWithoutBearer, 'parlaungan1980', (err, user) => {
-        if (err) {
-            return response(401, token, 'Token Tidak Valid', res);
-        }
-        req.user = user;
-        next();
-    });
-};
-
-const listValidToken = async (req, res) => {
-    const token = validTokens
-    return response(200, token, `Token`, res)
-}
-
-const protected = async (req, res) => {
-    return response(200, { user: req.user }, `Authenticated`, res)
-}
-
-module.exports = { auth, middleware, protected, listValidToken }
+module.exports = { auth }

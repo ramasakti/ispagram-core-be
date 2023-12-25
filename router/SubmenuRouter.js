@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const SubmenuController = require('../Controller/SubmenuController')
+const SubmenuController = require('../controller/SubmenuController')
 
 router.route('/submenu')
     .get(SubmenuController.submenu)
