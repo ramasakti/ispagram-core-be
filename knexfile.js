@@ -9,9 +9,9 @@ module.exports = {
     connection: {
       host: '127.0.0.1',
       port: 3306,
-      user: 'root',
+      user: 'smas5845_admin',
       password: '',
-      database: 'parlaungan'
+      database: 'smas5845_ispagram'
     },
     migrations: {
       tableName: 'knex_migrations'
@@ -23,9 +23,9 @@ module.exports = {
     connection: {
       host: '127.0.0.1',
       port: 3306,
-      user: 'root',
+      user: 'smas5845_admin',
       password: '',
-      database: 'parlaungan'
+      database: 'smas5845_ispagram'
     },
     migrations: {
       tableName: 'knex_migrations'
@@ -37,9 +37,9 @@ module.exports = {
     connection: {
       host: '127.0.0.1',
       port: 3306,
-      user: 'root',
+      user: 'smas5845_admin',
       password: '',
-      database: 'parlaungan'
+      database: 'smas5845_ispagram'
     },
     migrations: {
       tableName: 'knex_migrations'
