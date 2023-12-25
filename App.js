@@ -61,6 +61,6 @@ wss.on('connection', function connection(ws) {
     }
 })
 
-server.listen(4500, async () => {
+server.listen(8080, async () => {
     console.log(`Server is running`)
 })
