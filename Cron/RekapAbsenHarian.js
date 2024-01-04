@@ -1,6 +1,5 @@
-const db = require('./Config')
-const cron = require('node-cron')
-const moment = require('./Utilities/Moment')
+const db = require('../Config')
+const moment = require('../utilities/Moment')
 
 const RekapAbsen = async () => {
     try {
@@ -66,10 +65,4 @@ const RekapAbsen = async () => {
     }
 }
 
-cron.schedule('59 23 * * *', async () => {
-    await RekapAbsen()
-})
-
-module.exports = {
-    cron
-};
+module.exports = RekapAbsen

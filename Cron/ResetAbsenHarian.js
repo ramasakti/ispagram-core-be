@@ -1,10 +1,14 @@
-const db = require('./Config')
-const cron = require('node-cron')
-const moment = require('./Utilities/Moment')
+const db = require('../Config')
+const moment = require('../utilities/Moment')
 
-cron.schedule('0 0 * * *', async () => {
+const ResetAbsenHarian = async () => {
     await db('absen')
         .whereNull('izin')
         .update({ waktu_absen: null, keterangan: '' })
+
     await db('jadwal').update({ status: '' })
-})
+
+    return true
+}
+
+module.exports = ResetAbsenHarian

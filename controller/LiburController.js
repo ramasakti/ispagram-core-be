@@ -25,7 +25,7 @@ const storeLibur = async (req, res) => {
     try {
         const { keterangan, libur } = req.body
         if (!keterangan || !libur) return response(400, null, `Gagal! Semua field wajib diisi`, res)
-    
+
         if (libur.length === 10) {
             await LiburModel.insertLibur({
                 keterangan, mulai: libur, sampai: libur
@@ -33,12 +33,12 @@ const storeLibur = async (req, res) => {
         } else {
             const mulai = libur.substring(0, 10)
             const sampai = libur.substring(14, 24)
-    
+
             await LiburModel.insertLibur({
                 keterangan, mulai, sampai
             })
         }
-    
+
         return response(201, {}, `Berhasil menambahkan data libur!`, res)
     } catch (error) {
         console.error(error)
@@ -50,13 +50,13 @@ const updateLibur = async (req, res) => {
     try {
         const { id_libur, keterangan, libur } = req.body
         if (!id_libur) return response(400, null, `Gagal! data libur tidak ditemukan`, res)
-    
+
         if (!libur && keterangan) {
             await LiburModel.updateLibur(id_libur, { keterangan })
-    
+
             return response(201, {}, `Berhasil mengubah data libur!`, res)
         }
-    
+
         if (libur.length === 10) {
             await LiburModel.updateLibur(id_libur, {
                 keterangan, mulai: libur, sampai: libur
@@ -64,12 +64,12 @@ const updateLibur = async (req, res) => {
         } else {
             const mulai = libur.substring(0, 10)
             const sampai = libur.substring(14, 24)
-    
+
             await LiburModel.updateLibur(id_libur, {
                 keterangan, mulai, sampai
             })
         }
-        
+
         return response(201, {}, `Berhasil mengubah data libur!`, res)
     } catch (error) {
         console.error(error)
@@ -82,7 +82,7 @@ const deleteLibur = async (req, res) => {
         const id_libur = req.params.id_libur
         const dataLibur = await LiburModel.getLiburByID(id_libur)
         if (!dataLibur) return response(400, null, `Gagal! Data libur tidak ditemukan`, res)
-    
+
         await LiburModel.deleteLibur(id_libur)
         return response(201, {}, `Berhasil delete data libur!`, res)
     } catch (error) {

@@ -5,8 +5,9 @@ const WebSocket = require('ws')
 const app = express()
 const server = http.createServer(app)
 const wss = new WebSocket.Server({ server })
-const cron = require('node-cron')
 const path = require('path')
+const initCronJobs = require('./Cron/CronJob')
+const cron = require('node-cron')
 const db = require('./Config')
 const router = require('./router/Router')
 const cors = require('cors')
@@ -48,7 +49,7 @@ app.use('/upload', express.static(path.join(__dirname, 'upload')))
 //  │ │ │ │ │ │
 //  │ │ │ │ │ │
 //  * * * * * *
-
+initCronJobs()
 wss.on('connection', function connection(ws) {
     console.log('Koneksi WebSocket terbuka')
 
