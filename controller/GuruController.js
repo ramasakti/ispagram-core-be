@@ -33,7 +33,7 @@ const guru = async (req, res) => {
     }
 }
 
-const staf = async (req, res) => {
+const dataStaf = async (req, res) => {
     try {
         const staf = await GuruModel.getAllGuruStaf()
         return response(200, staf, `Data Staf`, res)
@@ -46,7 +46,7 @@ const staf = async (req, res) => {
 const store = async (req, res) => {
     try {
         // Tangkap inputan
-        const { id_guru, email, rfid, nama_guru, alamat, telp, tempat_lahir, tanggal_lahir } = req.body
+        const { id_guru, staf, email, rfid, nama_guru, alamat, telp, tempat_lahir, tanggal_lahir } = req.body
         
         // Filter apakah inputan lengkap
         if (!id_guru || !email || !nama_guru || !telp) return response(400, null, `Formulir yang dikirim tidak lengkap!`, res)
@@ -72,11 +72,13 @@ const store = async (req, res) => {
 
         // Insert ke tabel guru
         await GuruModel.insertGuru({
-            id_guru, rfid, nama_guru, alamat, telp, tempat_lahir, tanggal_lahir
+            id_guru, staf: staf ?? false, rfid, nama_guru, alamat, telp, tempat_lahir, tanggal_lahir
         })
 
+        // Cek tabel detail_guru
+        const detail_guru = await GuruModel.getDetailGuruByID(id_guru)
         // Insert ke tabel detail_guru
-        await DetailGuruModel.insertDetailGuru(id_guru)
+        if (!detail_guru) await DetailGuruModel.insertDetailGuru(id_guru)
     
         // Teks yang akan dikirim ke email yang didaftarkan
         const text = `Assalamualaikum ${nama_guru} \n\n Berikut adalah detail akun yang digunakan untuk login di aplikasi Ispagram \n Username: ${id_guru} \n Password: ${randomPassword} \n\n Note: Segera ganti password anda agar mudah diingat`
@@ -106,20 +108,20 @@ const update = async (req, res) => {
 
         // Periksa apakah guru pernah terdaftar
         const detailGuru = await GuruModel.getDetailGuruByID(id_guru)
-        if (!detailGuru) {
-            await DetailGuruModel.insertDetailGuru({ guru_id: id_guru })
-        }
+        if (!detailGuru) await DetailGuruModel.insertDetailGuru(id_guru)
     
         // Periksa apakah email sudah digunakan
-        const existingEmail = await UserUtils.existingEmail(email)
-        if (existingEmail != null && existingEmail.email !== detailGuru.email) return response(400, null, `Email telah digunakan!`, res)
+        if (email) {
+            const existingEmail = await UserUtils.existingEmail(email)
+            if (existingEmail != null && existingEmail.email !== detailGuru.email) return response(400, null, `Email telah digunakan!`, res)
+        }
     
         // Update ke database
         await GuruModel.updateGuru(id_guru, {
             rfid, nama_guru, alamat, telp, tempat_lahir, tanggal_lahir, staf
         })
     
-        return response(201, {}, `Berhasil update data guru baru!`, res)
+        return response(201, {}, `Berhasil update data guru!`, res)
     } catch (error) {
         console.error(error)
         return response(500, null, `Internal server error!`, res)
@@ -148,4 +150,4 @@ const destroy = async (req, res) => {
     }
 }
 
-module.exports = { guru, staf, store, update, destroy }
+module.exports = { guru, dataStaf, store, update, destroy }

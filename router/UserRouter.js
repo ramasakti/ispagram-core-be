@@ -15,6 +15,9 @@ const storage = multer.diskStorage({
 })
 const upload = multer({ storage: storage })
 
+// router.route('/recognition')
+//     .post(UserController.recognition)
+
 router.route('/users')
     .get(UserController.users)
     .post(UserController.store)

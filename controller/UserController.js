@@ -1,5 +1,6 @@
 const response = require('../Response')
 const bcrypt = require('bcryptjs')
+const faceapi = require('face-api.js')
 const crypto = require('crypto')
 const sendMail = require('../utilities/UserUtils')
 const moment = require('../utilities/Moment')
@@ -137,5 +138,30 @@ const store = async (req, res) => {
         return response(400, null, `Internal Server Error!`, res)
     }
 }
+
+// let faceMatcher
+
+// const recognition = async (req, res) => {
+//     try {
+//         const { image } = req.body;
+//         const detections = await faceapi
+//             .detectAllFaces(Buffer.from(image, 'base64'), new faceapi.TinyFaceDetectorOptions())
+//             .withFaceLandmarks()
+//             .withFaceDescriptors();
+
+//         if (faceMatcher) {
+//             const result = detections.map(d => {
+//                 return faceMatcher.findBestMatch(d.descriptor);
+//             });
+            
+//             return response(200, result, `Face Match`, res)
+//         } else {
+//             return response(404, null, `Face Not Found`, res)
+//         }
+//     } catch (error) {
+//         console.error(error);
+//         return response(500, null, `Internal Server Error`, res);
+//     }
+// }
 
 module.exports = { users, detail, update, store, forgetPassword }

@@ -9,9 +9,9 @@ module.exports = {
     connection: {
       host: '127.0.0.1',
       port: 3306,
-      user: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME
+      user: 'root',
+      password: '',
+      database: 'parlaungan'
     },
     migrations: {
       tableName: 'knex_migrations'
@@ -23,9 +23,9 @@ module.exports = {
     connection: {
       host: '127.0.0.1',
       port: 3306,
-      user: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME
+      user: 'root',
+      password: '',
+      database: 'parlaungan'
     },
     migrations: {
       tableName: 'knex_migrations'
@@ -37,9 +37,9 @@ module.exports = {
     connection: {
       host: '127.0.0.1',
       port: 3306,
-      user: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME
+      user: 'root',
+      password: '',
+      database: 'parlaungan'
     },
     migrations: {
       tableName: 'knex_migrations'

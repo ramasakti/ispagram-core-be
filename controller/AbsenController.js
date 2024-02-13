@@ -63,6 +63,11 @@ const update = async (req, res) => {
 const diagramHarian = async (req, res) => {
     try {
         const diagramHarian = await AbsenSiswaModel.statistikHarian()
+
+        if (!diagramHarian.H && !diagramHarian.S && !diagramHarian.I && !diagramHarian.A && !diagramHarian.T) {
+            return response(200, [0, 0, 0, 0, 0], `Absen Kosong`, res)
+        }
+
         return response(200, [diagramHarian.H, diagramHarian.S, diagramHarian.I, diagramHarian.A, diagramHarian.T], 'Diagram Hari Ini!', res)
     } catch (error) {
         console.error(error)
@@ -96,7 +101,10 @@ const grafikMingguan = async (req, res) => {
         series.push(data)
     })
 
-    const tanggal = data.map(item => moment(item.tanggal).format('YYYY-MM-DD'))
+    const tanggal = data.map(item => moment(item.tanggal).format('Do MMM YY'))
+
+    series.reverse()
+    tanggal.reverse()
 
     return response(200, { series, labels: tanggal }, `Grafik`, res)
 }

@@ -19,7 +19,7 @@ const formatNavbarData = (navbarData, submenuData) => {
 
         const menuObject = {
             menu_name,
-            route: menu_route ? `/${role.toLowerCase()}${menu_route}` : (menu_route === '') && `/${role.toLowerCase()}`,
+            route: menu_route ? `/dashboard${menu_route}` : (menu_route === '') && `/dashboard`,
             submenu: [],
         };
 
@@ -29,7 +29,7 @@ const formatNavbarData = (navbarData, submenuData) => {
             relatedSubmenus.forEach((submenu) => {
                 menuObject.submenu.push({
                     submenu: submenu.name,
-                    submenu_route: `/${role.toLowerCase()}${submenu.route}`,
+                    submenu_route: `/dashboard${submenu.route}`,
                 });
             });
         }
@@ -52,7 +52,7 @@ const navbar = async (req, res) => {
 
         const formattedNavbarData = formatNavbarData(navbarData, submenuData);
 
-        return response(200, formattedNavbarData, `Navbar`, res);
+        return response(200, formattedNavbarData, `Navbars`, res);
     } catch (error) {
         console.error('Error fetching navbar data:', error);
         return response(500, {}, 'Internal server error', res);

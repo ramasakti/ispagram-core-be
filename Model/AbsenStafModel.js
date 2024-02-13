@@ -4,7 +4,7 @@ const moment = require('../utilities/Moment')
 const getAbsenStafByDate = async (start, end) => {
     return await db('absen_staf')
         .join('guru', 'guru.id_guru', '=', 'absen_staf.guru_id')
-        .whereBetween('tanggal', [start, end])
+        .whereBetween('absen_staf.tanggal', [start, end])
 }
 
 const insertAbsenStaf = async (req) => await db('absen_staf').insert(req)

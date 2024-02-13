@@ -112,6 +112,12 @@ const deleteUserByUsername = async (username) => {
         .del()
 }
 
+const addFaceByUsername = async (username, face) => {
+    return await db('users')
+        .where('username', username)
+        .update({ face })
+}
+
 module.exports = {
     getAllUsers,
     getAllUsersWithRole,
@@ -127,5 +133,6 @@ module.exports = {
     updateUserPasswordByEmail,
     updateUserByUsername,
     insertUser,
-    deleteUserByUsername
+    deleteUserByUsername,
+    addFaceByUsername
 };

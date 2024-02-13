@@ -20,6 +20,7 @@ const roleRouter = require('./RoleRouter')
 const sectionRouter = require('./SectionRouter')
 const menuRouter = require('./MenuRouter')
 const submenuRouter = require('./SubmenuRouter')
+const chatRouter = require('./ChatRouter')
 const whatsappRouter = require('./WhatsAppRouter')
 
 app.use(navbarRouter)
@@ -42,6 +43,7 @@ app.use(roleRouter)
 app.use(sectionRouter)
 app.use(menuRouter)
 app.use(submenuRouter)
+app.use(chatRouter)
 app.use(authRouter)
 
 module.exports = app

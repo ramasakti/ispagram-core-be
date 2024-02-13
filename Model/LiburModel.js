@@ -1,9 +1,9 @@
 const db = require('../Config')
 const moment = require('../utilities/Moment')
 
-const getAllLibur = async () => await db('libur')
+const getAllLibur = async () => await db('libur').orderBy('mulai', 'asc')
 
-const getAllComingLibur = async () => await db('libur').where('tanggal', '<', moment().format('YYYY-MM-DD'))
+const getAllComingLibur = async () => await db('libur').where('mulai', '<', moment().format('YYYY-MM-DD'))
 
 const getLiburByID = async (id_libur) => await db('libur').where('id_libur', id_libur).first()
 

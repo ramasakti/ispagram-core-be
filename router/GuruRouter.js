@@ -7,7 +7,7 @@ router.route('/guru')
     .post(GuruController.store)
 
 router.route('/staf')
-    .get(GuruController.staf)
+    .get(GuruController.dataStaf)
 
 router.route('/guru/:id_guru')
     .put(GuruController.update)
