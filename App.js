@@ -14,7 +14,7 @@ const router = require('./router/Router')
 const cors = require('cors')
 const moment = require('./utilities/Moment')
 
-const acceptedHost = ['http://localhost:3000', 'https://smaispa.sch.id', 'http://127.0.0.1:5501']
+const acceptedHost = ['http://localhost:3000', 'https://smaispa.sch.id', 'http://127.0.0.1:5501', 'https://ispagram-core-fe.vercel.app']
 
 app.use((req, res, next) => {
     const ipv6 = req.ip
