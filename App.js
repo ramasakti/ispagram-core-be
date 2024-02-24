@@ -16,25 +16,26 @@ const moment = require('./utilities/Moment')
 
 const acceptedHost = ['http://localhost:3000', 'https://smaispa.sch.id', 'http://127.0.0.1:5501', 'https://ispagram-core-fe.vercel.app']
 
-app.use((req, res, next) => {
-    const ipv6 = req.ip
-    const ipv4 = ipv6.includes('::ffff:') ? ipv6.split('::ffff:')[1] : ipv6
-    const modifiedIP = `http://${ipv4}:3000`
-    acceptedHost.push(modifiedIP)
-    next()
-})
+// app.use((req, res, next) => {
+//     const ipv6 = req.ip
+//     const ipv4 = ipv6.includes('::ffff:') ? ipv6.split('::ffff:')[1] : ipv6
+//     const modifiedIP = `http://${ipv4}:3000`
+//     acceptedHost.push(modifiedIP)
+//     next()
+// })
 
-app.use(cors({
-    origin: function (origin, callback) {
-        const allowedOrigins = acceptedHost;
-        const isAllowed = !origin || allowedOrigins.includes(origin);
-        callback(null, isAllowed);
-    },
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-    optionsSuccessStatus: 204,
-}))
+// app.use(cors({
+//     origin: function (origin, callback) {
+//         const allowedOrigins = acceptedHost;
+//         const isAllowed = !origin || allowedOrigins.includes(origin);
+//         callback(null, isAllowed);
+//     },
+//     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+//     credentials: true,
+//     optionsSuccessStatus: 204,
+// }))
 
+app.use(cors())
 app.use(express.json())
 app.use(router)
 
