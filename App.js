@@ -30,7 +30,7 @@ app.use(cors({
         const isAllowed = !origin || allowedOrigins.includes(origin);
         callback(null, isAllowed);
     },
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     optionsSuccessStatus: 204,
 }))
