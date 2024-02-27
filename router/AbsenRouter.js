@@ -15,6 +15,9 @@ router.route('/absen/kelas/:kelas_id')
 router.route('/absen/all')
     .get(AbsenController.dataAllAbsensiSiswa)
 
+router.route('/absen/terlambat')
+    .get(AbsenController.dataTerlambat)
+
 router.route('/absen/data/harian')
     .get(AbsenController.diagramHarian)
 

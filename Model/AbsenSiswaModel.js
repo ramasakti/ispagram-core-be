@@ -1,5 +1,6 @@
 const db = require('../Config')
 const Moment = require('../utilities/Moment')
+const AbsenSiswaUtils = require('../utilities/AbsenSiswaUtils')
 
 const dataAllAbsensiSiswa = async () => await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa')
 
@@ -7,6 +8,11 @@ const dataAllKetidakhadiranSiswa = async () => {
     return await db('absen')
         .join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa')
         .whereNull('absen.waktu_absen')
+}
+
+const getAllSiswaTerlambat = async () => {
+    const masuk = await AbsenSiswaUtils.jamMasuk()
+    return await db('absen').join('siswa', 'absen.id_siswa', '=', 'siswa.id_siswa').where('absen.waktu_absen', '>', masuk.masuk)
 }
 
 const dataKetidakhadiranKelas = async (kelas_id) => {
@@ -118,6 +124,7 @@ const updateAbsenToDefault = async () => {
 module.exports = {
     dataAllAbsensiSiswa,
     dataAllKetidakhadiranSiswa,
+    getAllSiswaTerlambat,
     dataKetidakhadiranKelas,
     dataAbsensiSiswaIndividu,
     insertAbsen,

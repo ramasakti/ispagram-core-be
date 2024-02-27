@@ -35,6 +35,16 @@ const dataAbsensiKelas = async (req, res) => {
     }
 }
 
+const dataTerlambat = async (req, res) => {
+    try {
+        const dataTerlambat = await AbsenSiswaModel.getAllSiswaTerlambat()
+        return response(200, dataTerlambat, 'Data Siswa Terlambat', res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
+    }
+}
+
 const update = async (req, res) => {
     try {
         const id_siswa = req.params.id_siswa
@@ -171,6 +181,7 @@ module.exports = {
     dataAllAbsensiSiswa,
     dataAbsensi,
     dataAbsensiKelas,
+    dataTerlambat,
     update,
     diagramHarian,
     grafikMingguan,

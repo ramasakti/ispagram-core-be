@@ -36,7 +36,7 @@ const rekapAbsen = async (id_siswa, keterangan) => {
 }
 
 const jamMasuk = async () => {
-    const jamMasuk = await db('hari').select().where('nama_hari', moment().format('dddd')).first()
+    const jamMasuk = await db('hari').select('masuk').where('nama_hari', moment().format('dddd')).first()
     return jamMasuk
 }
 
