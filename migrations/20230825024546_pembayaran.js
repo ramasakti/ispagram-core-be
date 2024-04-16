@@ -8,6 +8,7 @@ exports.up = function (knex) {
         table.string('nama_pembayaran');
         table.integer('nominal').nullable();
         table.json('kelas');
+        table.boolean('active').defaultTo(true);
     });
 };
 

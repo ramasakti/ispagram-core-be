@@ -31,7 +31,37 @@ const biodata = async (req, res) => {
 
             return response(200, data, `Detail Biodata`, res)
         } else {
-            const data = await SiswaModel.getSiswaByID(username)
+            const siswa = await SiswaModel.getSiswaByID(username)
+            const data = {
+                nama_siswa: siswa.nama_siswa,
+                alamat:  siswa.alamat,
+                telp: siswa.telp,
+                tempat_lahir: siswa.tempat_lahir,
+                tanggal_lahir: moment(siswa.tanggal_lahir).format('YYYY-MM-DD'),
+                nisn: siswa.nisn,
+                nik : siswa.nik,
+                nokk : siswa.nokk,
+                scan_kk : siswa.scan_kk,
+                transportasi : siswa.transportasi,
+                anak : siswa.anak,
+                jenis_tinggal : siswa.jenis_tinggal,
+                askol : siswa.askol,
+                scan_ijazah : siswa.scan_ijazah,
+                ibu : siswa.ibu,
+                nik_ibu : siswa.nik_ibu,
+                pendidikan_ibu : siswa.pendidikan_ibu,
+                profesi_ibu : siswa.profesi_ibu,
+                penghasilan_ibu : siswa.penghasilan_ibu,
+                telp_ibu : siswa.telp_ibu,
+                ayah : siswa.ayah,
+                nik_ayah : siswa.nik_ayah,
+                pendidikan_ayah : siswa.pendidikan_ayah,
+                profesi_ayah : siswa.profesi_ayah,
+                penghasilan_ayah : siswa.penghasilan_ayah,
+                telp_ayah : siswa.telp_ayah,
+                tinggi : siswa.tinggi,
+                berat : siswa.berat
+            }
 
             return response(200, data, `Detail Biodata`, res)
         }
@@ -73,15 +103,12 @@ const updateBiodata = async (req, res) => {
 
             const { nama_siswa, alamat, telp, tempat_lahir, tanggal_lahir, nisn, nik, nokk, scan_kk, transportasi, anak, jenis_tinggal, askol, scan_ijazah, ibu, nik_ibu, pendidikan_ibu, profesi_ibu, penghasilan_ibu, telp_ibu, ayah, nik_ayah, pendidikan_ayah, profesi_ayah, penghasilan_ayah, telp_ayah, tinggi, berat } = req.body
 
-            await SiswaModel.updateSiswaByID(username, {
+            await SiswaModel.updateDetailSiswaByID(username, {
                 nama_siswa: nama_siswa ? nama_siswa : siswa.nama_siswa,
                 alamat: alamat ? alamat : siswa.alamat,
                 telp: telp ? telp : siswa.telp,
                 tempat_lahir: tempat_lahir ? tempat_lahir : siswa.tempat_lahir,
                 tanggal_lahir: tanggal_lahir ? tanggal_lahir : siswa.tanggal_lahir,
-            })
-
-            await SiswaModel.updateDetailSiswaByID(username, {
                 nisn,
                 nik,
                 nokk,

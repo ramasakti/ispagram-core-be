@@ -1,7 +1,7 @@
 const response = require('../Response')
 const AbsenStafModel = require('./../Model/AbsenStafModel')
 
-const absenStaf = async (req, res) => {
+const rekap = async (req, res) => {
     try {
         const { range } = req.query
         if (!range) return response(400, null, `Form tidak lengkap!`, res)
@@ -12,8 +12,8 @@ const absenStaf = async (req, res) => {
         const dari = tanggalArray[0]
         const sampai = tanggalArray[1]
 
-        const absenStaf = await AbsenStafModel.getAbsenStafByDate(dari, sampai)
-        return response(200, absenStaf, `Rekap Absen Staf dari ${dari} sampai ${sampai}`, res);
+        const rekap = await AbsenStafModel.getAbsenStafByDate(dari, sampai)
+        return response(200, rekap, `Rekap Absen Staf dari ${dari} sampai ${sampai}`, res);
     } catch (error) {
         console.error(error)
         return response(500, null, `Internal Server Error!`, res)
@@ -59,7 +59,7 @@ const destroy = async (req, res) => {
 }
 
 module.exports = {
-    absenStaf,
+    rekap,
     store,
     update,
     destroy

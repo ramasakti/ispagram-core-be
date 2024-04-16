@@ -11,4 +11,10 @@ router.route('/kelas/:kelas_id')
     .put(KelasController.update)
     .delete(KelasController.destroy)
 
+router.route('/graduate')
+    .post(KelasController.graduate)
+
+router.route('/tunggakan')
+    .get(KelasController.getTunggakanSiswaAktif)
+
 module.exports = router

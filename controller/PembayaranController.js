@@ -1,28 +1,31 @@
 const db = require('../Config')
 const response = require('../Response')
+const PembayaranSiswaModel = require('../Model/PembayaranSiswaModel')
+const TransaksiPembayaranSiswaModel = require('../Model/TransaksiPembayaranSiswaModel')
 
 const pembayaran = async (req, res) => {
     try {
-        const pembayaran = await db('pembayaran').where('id_pembayaran', '!=', 1).select()
-        const pembayaranTransformed = pembayaran.map((item) => {
-            const kelasArray = JSON.parse(item.kelas).kelas || [];
+        const pembayaran = await PembayaranSiswaModel.getPembayaranActive()
+
+        const pembayaranParsed = pembayaran.map((item) => {
+            const kelasArray = JSON.parse(item.kelas).kelas || []
             return {
                 id_pembayaran: item.id_pembayaran,
                 nama_pembayaran: item.nama_pembayaran,
                 nominal: item.nominal,
                 kelas: kelasArray,
                 all: kelasArray.length === 0, // Menambahkan properti all jika kelasArray kosong
-            };
-        });
+            }
+        })
     
-        return response(200, pembayaranTransformed, `Data Pembayaran`, res)
+        return response(200, pembayaranParsed, `Data Pembayaran`, res)
     } catch (error) {
         console.error(error)
         return response(400, null, `Internal server error`, res)
     }
 }
 
-const storePembayaran = async (req, res) => {
+const store = async (req, res) => {
     try {     
         const nama_pembayaran = req.body.nama_pembayaran
         const nominal = parseInt(req.body.nominal.replace(/\./g, ""))
@@ -33,10 +36,10 @@ const storePembayaran = async (req, res) => {
         if (kelas.length < 1) return response(400, null, `Kelas wajib diisi!`, res)
         const objectKelas = { kelas: kelas.map(item => item.value.toString()) }
     
-        await db('pembayaran').insert({
+        await PembayaranSiswaModel.insertPembayaran({
             nama_pembayaran, nominal, kelas: objectKelas
         })
-    
+
         return response(201, {}, `Berhasil menambahkan pembayaran baru`, res)
     } catch (error) {
         console.error(error)
@@ -44,7 +47,7 @@ const storePembayaran = async (req, res) => {
     }
 }
 
-const updatePembayaran = async (req, res) => {
+const update = async (req, res) => {
     try {
         const id_pembayaran = req.params.id_pembayaran
         const nama_pembayaran = req.body.nama_pembayaran
@@ -66,30 +69,31 @@ const updatePembayaran = async (req, res) => {
             var objectKelas = { kelas: req.body.kelas }
         }
 
-        // Cek disini kalo pembayaran sudah ada yang bayar jangan bisa diedit atau dihapus
+        const transaksi = await TransaksiPembayaranSiswaModel.getTransactionByPembayaran(id_pembayaran)
+        if (transaksi > 0) return response(400, null, `Pembayaran tidak dapat dirubah karena terdapat transaksi`, res)
 
-        await db('pembayaran').where('id_pembayaran', id_pembayaran)
-            .update({
-                nama_pembayaran, nominal, kelas: JSON.stringify(objectKelas)
-            })
+        await PembayaranSiswaModel.updatePembayaran(id_pembayaran, {
+            nama_pembayaran, nominal, kelas: JSON.stringify(objectKelas)
+        })
 
-        return response(201, {}, `Berhasil menambahkan pembayaran baru`, res)
+        return response(201, {}, `Berhasil mengubah pembayaran`, res)
     } catch (error) {
         console.error(error)
         return response(400, null, `Internal server error`, res)
     }
 }
 
-const deletePembayaran = async (req, res) => {
+const destroy = async (req, res) => {
     try {
         const id_pembayaran = req.params.id_pembayaran
-        const detailPembayaran = await db('pembayaran').where('id_pembayaran', id_pembayaran).first()
+        const detailPembayaran = await PembayaranSiswaModel.getPembayaranByID(id_pembayaran)
     
         if (!detailPembayaran) return response(400, null, `Pembayaran tidak ditemukan!`, res)
     
-        // Cek disini kalo pembayaran sudah ada yang bayar jangan bisa diedit atau dihapus
+        const transaksi = await TransaksiPembayaranSiswaModel.getTransactionByPembayaran(id_pembayaran)
+        if (transaksi > 0) return response(400, null, `Pembayaran tidak dapat dihapus karena terdapat transaksi`, res)
     
-        await db('pembayaran').where('id_pembayaran', id_pembayaran).del()
+        await PembayaranSiswaModel.deletePembayaran(id_pembayaran)
     
         return response(201, {}, `Berhasil hapus data pembayaran!`, res)
     } catch (error) {
@@ -98,4 +102,4 @@ const deletePembayaran = async (req, res) => {
     }
 }
 
-module.exports = { pembayaran, storePembayaran, updatePembayaran, deletePembayaran }
+module.exports = { pembayaran, store, update, destroy }

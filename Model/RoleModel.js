@@ -1,12 +1,13 @@
 const db = require('../Config')
 
-const getAllRole = async () => await db('role')
+const getAllRole = async (trx = db) => await trx('role')
 
-const getDetailRoleByRole = async (role) => {
-    return await db('role').where('id_role', role).first()
-}
+const getDetailRoleByIDRole = async (id_role, trx = db) => await trx('role').where('id_role', id_role).first()
+
+const getRoleByRole = async (role, trx = db) => await trx('role').where('role', role).first()
 
 module.exports = {
     getAllRole,
-    getDetailRoleByRole
+    getDetailRoleByIDRole,
+    getRoleByRole
 };

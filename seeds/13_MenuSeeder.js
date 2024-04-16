@@ -160,7 +160,7 @@ exports.seed = async function (knex) {
 		{
 			name: 'WhatsApp Broadcaster',
 			type: 1,
-			route: '#',
+			route: '/app/whatsapp',
 			section_id: 6,
 			order: 1
 		},

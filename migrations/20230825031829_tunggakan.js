@@ -4,10 +4,12 @@
  */
 exports.up = function (knex) {
     return knex.schema.createTable('tunggakan', function (table) {
-        table.string('siswa_id').primary();
-        table.integer('tunggakan');
+        table.increments('id');
+        table.string('id_siswa');
+        table.integer('pembayaran_id').unsigned();
 
-        table.foreign('siswa_id').references('id_siswa').inTable('siswa').onDelete('cascade').onUpdate('cascade');
+        table.foreign('id_siswa').references('id_siswa').inTable('detail_siswa');
+        table.foreign('pembayaran_id').references('id_pembayaran').inTable('pembayaran');
     });
 };
 

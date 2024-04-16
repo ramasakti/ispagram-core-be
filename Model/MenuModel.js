@@ -1,9 +1,9 @@
 const db = require('../Config')
 
-const getAllMenu = async () => await db('menu')
+const getAllMenu = async (trx = db) => await trx('menu')
 
-const getAllMenuWithSection = async () => {
-    return await db('menu')
+const getAllMenuWithSection = async (trx = db) => {
+    return await trx('menu')
         .select(
             'menu.type',
             'menu.id_menu',
@@ -18,12 +18,10 @@ const getAllMenuWithSection = async () => {
         .orderBy('menu.order', 'ASC')
 }
 
-const getMenuByID = async (id_menu) => {
-    return await db('menu').where('id_menu', id_menu).first()
-}
+const getMenuByID = async (id_menu, trx = db) => await trx('menu').where('id_menu', id_menu).first()
 
-const getMenuByRole = async (role) => {
-    return await db('navbar')
+const getMenuByRole = async (role, trx = db) => {
+    return await trx('navbar')
         .select(
             'menu.id_menu',
             'menu.route',
@@ -35,21 +33,13 @@ const getMenuByRole = async (role) => {
         .where('navbar.role_id', role)
 }
 
-const getSubmenuByRole = async (menu_id) => {
-    return await db('submenu').where('menu_id', menu_id)
-}
+const getSubmenuByRole = async (menu_id, trx = db) => await trx('submenu').where('menu_id', menu_id)
 
-const insertMenu = async (req) => {
-    return await db('menu').insert(req)
-}
+const insertMenu = async (req, trx = db) => await trx('menu').insert(req)
 
-const updateMenu = async (id_menu, req) => {
-    return await db('menu').where('id_menu', id_menu).update(req)
-}
+const updateMenu = async (id_menu, req, trx = db) => await trx('menu').where('id_menu', id_menu).update(req)
 
-const deleteMenu = async (id_menu) => {
-    return await db('menu').where('id_menu', id_menu).del()
-}
+const deleteMenu = async (id_menu, trx = db) => await trx('menu').where('id_menu', id_menu).del()
 
 module.exports = {
     getAllMenu,

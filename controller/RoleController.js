@@ -14,7 +14,7 @@ const role = async (req, res) => {
 const detail = async (req, res) => {
     try {
         const role = req.params.role
-        const data = await RoleModel.getDetailRoleByRole(role)
+        const data = await RoleModel.getDetailRoleByIDRole(role)
         return response(200, data, ``, res)
     } catch (error) {
         return response(500, null, `Internal Server Error!`, res)

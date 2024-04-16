@@ -46,5 +46,20 @@ exports.seed = async function (knex) {
 			role: 'Wali Murid',
 			description: 'Role User Wali Murid'
 		},
+		{
+			id_role: 9,
+			role: 'Piket',
+			description: 'Role User Piket'
+		},
+		{
+			id_role: 10,
+			role: 'Wali Kelas',
+			description: 'Role User Wali Kelas'
+		},
+		{
+			id_role: 11,
+			role: 'Alumni',
+			description: 'Role User Alumni'
+		},
 	]);
 };

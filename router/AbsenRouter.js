@@ -37,7 +37,7 @@ router.route('/absen/reset')
     .post(AbsenController.resetAbsenHarian)
 
 router.route('/absen/staf')
-    .get(AbsenStafController.absenStaf)
+    .get(AbsenStafController.rekap)
 
 router.route('/absen/staf/:id_siswa')
     .post(AbsenStafController.store)

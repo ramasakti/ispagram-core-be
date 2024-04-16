@@ -62,25 +62,26 @@ const store = async (req, res) => {
 const update = async (req, res) => {
     try {
         const id_menu = req.params.id_menu
-        const { type, name, route, id_section, order } = req.body
+        const { name, route, id_section, order } = req.body
+        const type = parseInt(req.body.type)
 
         const detailMenu = await MenuModel.getMenuByID(id_menu)
         if (!detailMenu) return response(400, null, `Menu tidak ditemukan!`, res)
 
         switch (type) {
-            case '0': // Independent menu
+            case 0: // Independent menu
                 await MenuModel.updateMenu(id_menu, {
                     type, name, route, section_id: null, order
                 })
                 await SubmenuModel.deleteSubmenuByMenu(id_menu)
                 break;
-            case '1': // Menu of section
+            case 1: // Menu of section
                 await MenuModel.updateMenu(id_menu, {
                     type, name, route, section_id: id_section, order
                 })
                 await SubmenuModel.deleteSubmenuByMenu(id_menu)
                 break;
-            case '2': // Parent of submenu
+            case 2: // Parent of submenu
                 await MenuModel.updateMenu(id_menu, {
                     type, name, route: null, section_id: id_section, order
                 })

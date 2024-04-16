@@ -4,10 +4,10 @@ const PembayaranController = require('../controller/PembayaranController')
 
 router.route('/pembayaran')
     .get(PembayaranController.pembayaran)
-    .post(PembayaranController.storePembayaran)
+    .post(PembayaranController.store)
 
 router.route('/pembayaran/:id_pembayaran')
-    .put(PembayaranController.updatePembayaran)
-    .delete(PembayaranController.deletePembayaran)
+    .put(PembayaranController.update)
+    .delete(PembayaranController.destroy)
 
 module.exports = router

@@ -1,17 +1,17 @@
 const db = require('../Config')
 const moment = require('../utilities/Moment')
 
-const getAllLibur = async () => await db('libur').orderBy('mulai', 'asc')
+const getAllLibur = async (trx = db) => await trx('libur').orderBy('mulai', 'asc')
 
-const getAllComingLibur = async () => await db('libur').where('mulai', '<', moment().format('YYYY-MM-DD'))
+const getAllComingLibur = async (trx = db) => await trx('libur').where('mulai', '<', moment().format('YYYY-MM-DD'))
 
-const getLiburByID = async (id_libur) => await db('libur').where('id_libur', id_libur).first()
+const getLiburByID = async (id_libur, trx = db) => await trx('libur').where('id_libur', id_libur).first()
 
-const insertLibur = async (req) => await db('libur').insert(req)
+const insertLibur = async (req, trx = db) => await trx('libur').insert(req)
 
-const updateLibur = async (id_libur, req) => await db('libur').where('id_libur', id_libur).update(req)
+const updateLibur = async (id_libur, req, trx = db) => await trx('libur').where('id_libur', id_libur).update(req)
 
-const deleteLibur = async (id_libur) => await db('libur').where('id_libur', id_libur).del()
+const deleteLibur = async (id_libur, trx = db) => await trx('libur').where('id_libur', id_libur).del()
 
 module.exports = {
     getAllLibur,

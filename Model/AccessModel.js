@@ -1,8 +1,8 @@
 const db = require('../Config')
 const Moment = require('./../utilities/Moment')
 
-const getAccessByRole = async (role) => {
-    return await db('access')
+const getAccessByRole = async (role, trx = db) => {
+    return await trx('access')
         .select(
             'access.*',
             'menu.id_menu',

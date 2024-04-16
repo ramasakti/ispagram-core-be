@@ -26,7 +26,7 @@ const detail = async (req, res) => {
     if (!detailUser) return response(400, null, `User tidak terdaftar!`, res)
 
     if (detailUser.role === 'Guru') {
-        const piket = await HariModel.getHariByHariAndPiket(moment().format('dddd'), piket)
+        const piket = await HariModel.getHariByHariAndPiket(moment().format('dddd'), detailUser.username)
         const walas = await KelasModel.getKelasByWalas(detailUser.username)
         
         if (piket) {

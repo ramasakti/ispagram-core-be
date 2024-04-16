@@ -1,11 +1,11 @@
 const db = require('../Config')
 
-const getAllJadwal = async () => await db('jadwal')
+const getAllJadwal = async (trx = db) => await trx('jadwal')
 
-const getJadwalByID = async (id_jadwal) => await db('jadwal').where('id_jadwal', id_jadwal).first()
+const getJadwalByID = async (id_jadwal, trx = db) => await trx('jadwal').where('id_jadwal', id_jadwal).first()
 
-const getFullJadwalByDateNow = async (tanggal) => {
-    return await db('jadwal')
+const getFullJadwalByDateNow = async (tanggal, trx = db) => {
+    return await trx('jadwal')
         .join('jam_pelajaran', 'jadwal.jampel', '=', 'jam_pelajaran.id_jampel')
         .join('kelas', 'jadwal.kelas_id', '=', 'kelas.id_kelas')
         .join('guru', 'jadwal.guru_id', '=', 'guru.id_guru')
@@ -16,24 +16,24 @@ const getFullJadwalByDateNow = async (tanggal) => {
         .orderBy('jam_pelajaran.id_jampel', 'ASC')
 }
 
-const getJadwalInARow = async () => {
+const getJadwalInARow = async (trx = db) => {
 
 }
 
-const getJadwalByGuru = async (id_guru) => {
+const getJadwalByGuru = async (id_guru, trx = db) => {
 
 }
 
-const getJadwalByHari = async (hari) => {
+const getJadwalByHari = async (hari, trx = db) => {
 
 }
 
-const insertJadwal = async (req) => {
-    return await db('jadwal').insert(req)
+const insertJadwal = async (req, trx = db) => {
+    return await trx('jadwal').insert(req)
 }
 
-const updateJadwal = async (id_jadwal, req) => {
-    return await db('jadwal').where('id_jadwal', id_jadwal).update(req)
+const updateJadwal = async (id_jadwal, req, trx = db) => {
+    return await trx('jadwal').where('id_jadwal', id_jadwal).update(req)
 }
 
 module.exports = {

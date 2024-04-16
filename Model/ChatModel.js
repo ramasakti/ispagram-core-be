@@ -1,7 +1,7 @@
 const db = require('../Config')
 
-const getAllChatByUser = (username) => {
-    return db('chat')
+const getAllChatByUser = (username, trx = db) => {
+    return trx('chat')
         .select('chat.*', db.raw('CASE WHEN guru.id_guru IS NOT NULL THEN guru.nama_guru ELSE siswa.nama_siswa END AS receiver'))
         .join('users', 'users.username', '=', 'chat.to')
         .leftJoin('guru', 'guru.id_guru', '=', 'users.username')
@@ -16,20 +16,20 @@ const getAllChatByUser = (username) => {
         .orderBy('waktu', 'desc');
 }
 
-const getChatBySenderAndReceiver = (sender, receiver) => {
-    return db('chat')
+const getChatBySenderAndReceiver = (sender, receiver, trx = db) => {
+    return trx('chat')
         .where('from', sender)
         .where('to', receiver)
         .orWhere('from', receiver)
         .orWhere('to', sender)
 }
 
-const getChatByID = (id_chat) => {
-    return db('chat').where('id_chat', id_chat)
+const getChatByID = (id_chat, trx = db) => {
+    return trx('chat').where('id_chat', id_chat)
 }
 
-const storeChat = (data) => {
-    return db('chat').insert(data)
+const storeChat = (data, trx = db) => {
+    return trx('chat').insert(data)
 }
 
 module.exports = {

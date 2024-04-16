@@ -9,11 +9,11 @@ router.route('/transaksi')
 router.route('/transaksi/:id_siswa')
     .get(TransaksiController.transaksiSiswa)
 
-router.route('/tagihan/kelas/:id_siswa')
-    .get(TransaksiController.detailTagihanKelas)
+router.route('/tagihan/siswa/:id_siswa')
+    .get(TransaksiController.tagihan)
 
 router.route('/trx/:kwitansi')
-    .get(TransaksiController.detailTransaksi)
+    .get(TransaksiController.detail)
 
 router.route('/tagihan/siswa')
     .post(TransaksiController.detailTagihanSiswa)

@@ -10,8 +10,11 @@ exports.up = function (knex) {
         table.string('siswa_id');
         table.integer('pembayaran_id').unsigned();
         table.integer('terbayar');
+        table.string('metode');
+        table.string('token');
 
         table.foreign('pembayaran_id').references('id_pembayaran').inTable('pembayaran').onDelete('cascade').onUpdate('cascade');
+        table.foreign('siswa_id').references('id_siswa').inTable('detail_siswa').onDelete('cascade').onUpdate('cascade');
     });
 };
 

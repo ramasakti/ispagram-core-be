@@ -1,34 +1,38 @@
 const db = require('../Config')
 
-const getAllKelas = async () => await db('kelas')
+const getAllKelas = async (trx = db) => await trx('kelas')
 
-const getAllKelasWithWalas = async () => await db('kelas').join('guru', 'guru.id_guru', '=', 'kelas.walas')
+const getAllKelasWithWalas = async (trx = db) => await trx('kelas').join('guru', 'guru.id_guru', '=', 'kelas.walas')
 
-const getKelasWithWalasByWalas = async (walas) => {
-    return await db('kelas')
+const getKelasWithWalasByWalas = async (walas, trx = db) => {
+    return await trx('kelas')
         .join('guru', 'guru.id_guru', '=', 'kelas.walas')
         .where('kelas.walas', walas)
         .first()
 }
 
-const getKelasById = async (id_kelas) => await db('kelas').where('id_kelas', id_kelas).first()
+const getKelasById = async (id_kelas, trx = db) => await trx('kelas').where('id_kelas', id_kelas).first()
 
-const getKelasByWalas = async (walas) => await db('kelas').where('walas', walas).first()
+const getKelasByWalas = async (walas, trx = db) => await trx('kelas').where('walas', walas).first()
 
-const getKelasByTingkat = async (tingkat) => await db('kelas').where('tingkat', tingkat).first()
+const getKelasByTingkat = async (tingkat, trx = db) => await trx('kelas').where('tingkat', tingkat)
 
-const getKelasWithWalasByID = async (id_kelas) => {
-    return await db('kelas')
+const getSiswaByTingkat = async (tingkat, trx = db) => await trx('kelas').join('siswa', 'siswa.kelas_id', 'kelas.id_kelas').where('kelas.tingkat', tingkat)
+
+const getKelasWithWalasByID = async (id_kelas, trx = db) => {
+    return await trx('kelas')
         .join('guru', 'guru.id_guru', '=', 'kelas.walas')
         .where('kelas.id_kelas', id_kelas)
         .first()
 }
 
-const insertKelas = async (req) => await db('kelas').insert(req)
+const insertKelas = async (req, trx = db) => await trx('kelas').insert(req)
 
-const updateKelas = async (id_kelas, req) => await db('kelas').where('id_kelas', id_kelas).update(req)
+const updateKelas = async (id_kelas, req, trx = db) => await trx('kelas').where('id_kelas', id_kelas).update(req)
 
-const deleteKelas = async (id_kelas) => await db('kelas').where('id_kelas', id_kelas).del()
+const deleteKelas = async (id_kelas, trx = db) => await trx('kelas').where('id_kelas', id_kelas).del()
+
+const deleteKelasByTingkat = async (tingkat, trx = db) => await trx('kelas').where('tingkat', tingkat).del()
 
 module.exports = {
     getAllKelas,
@@ -38,7 +42,9 @@ module.exports = {
     getKelasWithWalasByID,
     getKelasByWalas,
     getKelasByTingkat,
+    getSiswaByTingkat,
     insertKelas,
     updateKelas,
-    deleteKelas
+    deleteKelas,
+    deleteKelasByTingkat
 };

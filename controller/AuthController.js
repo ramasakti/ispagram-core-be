@@ -48,7 +48,7 @@ const auth = async (req, res) => {
         // Manipulasi role
         if (user.role === 'Guru') {
             const piket = await HariModel.getHariByHari(moment().format('dddd'))
-            const walas = await KelasModel.getKelasByWalas(username)
+            const walas = await KelasModel.getKelasByWalas(user.username)
 
             // Jika terjadwal piket
             if (piket) {
@@ -57,6 +57,7 @@ const auth = async (req, res) => {
                     name: user.name,
                     email: user.email,
                     avatar: user.avatar,
+                    id_role: 9,
                     role: 'Piket',
                 }
 
@@ -76,6 +77,7 @@ const auth = async (req, res) => {
                     name: user.name,
                     email: user.email,
                     avatar: user.avatar,
+                    id_role: 10,
                     role: 'Walas',
                     walas: true,
                     kelas_id: walas.id_kelas

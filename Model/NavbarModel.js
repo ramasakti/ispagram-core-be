@@ -1,8 +1,8 @@
 const db = require('../Config')
 const Moment = require('./../utilities/Moment')
 
-const getNavbarByRole = async (role) => {
-    return await db('navbar')
+const getNavbarByRole = async (role, trx = db) => {
+    return await trx('navbar')
         .select(
             'navbar.id_navbar', 
             'menu.id_menu', 
@@ -20,22 +20,15 @@ const getNavbarByRole = async (role) => {
         .orderBy('menu.order', 'ASC')
 }
 
-const deleteNavbarByID = async (id_navbar) => {
-    return await db('navbar').where('id_navbar', id_navbar).del()
-}
-const deleteNavbarByMenu = async (menu) => {
-    return await db('navbar').where('menu_id', menu).del()
-}
+const deleteNavbarByID = async (id_navbar, trx = db) => await trx('navbar').where('id_navbar', id_navbar).del()
 
-const deleteNavbarByMenuAndRole = async (menu, role) => {
-    return await db('navbar').where('menu_id', menu).where('role_id', role).del()
-}
+const deleteNavbarByMenu = async (menu, trx = db) => await trx('navbar').where('menu_id', menu).del()
 
-const insertNavbar = async (req) => {
-    return await db('navbar').insert(req)
-}
+const deleteNavbarByMenuAndRole = async (menu, role, trx = db) => await trx('navbar').where('menu_id', menu).where('role_id', role).del()
 
-const getSubmenu = async () => await db('submenu').orderBy('order', 'ASC')
+const insertNavbar = async (req, trx = db) => await trx('navbar').insert(req)
+
+const getSubmenu = async (trx = db) => await trx('submenu').orderBy('order', 'ASC')
 
 module.exports = {
     getNavbarByRole,

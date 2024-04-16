@@ -4,8 +4,8 @@ const Moment = require('../utilities/Moment')
 const SiswaModel = require('../Model/SiswaModel')
 const KelasModel = require('../Model/KelasModel')
 const UserModel = require('../Model/UserModel')
+const RoleModel = require('../Model/RoleModel')
 const AbsenSiswaModel = require('../Model/AbsenSiswaModel')
-const DetailSiswaModel = require('../Model/DetailSiswaModel')
 const bcrypt = require('bcryptjs')
 const ExcelJS = require('exceljs')
 
@@ -34,7 +34,9 @@ const detail = async (req, res) => {
     try {
         const id_siswa = req.params.id_siswa
         const detailSiswa = await SiswaModel.getDetailSiswaByID(id_siswa)
+
         if (!detailSiswa) return response(400, null, `ID siswa tidak terdaftar! Data siswa tidak ditemukan!`, res)
+
         return response(200, detailSiswa, 'Get Detail Siswa', res)
     } catch (error) {
         console.error(error)
@@ -43,6 +45,7 @@ const detail = async (req, res) => {
 }
 
 const store = async (req, res) => {
+    const trx = await db.transaction()
     try {
         const { id_siswa, rfid, nama_siswa, kelas_id, alamat, telp, tempat_lahir, tanggal_lahir } = req.body
 
@@ -50,84 +53,97 @@ const store = async (req, res) => {
             return response(400, null, 'Semua data siswa harus diisi!', res)
         }
 
-        const existingSiswa = await SiswaModel.getDetailSiswaByID(id_siswa)
-        if (existingSiswa) return response(409, null, 'ID siswa sudah ada dalam database!', res)
+        const existingSiswa = await SiswaModel.getSiswaByID(id_siswa, trx)
+        if (existingSiswa) throw new Error(`ID siswa ${existingSiswa.id_siswa} sudah ada dalam database!`)
 
-        if (!Moment(tanggal_lahir, 'YYYY-MM-DD', true).isValid()) {
-            return response(400, null, 'Tanggal lahir tidak valid! Format harus YYYY-MM-DD', res)
-        }
+        if (!Moment(tanggal_lahir, 'YYYY-MM-DD', true).isValid()) throw new Error('Tanggal lahir tidak valid! Format harus YYYY-MM-DD')
+
+        const existingDetailSiswa = await SiswaModel.getDetailSiswaByID(id_siswa, trx)
+        if (existingDetailSiswa) throw new Error(`ID telah pernah digunakan oleh ${existingDetailSiswa.nama_siswa}`)
+
+        const existingUsername = await UserModel.getUserByUsername(username, trx)
+        const existingEmail = await UserModel.getUserByEmail(email, trx)
+        if (existingUsername || existingEmail) throw new Error(`Username atau email telah digunakan`)
+
+        await SiswaModel.insertDetailSiswa({
+            id_siswa, nama_siswa, telp, alamat, tempat_lahir, tanggal_lahir
+        }, trx)
 
         await UserModel.insertUser({
             username: id_siswa,
             password: '',
             email: `${id_siswa}@smaispa.sch.id`,
             role: 7
-        })
+        }, trx)
 
         await SiswaModel.insertSiswa({
-            id_siswa, rfid, nama_siswa, kelas_id, alamat, telp, tempat_lahir, tanggal_lahir
-        })
+            id_siswa, rfid, kelas_id
+        }, trx)
 
-        await AbsenSiswaModel.insertAbsen(id_siswa)
+        await AbsenSiswaModel.insertAbsen({ id_siswa }, trx)
 
-        const detailSiswa = await SiswaModel.getDetailSiswaByID(id_siswa)
-        if (!detailSiswa) {
-            await DetailSiswaModel.insertDetailSiswa(id_siswa)
-        }
+        await trx.commit()
 
         return response(201, {}, 'Berhasil menambahkan data siswa!', res)
     } catch (error) {
+        await trx.rollback()
         console.error('Error storing data:', error)
-        return response(500, null, 'Internal Server Error!', res)
+        return response(500, null, `${error}`, res)
     }
 }
 
 const update = async (req, res) => {
+    const trx = await db.transaction()
     try {
         const id_siswa = req.params.id_siswa
         const { rfid, nama_siswa, kelas_id, alamat, telp, tempat_lahir, tanggal_lahir } = req.body
+
         if (!id_siswa || !rfid || !nama_siswa || !kelas_id || !alamat || !tempat_lahir || !tanggal_lahir) {
             return response(400, null, 'Semua data siswa harus diisi!', res)
         }
 
-        const detailSiswa = await SiswaModel.getSiswaByID(id_siswa)
-        if (!detailSiswa) return response(400, null, `ID siswa tidak terdaftar! Data siswa tidak ditemukan!`, res)
+        if (!Moment(tanggal_lahir, 'YYYY-MM-DD', true).isValid()) throw new Error('Tanggal lahir tidak valid! Format harus YYYY-MM-DD')
 
-        const tanggalLahirFormatted = Moment(tanggal_lahir).format("YYYY-MM-DD")
-        if (!Moment(tanggalLahirFormatted, 'YYYY-MM-DD', true).isValid()) {
-            return response(400, null, 'Tanggal lahir tidak valid! Format harus YYYY-MM-DD', res)
-        }
+        const existingDetailSiswa = await SiswaModel.getDetailSiswaByID(id_siswa, trx)
+        if (existingDetailSiswa) throw new Error(`ID telah pernah digunakan oleh ${existingDetailSiswa.nama_siswa}`)
 
-        await SiswaModel.updateSiswaByID(id_siswa, {
-            rfid,
+        await SiswaModel.updateSiswaByID(id_siswa, { rfid, kelas_id }, trx)
+
+        await SiswaModel.updateDetailSiswaByID(id_siswa, {
             nama_siswa,
-            kelas_id,
             alamat,
             telp,
             tempat_lahir,
             tanggal_lahir: tanggalLahirFormatted
-        })
+        }, trx)
+
+        await trx.commit()
 
         return response(201, {}, 'Berhasil update data siswa!', res)
     } catch (error) {
+        await trx.rollback()
         console.error('Error storing data:', error)
         return response(500, null, 'Internal Server Error!', res)
     }
 }
 
 const destroy = async (req, res) => {
+    const trx = await db.transaction()
     try {
         const id_siswa = req.params.id_siswa
 
-        const detailSiswa = SiswaModel.getSiswaByID(id_siswa)
+        const detailSiswa = SiswaModel.getSiswaByID(id_siswa, trx)
         if (!detailSiswa) return response(400, null, `ID siswa tidak terdaftar! Data siswa tidak ditemukan!`, res)
-        
-        await SiswaModel.deleteSiswa(id_siswa)
-        
-        await UserModel.deleteUserByUsername(id_siswa)
+
+        await SiswaModel.deleteSiswa(id_siswa, trx)
+
+        await UserModel.deleteUserByUsername(id_siswa, trx)
+
+        await trx.commit()
 
         return response(201, {}, 'Berhasil delete siswa!', res)
     } catch (error) {
+        await trx.rollback()
         console.error('Error storing data:', error)
         return response(500, null, 'Internal Server Error!', res)
     }
@@ -154,47 +170,47 @@ const importSiswa = async (req, res) => {
             tanggal_lahir: row[9]
         }))
 
-        const kelas = await KelasModel.getAllKelas()
+        const existingKelasID = await KelasModel.getAllKelas()
         const existingSiswaID = await SiswaModel.getAllIDSiswa()
+        const siswaRole = await RoleModel.getRoleByRole('Siswa')
 
         const filteredData = data.map(row => {
-            const rowIDSiswa = row.id_siswa
-
-            if (existingSiswaID.includes(rowIDSiswa)) {
-                return response(400, null, `Data siswa ${rowIDSiswa} already exists!`, res)
-            } else if (!kelas.find(kelasData => kelasData.id_kelas === row.kelas_id)) {
+            if (existingSiswaID.includes(row.id_siswa)) {
+                return response(400, null, `Data siswa ${row.id_siswa} already exists!`, res)
+            } else if (!existingKelasID.find(kelas => kelas.id_kelas === row.kelas_id)) {
                 return response(400, null, `Data kelas tidak valid!`, res)
             } else {
                 return row
             }
         })
 
-        const trxProvider = db.transactionProvider()
-        const trx = await trxProvider()
+        const trx = await db.transaction()
 
         try {
             for (const siswa of filteredData) {
-                await trx('users').insert({
+                await UserModel.insertUser({
                     username: siswa.id_siswa,
                     password: await bcrypt.hash(siswa.id_siswa.toString(), 10),
                     email: siswa.email,
-                    role: 7
-                })
+                    role: siswaRole.id_role
+                }, trx)
 
-                await trx('siswa').insert({
+                await SiswaModel.insertSiswa({
                     id_siswa: siswa.id_siswa,
                     rfid: siswa.rfid,
-                    nama_siswa: siswa.nama_siswa,
-                    kelas_id: siswa.kelas_id,
-                    alamat: siswa.alamat,
-                    telp: siswa.telp,
-                    tempat_lahir: siswa.tempat_lahir,
-                    tanggal_lahir: siswa.tanggal_lahir,
-                })
+                    kelas_id: siswa.kelas_id
+                }, trx)
 
-                await trx('absen').insert({ id_siswa: siswa.id_siswa })
-                
-                await trx('detail_siswa').insert({ siswa_id: siswa.id_siswa })
+                await SiswaModel.insertDetailSiswa({
+                    id_siswa: siswa.id_siswa,
+                    nama_siswa: siswa.nama_siswa,
+                    telp: siswa.telp,
+                    alamat: siswa.alamat,
+                    tempat_lahir: siswa.tempat_lahir,
+                    tanggal_lahir: siswa.tanggal_lahir
+                }, trx)
+
+                await AbsenSiswaModel.insertAbsen(siswa.id_siswa , trx)
             }
 
             await trx.commit()
@@ -203,7 +219,7 @@ const importSiswa = async (req, res) => {
             console.error(error)
             return response(400, null, `Gagal import siswa!`, res)
         }
-        
+
         return response(200, null, `Berhasil import siswa!`, res)
     }
     catch (error) {
@@ -211,5 +227,6 @@ const importSiswa = async (req, res) => {
         return response(500, null, `Internal Server Error!`, res)
     }
 }
+
 
 module.exports = { siswa, siswaKelas, detail, store, update, destroy, importSiswa }

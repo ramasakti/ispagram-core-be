@@ -6,8 +6,8 @@ const transporter = nodemailer.createTransport({
     port: 465,
     secure: true,
     auth: {
-        user: 'admin@smaispa.sch.id', // Ganti dengan email pengirim
-        pass: 'parlaungan1980' // Ganti dengan kata sandi email pengirim
+        user: process.env.EMAIL_SMTP, // Ganti dengan email pengirim
+        pass: process.env.PASSWORD_SMTP // Ganti dengan kata sandi email pengirim
     }
 })
 

@@ -1,122 +1,94 @@
 const db = require('../Config')
 
-const getAllUsers = async () => {
-    return await db('users').join('role', 'role.id_role', '=', 'users.role')
-}
+const getAllUsers = async (trx = db) => await trx('users').join('role', 'role.id_role', '=', 'users.role')
 
-const getAllUsersWithRole = async () => {
-    return await db('users')
+const getAllUsersWithRole = async (trx = db) => {
+    return await trx('users')
         .select(
             'users.username',
             'users.email',
             'users.avatar',
             'role.role',
             'role.id_role',
-            db.raw('CASE WHEN guru.id_guru IS NOT NULL THEN guru.nama_guru ELSE siswa.nama_siswa END AS name')
+            db.raw('CASE WHEN guru.id_guru IS NOT NULL THEN guru.nama_guru ELSE detail_siswa.nama_siswa END AS name')
         )
         .join('role', 'role.id_role', '=', 'users.role')
         .leftJoin('guru', 'guru.id_guru', '=', 'users.username')
-        .leftJoin('siswa', 'siswa.id_siswa', '=', 'users.username')
+        .leftJoin('detail_siswa', 'detail_siswa.id_siswa', '=', 'users.username')
 
 }
 
-const getUserWithRoleByUsername = async (username) => {
-    return await db('users')
+const getUserWithRoleByUsername = async (username, trx = db) => {
+    return await trx('users')
         .select(
             'users.username',
             'users.email',
             'users.avatar',
             'role.role',
-            db.raw('CASE WHEN guru.id_guru IS NOT NULL THEN guru.nama_guru ELSE siswa.nama_siswa END AS name')
+            db.raw('CASE WHEN guru.id_guru IS NOT NULL THEN guru.nama_guru ELSE detail_siswa.nama_siswa END AS name')
         )
         .join('role', 'role.id_role', '=', 'users.role')
         .leftJoin('guru', 'guru.id_guru', '=', 'users.username')
-        .leftJoin('siswa', 'siswa.id_siswa', '=', 'users.username')
+        .leftJoin('detail_siswa', 'detail_siswa.id_siswa', '=', 'users.username')
         .where('users.username', username)
         .first()
 }
 
-const getAllUsersWithGuru = async () => {
-    return await db('users')
+const getAllUsersWithGuru = async (trx = db) => {
+    return await trx('users')
         .join('role', 'role.id_role', '=', 'users.role')
         .join('guru', 'guru.id_guru', '=', 'users.username')
 }
 
-const getUserByUsername = async (username) => {
-    return await db('users')
+const getUserByUsername = async (username, trx = db) => {
+    return await trx('users')
         .join('role', 'role.id_role', '=', 'users.role')
         .where('username', username)
         .first()
 }
 
-const getUserByEmail = async (email) => {
-    return await db('users')
+const getUserByEmail = async (email, trx = db) => {
+    return await trx('users')
         .join('role', 'role.id_role', '=', 'users.role')
         .where('email', email)
         .first()
 }
 
-const getUserWithGuruByUsername = async (username) => {
-    return await db('users')
+const getUserWithGuruByUsername = async (username, trx = db) => {
+    return await trx('users')
         .join('role', 'role.id_role', '=', 'users.role')
         .join('guru', 'guru.id_guru', '=', 'users.username')
         .where('users.username', username)
         .first()
 }
 
-const getUserWithGuruByEmail = async (email) => {
-    return await db('users')
+const getUserWithGuruByEmail = async (email, trx = db) => {
+    return await trx('users')
         .join('role', 'role.id_role', '=', 'users.role')
         .join('guru', 'guru.id_guru', '=', 'users.username')
         .where('users.email', email)
         .first()
 }
 
-const getAllUsersWithSiswa = async () => {
-    return await db('users')
+const getAllUsersWithSiswa = async (trx = db) => {
+    return await trx('users')
         .join('role', 'role.id_role', '=', 'users.role')
         .join('siswa', 'siswa.id_siswa', '=', 'users.username')
 }
 
-const updateUserAvatarByUsername = async (username, avatar) => {
-    return await db('users')
-        .where('username', username)
-        .update({ avatar })
-}
+const updateUserAvatarByUsername = async (username, avatar, trx = db) => await trx('users').where('username', username).update({ avatar })
 
-const updateUserPasswordByUsername = async (username, password) => {
-    return await db('users')
-        .where('username', username)
-        .update({ password })
-}
+const updateUserPasswordByUsername = async (username, password, trx = db) => await trx('users').where('username', username).update({ password })
 
-const updateUserPasswordByEmail = async (email, password) => {
-    return await db('users')
-        .where('email', email)
-        .update({ password })
-}
+const updateUserPasswordByEmail = async (email, password, trx = db) => await trx('users').where('email', email).update({ password })
 
-const updateUserByUsername = async (username, req) => {
-    return await db('users')
-        .where('username', username)
-        .update(req)
-}
+const updateUserByUsername = async (username, req, trx = db) => await trx('users').where('username', username).update(req)
 
-const insertUser = async (req) => {
-    return await db('users').insert(req)
-}
+const insertUser = async (req, trx = db) => await trx('users').insert(req)
 
-const deleteUserByUsername = async (username) => {
-    return await db('users')
-        .where('username', username)
-        .del()
-}
+const deleteUserByUsername = async (username, trx = db) => await trx('users').where('username', username).del()
 
-const addFaceByUsername = async (username, face) => {
-    return await db('users')
-        .where('username', username)
-        .update({ face })
-}
+const addFaceByUsername = async (username, face, trx = db) => await trx('users').where('username', username).update({ face })
 
 module.exports = {
     getAllUsers,
