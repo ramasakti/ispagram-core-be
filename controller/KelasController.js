@@ -96,30 +96,34 @@ const graduate = async (req, res) => {
         const siswas = await SiswaModel.getAllSiswaActive()
 
         // Update tunggakan
-        siswas.map(async siswa => {
+        for (const siswa of siswas) {
             const tunggakans = await getTunggakanSiswaAktif(siswa.id_siswa)
-            tunggakans.map(async tunggakan => {
+            for (const tunggakan of tunggakans) {
                 if ((tunggakan.terbayar !== tunggakan.nominal && tunggakan.terbayar === 0) || (tunggakan.terbayar !== 0 && tunggakan.terbayar !== tunggakan.nominal)) {
                     await TransaksiPembayaranSiswaModel.updateTunggakanBySiswa({
                         id_siswa: siswa.id_siswa,
                         pembayaran_id: tunggakan.id_pembayaran,
                     }, trx)
                 }
-            })
-        })
+            }
+        }
 
         // Ambil data tingkat terakhir (XII)
         const alumnis = await KelasModel.getSiswaByTingkat('XII')
-        alumnis.map(async alumni => {
-            // Delete dari tabel siswa
+
+        for (const alumni of alumnis) {
+            // Hapus dari tabel siswa
             await SiswaModel.deleteSiswa(alumni.id_siswa, trx)
 
-            // Update role
+            // Update role menjadi alumni
             await UserModel.updateUserByUsername(alumni.id_siswa, { role: 11 }, trx)
-        })
+        }
 
         // Hapus data kelas tingkat akhir (XII)
         await KelasModel.deleteKelasByTingkat('XII', trx)
+
+        // Update tingkat
+        await KelasModel.graduateKelas(trx)
 
         // Hapus data pembayaran tahun ajaran ini
         await PembayaranSiswaModel.updateStatusPembayaran(0, trx)
@@ -140,11 +144,11 @@ async function getTunggakanSiswaAktif(id_siswa) {
 
         const kelas = siswa.kelas_id.toString()
 
-        const dataPembayaran = await PembayaranSiswaModel.getAllPembayaran()
+        const dataPembayaran = await PembayaranSiswaModel.getPembayaranActive()
         const pembayaran = dataPembayaran.filter(item => item.kelas.includes(kelas))
         const idPembayaranArray = pembayaran.map(item => item.id_pembayaran)
 
-        const detailTagihan = await PembayaranSiswaModel.getPembayaranBySiswaAndInID(idPembayaranArray, id_siswa)
+        const detailTagihan = await PembayaranSiswaModel.getTransaksiPembayaranBySiswaAndInID(idPembayaranArray, id_siswa)
 
         let tagihan = []
         for (var i = 0; i < pembayaran.length; i++) {

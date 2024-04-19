@@ -30,6 +30,13 @@ const insertKelas = async (req, trx = db) => await trx('kelas').insert(req)
 
 const updateKelas = async (id_kelas, req, trx = db) => await trx('kelas').where('id_kelas', id_kelas).update(req)
 
+const graduateKelas = async (trx = db) => {
+    await trx('kelas')
+        .update({
+            tingkat: trx.raw(`CASE WHEN tingkat = 'X' THEN 'XI' WHEN tingkat = 'XI' THEN 'XII' END`)
+        })
+}
+
 const deleteKelas = async (id_kelas, trx = db) => await trx('kelas').where('id_kelas', id_kelas).del()
 
 const deleteKelasByTingkat = async (tingkat, trx = db) => await trx('kelas').where('tingkat', tingkat).del()
@@ -45,6 +52,7 @@ module.exports = {
     getSiswaByTingkat,
     insertKelas,
     updateKelas,
+    graduateKelas,
     deleteKelas,
     deleteKelasByTingkat
 };
