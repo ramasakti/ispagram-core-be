@@ -3,6 +3,7 @@ const response = require('../Response')
 const moment = require('../utilities/Moment')
 const jadwalUtils = require('../utilities/JadwalUtils')
 const JadwalModel = require('../Model/JadwalModel')
+const MapelModel = require('../Model/MapelModel')
 
 const jadwal = async (req, res) => {
     try {
@@ -14,11 +15,14 @@ const jadwal = async (req, res) => {
     }
 }
 
-const storeJadwal = async (req, res) => {
+const store = async (req, res) => {
     try {
         // Tangkap inputan dan periksa
-        const { jampel, guru, kelas, mapel } = req.body
-        if (!jampel || !guru || !kelas || !mapel) return response(400, null, `Gagal! Inputan tidak lengkap!`, res)
+        const { jampel, guru, mapel } = req.body
+        if (!jampel || !guru || !mapel) return response(400, null, `Gagal! Inputan tidak lengkap!`, res)
+
+        // Ambil data mapel untuk mendapatkan detail kelas
+        const detailMapel = await MapelModel.getMapelByID(mapel)
 
         // Parse jampel menjadi JSON
         const jam_pelajaran = JSON.parse(jampel)
@@ -29,7 +33,7 @@ const storeJadwal = async (req, res) => {
         // Looping jampel 
         for (const item of jam_pelajaran) {
             // Cek apakah jam sudah digunakan 
-            const existingJadwal = await jadwalUtils.existingJadwal(item.value, kelas)
+            const existingJadwal = await jadwalUtils.existingJadwal(item.value, detailMapel.kelas_id)
             if (existingJadwal !== null) {
                 hasError = true
                 break
@@ -41,7 +45,7 @@ const storeJadwal = async (req, res) => {
 
         // Jika tidak ada kesalahan, store ke database
         for (const item of jam_pelajaran) {
-            await JadwalModel.insertJadwal({ jampel: item.value, guru_id: guru, kelas_id: kelas, mapel })
+            await JadwalModel.insertJadwal({ jampel: item.value, guru_id: guru, mapel })
         }
 
         return response(201, {}, `Berhasil menambahkan data jadwal!`, res)
@@ -51,16 +55,16 @@ const storeJadwal = async (req, res) => {
     }
 }
 
-const updateJadwal = async (req, res) => {
+const update = async (req, res) => {
     try {
         // Tangkap request parameter
         const id_jadwal = req.params.id_jadwal
 
         // Tangkap inputan dan periksa
-        let { jampel, id_guru, kelas_id, mapel } = req.body
+        let { jampel, id_guru, mapel } = req.body
 
         // Periksa apakah inputan lengkap
-        if (!jampel || !id_guru || !kelas_id) return response(400, null, `Semua inputan wajib diisi!`, res)
+        if (!jampel || !id_guru || !mapel) return response(400, null, `Semua inputan wajib diisi!`, res)
 
         try {
             // Parsing ke JSON ketika ada perubahan jam pelajaran
@@ -71,15 +75,15 @@ const updateJadwal = async (req, res) => {
             if (existingJadwal !== null) return response(400, null, `Jam Pelajaran telah digunakan!`, res)
 
             // Update tabel jadwal
-            await JadwalModel.updateJadwal(id_jadwal, {
-                jampel: jampel.value, guru_id: id_guru, kelas_id: kelas_id, mapel
+            await JadwalModel.update(id_jadwal, {
+                jampel: jampel.value, guru_id: id_guru, mapel
             })
         } catch (error) {
             jampel = req.body.jampel
 
             // Update tabel jadwal
             await JadwalModel.updateJadwal(id_jadwal, {
-                jampel, guru_id: id_guru, kelas_id: kelas_id, mapel
+                jampel, guru_id: id_guru, mapel
             })
         }
 
@@ -90,7 +94,7 @@ const updateJadwal = async (req, res) => {
     }
 }
 
-const deleteJadwal = async (req, res) => {
+const destroy = async (req, res) => {
     try {
         // Tangkap inputan dari parameter
         const id_jadwal = req.params.id_jadwal
@@ -133,4 +137,4 @@ const jadwalGrup = async (req, res) => {
     }
 }
 
-module.exports = { jadwal, storeJadwal, updateJadwal, deleteJadwal, jadwalGrup }
+module.exports = { jadwal, store, update, destroy, jadwalGrup }

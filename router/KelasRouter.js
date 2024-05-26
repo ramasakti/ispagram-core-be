@@ -11,7 +11,7 @@ router.route('/kelas/:kelas_id')
     .put(KelasController.update)
     .delete(KelasController.destroy)
 
-router.route('/graduate')
+router.route('/kelas/graduate')
     .post(KelasController.graduate)
 
 router.route('/tunggakan')

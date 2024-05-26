@@ -26,7 +26,7 @@ const auth = async (req, res) => {
             token = jwt.sign({ userId: user.username }, 'parlaungan1980', { expiresIn: '1h' })
             validTokens[token] = {
                 expiresAt: new Date().getTime() + 3600 * 1000, // Waktu kadaluarsa 1 jam
-                userData: { userId: user.username } // Informasi tambahan yang diperlukan
+                userData: { userId: user.username, role: user.id_role } // Informasi tambahan yang diperlukan
             };
         } else {
             // Periksa apakah username terdaftar

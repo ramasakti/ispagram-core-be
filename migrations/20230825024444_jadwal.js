@@ -7,13 +7,12 @@ exports.up = function (knex) {
         table.increments('id_jadwal');
         table.integer('jampel').unsigned();
         table.string('guru_id');
-        table.integer('kelas_id').unsigned();
-        table.string('mapel');
+        table.integer('mapel').unsigned();
         table.string('status', 10).defaultTo('');
 
         table.foreign('jampel').references('id_jampel').inTable('jam_pelajaran').onDelete('cascade').onUpdate('cascade');
         table.foreign('guru_id').references('id_guru').inTable('guru').onDelete('cascade').onUpdate('cascade');
-        table.foreign('kelas_id').references('id_kelas').inTable('kelas').onDelete('cascade').onUpdate('cascade');
+        table.foreign('mapel').references('id_mapel').inTable('mapel').onDelete('cascade').onUpdate('cascade');
     });
 };
 

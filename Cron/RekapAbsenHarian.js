@@ -42,22 +42,7 @@ const RekapAbsen = async () => {
                 }
             } else {
                 // Jika libur
-
-                // Ambil data jadwal yang tidak diatur untuk direkap ketidakhadirannya
-                const dataJadwal = await db('jadwal')
-                    .select('id_jadwal', 'mulai', 'sampai')
-                    .where('hari', moment().format('dddd'))
-
-                // Masukkan data jadwal di hari tersebut ke jurnal
-                for (const insertJadwal of dataJadwal) {
-                    await db('jurnal').insert({
-                        tanggal: moment().format('YYYY-MM-DD'),
-                        jadwal_id: insertJadwal.id_jadwal,
-                        inval: 0,
-                        transport: 0,
-                        materi: 'Libur'
-                    })
-                }
+                // Masukkan jadwal ke jurnal mengajar
             }
         }
     } catch (error) {

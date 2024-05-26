@@ -1,6 +1,7 @@
 require('dotenv').config()
 const express = require('express')
 const http = require('http')
+const os = require('os');
 const faceapi = require('face-api.js')
 const WebSocket = require('ws')
 const app = express()
@@ -13,29 +14,42 @@ const db = require('./Config')
 const router = require('./router/Router')
 const cors = require('cors')
 const moment = require('./utilities/Moment')
+moment.locale('id')
 
-const acceptedHost = ['http://localhost:3000', 'https://smaispa.sch.id', 'http://127.0.0.1:5501', 'https://ispagram-core-fe.vercel.app']
+const getServerIP = () => {
+    const interfaces = os.networkInterfaces()
+    for (let interfaceName in interfaces) {
+        for (let iface of interfaces[interfaceName]) {
+            if (iface.family === 'IPv4' && !iface.internal) return iface.address
+        }
+    }
+    return null
+}
 
-// app.use((req, res, next) => {
-//     const ipv6 = req.ip
-//     const ipv4 = ipv6.includes('::ffff:') ? ipv6.split('::ffff:')[1] : ipv6
-//     const modifiedIP = `http://${ipv4}:3000`
-//     acceptedHost.push(modifiedIP)
-//     next()
-// })
+const acceptedHost = [`http://${getServerIP()}:3000`, 'http://localhost:3000', 'https://smaispa.sch.id', 'https://ispagram.vercel.app']
 
-// app.use(cors({
-//     origin: function (origin, callback) {
-//         const allowedOrigins = acceptedHost;
-//         const isAllowed = !origin || allowedOrigins.includes(origin);
-//         callback(null, isAllowed);
-//     },
-//     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-//     credentials: true,
-//     optionsSuccessStatus: 204,
-// }))
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Cek apakah origin termasuk dalam daftar yang diizinkan
+        if (acceptedHost.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else if (!origin) {
+            // Blokir permintaan tanpa header origin (contoh: dari localhost)
+            callback(new Error('Not allowed by CORS'));
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    }
+}
 
-app.use(cors())
+app.use((req, res, next) => {
+    if (req.path.startsWith('/upload')) {
+        next()
+    } else {
+        cors(corsOptions)(req, res, next);
+    }
+})
+
 app.use(express.json())
 app.use(router)
 

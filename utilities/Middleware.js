@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const response = require('./../Response')
+const db = require('./../')
 
 const middleware = (req, res, next) => {
     const token = req.headers['authorization']

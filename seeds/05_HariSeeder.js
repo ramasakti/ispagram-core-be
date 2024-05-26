@@ -16,7 +16,7 @@ exports.seed = async function (knex) {
 				{ mulai: '11:20:00', selesai: '11:50:00' }
 			]),
 			pulang: '14:40:00', jampel: '00:40:00',
-			piket: 'arifubaidillah',
+			piket: 'syamsuddin',
 			status: true
 		},
 		{
@@ -30,7 +30,7 @@ exports.seed = async function (knex) {
 			]),
 			pulang: '14:40:00',
 			jampel: '00:40:00',
-			piket: 'arifubaidillah',
+			piket: 'sitiaminatus',
 			status: true
 		},
 		{
@@ -44,7 +44,7 @@ exports.seed = async function (knex) {
 			]),
 			pulang: '14:40:00',
 			jampel: '00:40:00',
-			piket: 'arifubaidillah',
+			piket: 'nasrulhidayat',
 			status: true
 		},
 		{
@@ -58,7 +58,7 @@ exports.seed = async function (knex) {
 			]),
 			pulang: '14:40:00',
 			jampel: '00:40:00',
-			piket: 'arifubaidillah',
+			piket: 'masfaza',
 			status: true
 		},
 		{
@@ -70,7 +70,7 @@ exports.seed = async function (knex) {
 			]),
 			pulang: '14:40:00',
 			jampel: '00:40:00',
-			piket: 'arifubaidillah',
+			piket: 'imroatul',
 			status: true
 		},
 		{
@@ -82,11 +82,11 @@ exports.seed = async function (knex) {
 			]),
 			pulang: '14:40:00',
 			jampel: '00:40:00',
-			piket: 'arifubaidillah',
+			piket: 'anikzulifah',
 			status: true
 		},
 		{
-			nama_hari: 'Minggu', diniyah: false, masuk: '06:50:00', pulang: '14:40:00', jampel: '00:40:00', piket: 'arifubaidillah', status: false
+			nama_hari: 'Minggu', diniyah: false, masuk: '06:50:00', pulang: '14:40:00', jampel: '00:40:00', piket: 'arifubayd', status: false
 		},
 	];
 	await knex('hari').insert(days);

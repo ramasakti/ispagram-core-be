@@ -22,6 +22,8 @@ const menuRouter = require('./MenuRouter')
 const submenuRouter = require('./SubmenuRouter')
 const chatRouter = require('./ChatRouter')
 const whatsappRouter = require('./WhatsAppRouter')
+const mapelRouter = require('./MapelRouter')
+const dashboardRouter = require('./DashboardRouter');
 
 app.use(navbarRouter)
 app.use(accessRouter)
@@ -43,6 +45,8 @@ app.use(roleRouter)
 app.use(sectionRouter)
 app.use(menuRouter)
 app.use(submenuRouter)
+app.use(mapelRouter)
+app.use(dashboardRouter)
 app.use(chatRouter)
 app.use(authRouter)
 

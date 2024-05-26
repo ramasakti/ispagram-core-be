@@ -61,8 +61,8 @@ const store = async (req, res) => {
         const existingDetailSiswa = await SiswaModel.getDetailSiswaByID(id_siswa, trx)
         if (existingDetailSiswa) throw new Error(`ID telah pernah digunakan oleh ${existingDetailSiswa.nama_siswa}`)
 
-        const existingUsername = await UserModel.getUserByUsername(username, trx)
-        const existingEmail = await UserModel.getUserByEmail(email, trx)
+        const existingUsername = await UserModel.getUserByUsername(id_siswa, trx)
+        const existingEmail = await UserModel.getUserByEmail(`${id_siswa}@smaispa.sch.id`, trx)
         if (existingUsername || existingEmail) throw new Error(`Username atau email telah digunakan`)
 
         await SiswaModel.insertDetailSiswa({
@@ -80,7 +80,7 @@ const store = async (req, res) => {
             id_siswa, rfid, kelas_id
         }, trx)
 
-        await AbsenSiswaModel.insertAbsen({ id_siswa }, trx)
+        await AbsenSiswaModel.insertAbsen(id_siswa, trx)
 
         await trx.commit()
 
@@ -97,15 +97,13 @@ const update = async (req, res) => {
     try {
         const id_siswa = req.params.id_siswa
         const { rfid, nama_siswa, kelas_id, alamat, telp, tempat_lahir, tanggal_lahir } = req.body
+        const tanggalLahirFormatted = Moment(tanggal_lahir).format('YYYY-MM-DD')
 
         if (!id_siswa || !rfid || !nama_siswa || !kelas_id || !alamat || !tempat_lahir || !tanggal_lahir) {
             return response(400, null, 'Semua data siswa harus diisi!', res)
         }
 
-        if (!Moment(tanggal_lahir, 'YYYY-MM-DD', true).isValid()) throw new Error('Tanggal lahir tidak valid! Format harus YYYY-MM-DD')
-
-        const existingDetailSiswa = await SiswaModel.getDetailSiswaByID(id_siswa, trx)
-        if (existingDetailSiswa) throw new Error(`ID telah pernah digunakan oleh ${existingDetailSiswa.nama_siswa}`)
+        if (!Moment(tanggalLahirFormatted, 'YYYY-MM-DD', true).isValid()) throw new Error('Tanggal lahir tidak valid! Format harus YYYY-MM-DD')
 
         await SiswaModel.updateSiswaByID(id_siswa, { rfid, kelas_id }, trx)
 
@@ -151,12 +149,12 @@ const destroy = async (req, res) => {
 
 const importSiswa = async (req, res) => {
     try {
-        if (!req.file) return response(400, null, `No file uploaded!`, res)
+        if (!req.file) return response(400, null, `No file uploaded!`, res);
 
-        const workbook = new ExcelJS.Workbook()
-        await workbook.xlsx.load(req.file.buffer)
-        const worksheet = workbook.getWorksheet(1)
-        const rows = worksheet.getSheetValues()
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(req.file.buffer);
+        const worksheet = workbook.getWorksheet(1);
+        const rows = worksheet.getSheetValues();
 
         const data = rows.slice(1).map(row => ({
             id_siswa: row[1],
@@ -168,23 +166,24 @@ const importSiswa = async (req, res) => {
             telp: row[7],
             tempat_lahir: row[8],
             tanggal_lahir: row[9]
-        }))
+        }));
 
-        const existingKelasID = await KelasModel.getAllKelas()
-        const existingSiswaID = await SiswaModel.getAllIDSiswa()
-        const siswaRole = await RoleModel.getRoleByRole('Siswa')
+        const existingKelasID = await KelasModel.getAllKelas();
+        const existingSiswaID = await SiswaModel.getAllIDSiswa();
+        const siswaRole = await RoleModel.getRoleByRole('Siswa');
 
-        const filteredData = data.map(row => {
+        const filteredData = [];
+        for (const row of data) {
             if (existingSiswaID.includes(row.id_siswa)) {
-                return response(400, null, `Data siswa ${row.id_siswa} already exists!`, res)
-            } else if (!existingKelasID.find(kelas => kelas.id_kelas === row.kelas_id)) {
-                return response(400, null, `Data kelas tidak valid!`, res)
+                return response(400, null, `Data siswa ${row.id_siswa} already exists!`, res);
+            } else if (!existingKelasID.find(kelas => kelas.id_kelas == row.kelas_id)) {
+                return response(400, null, `Data kelas tidak valid!`, res);
             } else {
-                return row
+                filteredData.push(row);
             }
-        })
+        }
 
-        const trx = await db.transaction()
+        const trx = await db.transaction();
 
         try {
             for (const siswa of filteredData) {
@@ -193,13 +192,13 @@ const importSiswa = async (req, res) => {
                     password: await bcrypt.hash(siswa.id_siswa.toString(), 10),
                     email: siswa.email,
                     role: siswaRole.id_role
-                }, trx)
+                }, trx);
 
                 await SiswaModel.insertSiswa({
                     id_siswa: siswa.id_siswa,
                     rfid: siswa.rfid,
                     kelas_id: siswa.kelas_id
-                }, trx)
+                }, trx);
 
                 await SiswaModel.insertDetailSiswa({
                     id_siswa: siswa.id_siswa,
@@ -208,25 +207,24 @@ const importSiswa = async (req, res) => {
                     alamat: siswa.alamat,
                     tempat_lahir: siswa.tempat_lahir,
                     tanggal_lahir: siswa.tanggal_lahir
-                }, trx)
+                }, trx);
 
-                await AbsenSiswaModel.insertAbsen(siswa.id_siswa , trx)
+                await AbsenSiswaModel.insertAbsen(siswa.id_siswa , trx);
             }
 
-            await trx.commit()
+            await trx.commit();
+            return response(200, null, `Berhasil import siswa!`, res);
         } catch (error) {
-            await trx.rollback()
-            console.error(error)
-            return response(400, null, `Gagal import siswa!`, res)
+            await trx.rollback();
+            console.error(error);
+            return response(400, null, `Gagal import siswa!`, res);
         }
+    } catch (error) {
+        console.error(error);
+        return response(500, null, `Internal Server Error!`, res);
+    }
+};
 
-        return response(200, null, `Berhasil import siswa!`, res)
-    }
-    catch (error) {
-        console.error(error)
-        return response(500, null, `Internal Server Error!`, res)
-    }
-}
 
 
 module.exports = { siswa, siswaKelas, detail, store, update, destroy, importSiswa }

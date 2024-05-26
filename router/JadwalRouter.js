@@ -4,11 +4,11 @@ const JadwalController = require('../controller/JadwalController')
 
 router.route('/jadwal')
     .get(JadwalController.jadwal)
-    .post(JadwalController.storeJadwal)
+    .post(JadwalController.store)
 
 router.route('/jadwal/:id_jadwal')
     .get(JadwalController.jadwalGrup)
-    .put(JadwalController.updateJadwal)
-    .delete(JadwalController.deleteJadwal)
+    .put(JadwalController.update)
+    .delete(JadwalController.destroy)
 
 module.exports = router

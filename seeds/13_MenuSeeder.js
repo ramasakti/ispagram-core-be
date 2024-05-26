@@ -144,18 +144,25 @@ exports.seed = async function (knex) {
 			order: 3
 		},
 		{
+			name: 'Mata Pelajaran',
+			type: 1,
+			route: '/akademik/mapel',
+			section_id: 5,
+			order: 1
+		},
+		{
 			name: 'Jadwal Pelajaran',
 			type: 1,
 			route: '/akademik/jadwal',
 			section_id: 5,
-			order: 1
+			order: 2
 		},
 		{
 			name: 'Jurnal Kelas',
 			type: 1,
 			route: '/akademik/jurnal',
 			section_id: 5,
-			order: 2
+			order: 3
 		},
 		{
 			name: 'WhatsApp Broadcaster',

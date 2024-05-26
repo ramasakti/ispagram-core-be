@@ -5,7 +5,7 @@
 exports.up = function(knex) {
     return knex.schema.createTable('mapel', function (table) {
         table.increments('id_mapel').primary();
-        table.string('name');
+        table.string('nama_mapel');
         table.integer('kelas_id').unsigned();
         table.foreign('kelas_id').references('id_kelas').inTable('kelas').onDelete('cascade').onUpdate('cascade');
     })

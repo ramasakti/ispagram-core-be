@@ -55,11 +55,29 @@ const updateTunggakanBySiswa = async (req, trx = db) => {
     return await trx('tunggakan').insert(req)
 }
 
+const getSumTransactionEveryDay = async (dari, sampai, trx = db) => {
+    return await trx.raw(`
+        WITH RECURSIVE dates AS (
+            SELECT DATE(?) AS date
+            UNION ALL
+            SELECT date + INTERVAL 1 DAY
+            FROM dates
+            WHERE date + INTERVAL 1 DAY <= DATE(?)
+        )
+        SELECT dates.date, IFNULL(SUM(transaksi.terbayar), 0) AS total
+        FROM dates
+        LEFT JOIN transaksi ON dates.date = DATE(transaksi.waktu_transaksi)
+        GROUP BY dates.date
+        ORDER BY dates.date
+        `, [dari, sampai]);
+}
+
 module.exports = {
     getAllTransactionByDateRange,
     getDetailTransactionByID,
     getTransactionBySiswa,
     getTransactionByPembayaranAndIDSiswa,
     getTransactionByPembayaran,
-    updateTunggakanBySiswa
+    updateTunggakanBySiswa,
+    getSumTransactionEveryDay
 };

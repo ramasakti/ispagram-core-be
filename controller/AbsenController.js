@@ -70,55 +70,6 @@ const update = async (req, res) => {
     }
 }
 
-const diagramHarian = async (req, res) => {
-    try {
-        const diagramHarian = await AbsenSiswaModel.statistikHarian()
-
-        if (!diagramHarian.H && !diagramHarian.S && !diagramHarian.I && !diagramHarian.A && !diagramHarian.T) {
-            return response(200, [0, 0, 0, 0, 0], `Absen Kosong`, res)
-        }
-
-        return response(200, [diagramHarian.H, diagramHarian.S, diagramHarian.I, diagramHarian.A, diagramHarian.T], 'Diagram Hari Ini!', res)
-    } catch (error) {
-        console.error(error)
-        return response(500, null, `Internal server error!`, res)
-    }
-}
-
-const grafikMingguan = async (req, res) => {
-    const data = await AbsenSiswaModel.statistikMingguan()
-    const statistik = data.map(item => {
-        return {
-            Sakit: item.S,
-            Izin: item.I,
-            Alfa: item.A,
-            Terlambat: item.T,
-        }
-    })
-    let categories = ["Sakit", "Izin", "Alfa", "Terlambat"]
-    let series = []
-
-    categories.forEach(category => {
-        let data = {
-            "name": category,
-            "data": []
-        }
-
-        statistik.forEach(stats => {
-            data.data.push(stats[category])
-        })
-
-        series.push(data)
-    })
-
-    const tanggal = data.map(item => moment(item.tanggal).format('Do MMM YY'))
-
-    series.reverse()
-    tanggal.reverse()
-
-    return response(200, { series, labels: tanggal }, `Grafik`, res)
-}
-
 const rekap = async (req, res) => {
     try {
         const { kelas, range } = req.query;
@@ -183,8 +134,6 @@ module.exports = {
     dataAbsensiKelas,
     dataTerlambat,
     update,
-    diagramHarian,
-    grafikMingguan,
     rekap,
     dataWA,
     diagramIndividu,

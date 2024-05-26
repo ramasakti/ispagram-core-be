@@ -23,7 +23,8 @@ const jamPelajaranFree = async (req, res) => {
         const jamPelajaranFilled = await db('jadwal')
             .select('jadwal.jampel')
             .join('jam_pelajaran', 'jam_pelajaran.id_jampel', '=', 'jadwal.jampel')
-            .where('jadwal.kelas_id', kelas)
+            .join('mapel', 'mapel.id_mapel', '=', 'jadwal.mapel')
+            .where('mapel.kelas_id', kelas)
 
         let idJamPelajaranFilled = []
         jamPelajaranFilled.map(item => idJamPelajaranFilled.push(item.jampel))
