@@ -105,8 +105,6 @@ wss(server)
 //     faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
 // }
 
-// Coba Update Repo
-
 server.listen(8080, async () => {
     // await setupFaceMatcher();
     console.log(`Server is running`)
