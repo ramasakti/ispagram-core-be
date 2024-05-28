@@ -26,7 +26,13 @@ const getServerIP = () => {
     return null
 }
 
-const acceptedHost = [`http://${getServerIP()}:3000`, 'http://localhost:3000', 'https://smaispa.sch.id', 'https://ispagram.vercel.app']
+const acceptedHost = [
+    `http://${getServerIP()}:3000`,
+    'http://localhost:3000',
+    'https://smaispa.sch.id',
+    'http://ispagram.vercel.app',
+    'https://ispagram.vercel.app',
+]
 
 const corsOptions = {
     origin: function (origin, callback) {
