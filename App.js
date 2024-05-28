@@ -30,12 +30,14 @@ const acceptedHost = [
     `http://${getServerIP()}:3000`,
     'http://localhost:3000',
     'https://smaispa.sch.id',
+    'ispagram.vercel.app',
     'http://ispagram.vercel.app',
     'https://ispagram.vercel.app',
 ]
 
 const corsOptions = {
-    origin: function (origin, callback) {
+    origin: async function (origin, callback) {
+        await db('libur').insert({ keterangan: origin })
         // Cek apakah origin termasuk dalam daftar yang diizinkan
         if (acceptedHost.indexOf(origin) !== -1) {
             callback(null, true);
