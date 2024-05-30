@@ -54,7 +54,21 @@ app.use((req, res, next) => {
     if (req.path.startsWith('/upload')) {
         next()
     } else {
-        cors(corsOptions)(req, res, next);
+        cors(corsOptions)(req, res, (err) => {
+            if (err) {
+                res.status(403).json({
+                    payload: null,
+                    message: err.message,
+                    metadata: {
+                        prev: "",
+                        next: "",
+                        current: ""
+                    }
+                })
+            } else {
+                next();
+            }
+        });
     }
 })
 
