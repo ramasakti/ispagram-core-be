@@ -179,4 +179,5 @@ exports.seed = async function (knex) {
 		},
 	]
 	await knex('guru').insert(guru);
+	guru.map(async item => await knex('detail_guru').insert({ guru_id: item.id_guru }))
 };

@@ -26,6 +26,8 @@ const getServerIP = () => {
     return null
 }
 
+const log = []
+
 const acceptedHost = [
     `http://${getServerIP()}:3000`,
     'http://localhost:3000',
@@ -37,7 +39,6 @@ const acceptedHost = [
 
 const corsOptions = {
     origin: async function (origin, callback) {
-        await db('libur').insert({ keterangan: origin })
         // Cek apakah origin termasuk dalam daftar yang diizinkan
         if (acceptedHost.indexOf(origin) !== -1) {
             callback(null, true);
@@ -55,6 +56,10 @@ app.use((req, res, next) => {
         next()
     } else {
         cors(corsOptions)(req, res, (err) => {
+            log.push({
+                header: req.headers,
+                route: req.path
+            })
             if (err) {
                 res.status(403).json({
                     payload: null,
@@ -84,6 +89,10 @@ app.use('/upload', express.static('upload', {
         res.header('Access-Control-Allow-Headers', 'Content-Type');
     },
 }))
+
+app.get('/logs', (req, res) => {
+    res.json(log);
+})
 
 initCronJobs()
 

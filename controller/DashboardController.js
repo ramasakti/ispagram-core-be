@@ -67,7 +67,7 @@ const grafikAbsenMingguanSiswa = async (req, res) => {
             series.push(data)
         })
     
-        const tanggal = data.map(item => moment(item.tanggal).format('Do MMM YY'))
+        const tanggal = data.map(item => Moment(item.tanggal).format('Do MMM YY'))
     
         series.reverse()
         tanggal.reverse()

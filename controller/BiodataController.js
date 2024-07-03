@@ -15,7 +15,7 @@ const biodata = async (req, res) => {
         if (!detailUser) return response(400, null, `User tidak terdaftar!`, res)
 
         if (detailUser.role !== 'Siswa') {
-            const guru = await GuruModel.getGuruByID(username)
+            const guru = await GuruModel.getDetailGuruByID(username)
             const data = {
                 id_guru: guru.id_guru,
                 nama_guru: guru.nama_guru,
@@ -83,7 +83,7 @@ const updateBiodata = async (req, res) => {
 
         if (detailUser.role !== 'Siswa') {
             const { nama, alamat, whatsapp, tempat_lahir, tanggal_lahir, sk_pengangkatan, nik, no_kk, scan_kk, norek } = req.body
-            const guru = await GuruModel.getGuruByID(username)
+            const guru = await GuruModel.getDetailGuruByID(username)
 
             await GuruModel.updateGuru(username, {
                 nama_guru: nama ? nama : guru.nama_guru,

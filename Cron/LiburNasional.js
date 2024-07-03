@@ -1,4 +1,5 @@
 const db = require('../Config')
+const axios = require('axios')
 const moment = require('../utilities/Moment')
 
 const isDateInRange = (date, start, end) => date >= start && date <= end
@@ -6,8 +7,8 @@ const isDateInRange = (date, start, end) => date >= start && date <= end
 const hariLibur = async () => {
     try {
         const tahun = moment().format('YYYY')
-        const response = await fetch(`https://api-harilibur.vercel.app/api?year=${tahun}`)
-        const data = await response.json()
+        const response = await axios.get(`https://api-harilibur.vercel.app/api?year=${tahun}`)
+        const data = response.data
     
         const liburNasional = data.filter(libur => libur.is_national_holiday === true)
     
