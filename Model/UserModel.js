@@ -43,14 +43,14 @@ const getAllUsersWithGuru = async (trx = db) => {
 const getUserByUsername = async (username, trx = db) => {
     return await trx('users')
         .join('role', 'role.id_role', '=', 'users.role')
-        .where('username', username)
+        .where('users.username', username)
         .first()
 }
 
 const getUserByEmail = async (email, trx = db) => {
     return await trx('users')
         .join('role', 'role.id_role', '=', 'users.role')
-        .where('email', email)
+        .where('users.email', email)
         .first()
 }
 
