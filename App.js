@@ -36,6 +36,7 @@ const acceptedHost = [
     'http://ispagram.vercel.app',
     'https://ispagram.vercel.app',
     'arditama.vercel.app',
+    'http://arditama.vercel.app',
     'https://arditama.vercel.app'
 ]
 
