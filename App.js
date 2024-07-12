@@ -35,6 +35,8 @@ const acceptedHost = [
     'ispagram.vercel.app',
     'http://ispagram.vercel.app',
     'https://ispagram.vercel.app',
+    'arditama.vercel.app',
+    'https://arditama.vercel.app'
 ]
 
 const corsOptions = {
