@@ -5,16 +5,17 @@ const TransaksiPembayaranSiswaModel = require('../Model/TransaksiPembayaranSiswa
 
 const pembayaran = async (req, res) => {
     try {
-        const pembayaran = await PembayaranSiswaModel.getPembayaranActive()
+        const pembayaran = await PembayaranSiswaModel.getAllPembayaran()
 
-        const pembayaranParsed = pembayaran.map((item) => {
-            const kelasArray = JSON.parse(item.kelas).kelas || []
+        const pembayaranParsed = pembayaran.map(item => {
+            const kelasArray = item.kelas ? JSON.parse(item.kelas).kelas : []
             return {
                 id_pembayaran: item.id_pembayaran,
                 nama_pembayaran: item.nama_pembayaran,
                 nominal: item.nominal,
                 kelas: kelasArray,
                 all: kelasArray.length === 0, // Menambahkan properti all jika kelasArray kosong
+                active: item.active
             }
         })
     

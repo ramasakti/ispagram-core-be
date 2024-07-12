@@ -5,9 +5,9 @@
 exports.up = function (knex) {
     return knex.schema.createTable('alumni', function (table) {
         table.string('nis').primary();
-        table.string('nama');
+        table.string('tahun_lulus');
         table.string('kegiatan');
-        table.integer('tunggakan');
+        table.foreign('nis').references('id_siswa').inTable('detail_siswa');
     });
 };
 

@@ -5,6 +5,7 @@ const KelasModel = require('../Model/KelasModel')
 const SiswaModel = require('../Model/SiswaModel')
 const PembayaranSiswaModel = require('../Model/PembayaranSiswaModel')
 const TransaksiPembayaranSiswaModel = require('../Model/TransaksiPembayaranSiswaModel')
+const AlumniModel = require('../Model/AlumniModel')
 
 const kelas = async (req, res) => {
     try {
@@ -117,6 +118,12 @@ const graduate = async (req, res) => {
 
             // Update role menjadi alumni
             await UserModel.updateUserByUsername(alumni.id_siswa, { role: 11 }, trx)
+
+            // Simpan di tabel alumni
+            await AlumniModel.insertAlumni({ 
+                nis: alumni.id_siswa,
+                tahun_lulus: '', 
+            })
         }
 
         // Hapus data kelas tingkat akhir (XII)

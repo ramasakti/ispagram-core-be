@@ -7,7 +7,7 @@ exports.up = function (knex) {
         table.string('id_siswa').primary();
         table.string('rfid').defaultTo('');
         table.integer('kelas_id').unsigned();
-        table.foreign('id_siswa').references('username').inTable('users')
+        table.foreign('id_siswa').references('username').inTable('users');
         table.foreign('kelas_id').references('id_kelas').inTable('kelas');
     });
 };
