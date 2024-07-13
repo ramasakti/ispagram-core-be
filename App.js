@@ -32,6 +32,7 @@ const acceptedHost = [
     `http://${getServerIP()}:3000`,
     'http://localhost:3000',
     'https://smaispa.sch.id',
+    'https://smparditamawaru.sch.id',
     'ispagram.vercel.app',
     'http://ispagram.vercel.app',
     'https://ispagram.vercel.app',
