@@ -39,6 +39,6 @@ router.route('/absen/staf/:id_siswa')
     .post(AbsenStafController.store)
 
 router.route('/absen/engine/:username')
-    .get(middleware, EngineAbsenController.engine)
+    .get(EngineAbsenController.engine)
 
 module.exports = router

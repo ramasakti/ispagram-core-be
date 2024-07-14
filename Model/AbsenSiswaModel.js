@@ -24,6 +24,7 @@ const dataKetidakhadiranKelas = async (kelas_id, trx = db) => {
 
 const dataAbsensiSiswaIndividu = async (id_siswa, trx = db) => {
     return await trx('absen')
+        .select('detail_siswa.nama_siswa', 'absen.waktu_absen')
         .join('detail_siswa', 'absen.id_siswa', '=', 'detail_siswa.id_siswa')
         .select('detail_siswa.nama_siswa', 'absen.waktu_absen')
         .where('detail_siswa.id_siswa', id_siswa)
@@ -41,11 +42,13 @@ const updateHadir = async (id_siswa, trx = db) => {
 }
 
 const updateAbsenOrTerlambat = async (id_siswa, keterangan, trx = db) => {
-    return await trx('absen').where('id_siswa', id_siswa).update({
-        waktu_absen: (keterangan !== 'T') ? null : Moment().format('HH:mm:ss'),
-        izin: (keterangan !== 'T') ? Moment().format('YYYY-MM-DD') : null,
-        keterangan
-    })
+    return await trx('absen')
+        .where('id_siswa', id_siswa)
+        .update({
+            waktu_absen: (keterangan !== 'T') ? null : Moment().format('HH:mm:ss'),
+            izin: (keterangan !== 'T') ? Moment().format('YYYY-MM-DD') : null,
+            keterangan
+        })
 }
 
 const rekap = async (kelas, dari, sampai, trx = db) => {
