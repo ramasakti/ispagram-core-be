@@ -7,7 +7,7 @@ exports.seed = async function (knex) {
 	await knex('guru').del()
 	const guru = [
 		{
-			id_guru: 'arifubayd',
+			id_guru: 'arifubaidillah',
 			staf: true,
 			nama_guru: 'Arif Ubaidillah',
 			alamat: 'Jalan mastrip',
