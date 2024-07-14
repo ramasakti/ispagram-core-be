@@ -156,7 +156,7 @@ const importSiswa = async (req, res) => {
         const worksheet = workbook.getWorksheet(1);
         const rows = worksheet.getSheetValues();
 
-        const data = rows.slice(1).map(row => ({
+        const data = rows.slice(2).map(row => ({
             id_siswa: row[1],
             rfid: row[2],
             email: row[3],

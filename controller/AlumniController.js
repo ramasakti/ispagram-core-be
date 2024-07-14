@@ -67,7 +67,7 @@ const importAlumni = async (req, res) => {
         const worksheet = workbook.getWorksheet(1);
         const rows = worksheet.getSheetValues();
 
-        const data = rows.slice(1).map(row => ({
+        const data = rows.slice(2).map(row => ({
             id_siswa: row[1],
             nisn: row[4],
             nik: row[7],
