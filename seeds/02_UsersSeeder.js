@@ -8,8 +8,8 @@ exports.seed = async function (knex) {
 	await knex('users').del()
 	const users = [
 		{
-			username: 'arifubaillah',
-			password: await bcrypt.hash('arifubaillah', 10),
+			username: 'arifubaidillah',
+			password: await bcrypt.hash('arifubaidillah', 10),
 			email: 'arekraden2005@gmail.com',
 			role: 6
 		},
