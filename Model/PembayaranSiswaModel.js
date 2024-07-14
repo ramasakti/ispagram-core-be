@@ -77,6 +77,25 @@ const getTagihanTunggakanBySiswa = async (id_siswa, trx = db) => {
 
 }
 
+const getTunggakanAlumni = async (trx = db) => {
+    return trx('alumni')
+        .join('detail_siswa', 'alumni.nis', 'detail_siswa.id_siswa')
+        .leftJoin('tunggakan', 'detail_siswa.id_siswa', 'tunggakan.id_siswa')
+        .leftJoin('pembayaran', 'tunggakan.pembayaran_id', 'pembayaran.id_pembayaran')
+        .leftJoin('transaksi', function() {
+            this.on('tunggakan.id_siswa', '=', 'transaksi.siswa_id')
+                .andOn('tunggakan.pembayaran_id', '=', 'transaksi.pembayaran_id');
+        })
+        .select(
+            'alumni.nis',
+            'detail_siswa.nama_siswa',
+            'detail_siswa.nisn',
+            'alumni.tahun_lulus',
+            trx.raw('SUM(pembayaran.nominal - IFNULL(transaksi.terbayar, 0)) as total_tunggakan')
+        )
+        .groupBy('alumni.nis', 'detail_siswa.nama_siswa', 'detail_siswa.nisn');
+}
+
 module.exports = {
     getAllPembayaran,
     getPembayaranActive,
@@ -89,5 +108,6 @@ module.exports = {
     deletePembayaran,
     getTagihanSiswa,
     updateStatusPembayaran,
-    getTagihanTunggakanBySiswa
+    getTagihanTunggakanBySiswa,
+    getTunggakanAlumni
 };

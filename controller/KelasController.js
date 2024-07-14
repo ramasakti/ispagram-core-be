@@ -1,5 +1,6 @@
 const db = require('../Config')
 const response = require('../Response')
+const Moment = require('../utilities/Moment')
 const UserModel = require('../Model/UserModel')
 const KelasModel = require('../Model/KelasModel')
 const SiswaModel = require('../Model/SiswaModel')
@@ -122,7 +123,7 @@ const graduate = async (req, res) => {
             // Simpan di tabel alumni
             await AlumniModel.insertAlumni({ 
                 nis: alumni.id_siswa,
-                tahun_lulus: '', 
+                tahun_lulus: Moment().format('YYYY'), 
             })
         }
 

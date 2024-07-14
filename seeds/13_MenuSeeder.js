@@ -214,25 +214,11 @@ exports.seed = async function (knex) {
 			order: 1
 		},
 		{
-			name: 'Tunggakan',
-			type: 1,
-			route: '/alumni/tunggakan',
-			section_id: 7,
-			order: 2
-		},
-		{
 			name: 'Transaksi',
 			type: 1,
 			route: '/alumni/transaksi',
 			section_id: 7,
-			order: 3
-		},
-		{
-			name: 'Riwayat Transaksi',
-			type: 1,
-			route: '/alumni/riwayat',
-			section_id: 7,
-			order: 4
+			order: 2
 		},
 	]);
 };

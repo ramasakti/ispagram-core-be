@@ -1,6 +1,7 @@
 const db = require('../Config')
 const response = require('../Response')
 const AlumniModel = require('../Model/AlumniModel')
+const PembayaranSiswaModel = require('../Model/PembayaranSiswaModel')
 const RoleModel = require('../Model/RoleModel')
 const SiswaModel = require('../Model/SiswaModel')
 const UserModel = require('../Model/UserModel')
@@ -17,6 +18,45 @@ const alumni = async (req, res) => {
         return response(500, null, `Internal Server Error!`, res)
     }
 }
+
+const alumniTahun = async (req, res) => {
+    try {
+        const tahunLulus = req.params.tahun
+        const alumni = await AlumniModel.getAlumniByTahunLulus(tahunLulus)
+
+        return response(200, alumni, `Data Alumni Tahun ${tahunLulus}`, res) 
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal Server Error!`, res)
+    }
+}
+
+const store = async (req, res) => {
+    try {
+        
+    } catch (error) {
+        
+    }
+}
+
+const update = async (req, res) => {
+    try {
+        
+    } catch (error) {
+        
+    }
+}
+
+const tunggakan = async (req, res) => {
+    try {
+        const tunggakan = await PembayaranSiswaModel.getTunggakanAlumni()
+
+        return response(200, tunggakan, `Data Tunggakan Alumni`, res) 
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal Server Error!`, res)
+    }
+} 
 
 const importAlumni = async (req, res) => {
     try {
@@ -53,6 +93,8 @@ const importAlumni = async (req, res) => {
                     tempat_lahir: alumni.tempat_lahir,
                     tanggal_lahir: alumni.tanggal_lahir
                 }, trx);
+
+                await AlumniModel.insertAlumni({ nis: alumni.id_siswa, tahun_lulus: alumni.tahun_lulus, kegiatan: '' }, trx)
             }
 
             await trx.commit();
@@ -70,5 +112,9 @@ const importAlumni = async (req, res) => {
 
 module.exports = {
     alumni,
+    alumniTahun,
+    store,
+    update,
+    tunggakan,
     importAlumni
 };
