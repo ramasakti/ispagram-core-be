@@ -34,6 +34,23 @@ const getUserWithRoleByUsername = async (username, trx = db) => {
         .first()
 }
 
+const getUserWithRoleByEmail = async (email, trx = db) => {
+    return await trx('users')
+        .select(
+            'users.username',
+            'users.email',
+            'users.avatar',
+            'role.id_role',
+            'role.role',
+            db.raw('CASE WHEN guru.id_guru IS NOT NULL THEN guru.nama_guru ELSE detail_siswa.nama_siswa END AS name')
+        )
+        .join('role', 'role.id_role', '=', 'users.role')
+        .leftJoin('guru', 'guru.id_guru', '=', 'users.username')
+        .leftJoin('detail_siswa', 'detail_siswa.id_siswa', '=', 'users.username')
+        .where('users.email', email)
+        .first()
+}
+
 const getAllUsersWithGuru = async (trx = db) => {
     return await trx('users')
         .join('role', 'role.id_role', '=', 'users.role')
@@ -94,6 +111,7 @@ module.exports = {
     getAllUsers,
     getAllUsersWithRole,
     getUserWithRoleByUsername,
+    getUserWithRoleByEmail,
     getUserByUsername,
     getUserByEmail,
     getAllUsersWithGuru,

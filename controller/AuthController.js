@@ -13,24 +13,25 @@ const auth = async (req, res) => {
     try {
         let user = ''
         let token = ''
+        let name = ''
         // Jangan kembalikan password
         // Manipulasi dulu untuk menentukan role karena kita butuh role dinamis yang tiap hari bisa ganti role
         // Buat variabel baru kemudian variabel baru itulah yang dikirim ke FE
 
         if (email) {
             // Login dengan OAuth, langsung ambil detail user
-            user = await UserModel.getUserByEmail(email)
+            user = await UserModel.getUserWithRoleByEmail(email)
             if (!user) return response(404, null, `Not Authorized`, res)
 
             // Buat token
             token = jwt.sign({ userId: user.username }, 'parlaungan1980', { expiresIn: '1h' })
             validTokens[token] = {
                 expiresAt: new Date().getTime() + 3600 * 1000, // Waktu kadaluarsa 1 jam
-                userData: { userId: user.username, role: user.id_role } // Informasi tambahan yang diperlukan
+                userData: { userId: user.username, name: user.name, id_role: user.id_role, role: user.id_role } // Informasi tambahan yang diperlukan
             };
         } else {
             // Periksa apakah username terdaftar
-            user = await UserModel.getUserByUsername(username)
+            user = await UserModel.getUserWithRoleByUsername(username)
             if (!user) return response(404, {}, 'Not Authorized', res)
 
             // Periksa apakah password yang diinputkan sama dengan di database
@@ -41,7 +42,7 @@ const auth = async (req, res) => {
             token = jwt.sign({ userId: user.username }, 'parlaungan1980', { expiresIn: '1h' })
             validTokens[token] = {
                 expiresAt: new Date().getTime() + 3600 * 1000, // Waktu kadaluarsa 1 jam
-                userData: { userId: user.username } // Informasi tambahan yang diperlukan
+                userData: { userId: user.username, name: user.name } // Informasi tambahan yang diperlukan
             };
         }
 

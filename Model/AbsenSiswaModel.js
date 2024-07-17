@@ -6,13 +6,21 @@ const dataAllAbsensiSiswa = async (trx = db) => await trx('absen').join('detail_
 
 const dataAllKetidakhadiranSiswa = async (trx = db) => {
     return await trx('absen')
-        .join('detail_siswa', 'absen.id_siswa', '=', 'detail_siswa.id_siswa')
+        .select('detail_siswa.nama_siswa', 'absen.keterangan', 'kelas.id_kelas', 'kelas.tingkat', 'kelas.jurusan')
+        .join('detail_siswa', 'detail_siswa.id_siswa', '=', 'absen.id_siswa')
+        .join('siswa', 'siswa.id_siswa', '=', 'absen.id_siswa')
+        .join('kelas', 'kelas.id_kelas', '=', 'siswa.kelas_id')
         .whereNull('absen.waktu_absen')
 }
 
 const getAllSiswaTerlambat = async (trx = db) => {
     const masuk = await AbsenSiswaUtils.jamMasuk()
-    return await trx('absen').join('detail_siswa', 'absen.id_siswa', '=', 'detail_siswa.id_siswa').where('absen.waktu_absen', '>', masuk.masuk)
+    return await trx('absen')
+        .select('detail_siswa.nama_siswa', 'absen.keterangan', 'absen.waktu_absen', 'kelas.id_kelas', 'kelas.tingkat', 'kelas.jurusan')
+        .join('detail_siswa', 'absen.id_siswa', '=', 'detail_siswa.id_siswa')
+        .join('siswa', 'siswa.id_siswa', '=', 'absen.id_siswa')
+        .join('kelas', 'kelas.id_kelas', '=', 'siswa.kelas_id')
+        .where('absen.waktu_absen', '>', masuk.masuk)
 }
 
 const dataKetidakhadiranKelas = async (kelas_id, trx = db) => {

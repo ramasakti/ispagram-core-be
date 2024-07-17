@@ -26,6 +26,7 @@ const mapelRouter = require('./MapelRouter')
 const dashboardRouter = require('./DashboardRouter')
 const alumniRouter = require('./AlumniRouter')
 const blogRouter = require('./BlogRouter')
+const kedisiplinanRouter = require('./KedisiplinanRouter');
 
 app.use(navbarRouter)
 app.use(accessRouter)
@@ -51,6 +52,7 @@ app.use(mapelRouter)
 app.use(dashboardRouter)
 app.use(alumniRouter)
 app.use(blogRouter)
+app.use(kedisiplinanRouter)
 app.use(chatRouter)
 app.use(authRouter)
 
