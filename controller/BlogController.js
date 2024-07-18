@@ -5,7 +5,7 @@ const article = async (req, res) => {
     try {
         const articles = await BlogModel.getAllArticle()
 
-        return response(200, articles, ``, res)
+        return response(200, articles, `Data Semua Artikel`, res)
     } catch (error) {
         console.error(error)
         return response(500, null, `Internal Server Error!`, res)
@@ -19,14 +19,14 @@ const detail = async (req, res) => {
 
         if (!article) return response(404, null, `Article Not Found`, res)
 
-        return response(200, article, ``, res)
+        return response(200, article, `Artikel ${article.title}`, res)
     } catch (error) {
         console.error(error)
-        return response(500, null, `Internal Server Error!`, res) 
+        return response(500, null, `Internal Server Error!`, res)
     }
 }
 
-const store =  async (req, res) => {
+const store = async (req, res) => {
     try {
         const { slug, title, description, content, uploader } = req.body
 
@@ -41,7 +41,47 @@ const store =  async (req, res) => {
             slug, banner, title, description, content, uploader
         })
 
-        return response(201, {}, ``, res)
+        return response(201, {}, `Berhasil Menambah Artikel`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal Server Error!`, res)
+    }
+}
+
+const update = async (req, res) => {
+    try {
+        const slug = req.params.slug
+        const { title, description, content } = req.body
+
+        if (req.file) {
+            if (!req.file.mimetype.startsWith('image/')) {
+                return response(400, null, `File yang diunggah bukan gambar!`, res)
+            }
+            
+            const banner = req.file.path
+            await BlogModel.updateArticleBySlug(slug, {
+                banner, title, description, content
+            })
+        }
+
+        await BlogModel.updateArticleBySlug(slug, {
+            title, description, content
+        })
+        
+        return response(201, {}, `Berhasil Update Data Artikel`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal Server Error!`, res)
+    }
+}
+
+const destroy = async (req, res) => {
+    try {
+        const slug = req.params.slug
+
+        await BlogModel.deleteArticleBySlug(slug)
+
+        return response(201, {}, `Berhasil Delete Data Artikel`, res)
     } catch (error) {
         console.error(error)
         return response(500, null, `Internal Server Error!`, res)
@@ -51,5 +91,7 @@ const store =  async (req, res) => {
 module.exports = {
     article,
     detail,
-    store
+    store,
+    update,
+    destroy
 };
