@@ -24,6 +24,8 @@ const getUserWithRoleByUsername = async (username, trx = db) => {
             'users.username',
             'users.email',
             'users.avatar',
+            'users.password',
+            'role.id_role',
             'role.role',
             db.raw('CASE WHEN guru.id_guru IS NOT NULL THEN guru.nama_guru ELSE detail_siswa.nama_siswa END AS name')
         )
@@ -40,6 +42,7 @@ const getUserWithRoleByEmail = async (email, trx = db) => {
             'users.username',
             'users.email',
             'users.avatar',
+            'users.password',
             'role.id_role',
             'role.role',
             db.raw('CASE WHEN guru.id_guru IS NOT NULL THEN guru.nama_guru ELSE detail_siswa.nama_siswa END AS name')
