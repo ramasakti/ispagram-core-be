@@ -12,6 +12,8 @@ const engine = async (req, res) => {
         const username = req.params.username
         const rfid = await SiswaModel.getSiswaByRFID(username)
         const user = await UserModel.getUserByUsername(username) ?? rfid
+
+        if (!user) return response(404, null, `ID Anda Tidak Terdaftar!`, res)
         
         if (user.role === 'Siswa') {
             const absen = await AbsenSiswaModel.dataAbsensiSiswaIndividu(username)

@@ -18,6 +18,7 @@ const getSiswaByRFID = async (rfid, trx = db) => {
     return await trx('siswa')
         .join('detail_siswa', 'detail_siswa.id_siswa', '=', 'siswa.id_siswa')
         .join('users', 'users.username', '=', 'siswa.id_siswa')
+        .join('role', 'role.id_role', '=', 'users.role')
         .where('siswa.rfid', rfid)
         .first()
 }
