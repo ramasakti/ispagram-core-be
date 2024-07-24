@@ -16,14 +16,14 @@ const engine = async (req, res) => {
         if (!user) return response(404, null, `ID Anda Tidak Terdaftar!`, res)
         
         if (user.role === 'Siswa') {
-            const absen = await AbsenSiswaModel.dataAbsensiSiswaIndividu(username)
+            const absen = await AbsenSiswaModel.dataAbsensiSiswaIndividu(user.username)
             if (absen.waktu_absen) return response(200, null, `${absen.nama_siswa} Sudah Absen!`, res)
 
             const hari = await HariModel.getHariByHari(Moment().format('dddd'))
             if (hari.masuk < Moment().format('HH:mm:ss')) {
-                await AbsenSiswaModel.updateAbsenOrTerlambat(username, 'T')
+                await AbsenSiswaModel.updateAbsenOrTerlambat(user.username, 'T')
             }else{
-                await AbsenSiswaModel.updateHadir(username)
+                await AbsenSiswaModel.updateHadir(user.username)
             }
 
             return response(201, {}, `${absen.nama_siswa} Berhasil Absen!`, res)
@@ -34,7 +34,7 @@ const engine = async (req, res) => {
             
             // Insert Absen
             await AbsenStafModel.insertAbsenStaf({
-                guru_id: username, 
+                guru_id: user.username, 
                 tanggal: moment().format('YYYY-MM-DD'),
                 waktu: moment().format('HH:MM:SS'),
                 keterangan: 'Hadir'
