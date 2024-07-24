@@ -21,6 +21,7 @@ const getAllSiswaTerlambat = async (trx = db) => {
         .join('siswa', 'siswa.id_siswa', '=', 'absen.id_siswa')
         .join('kelas', 'kelas.id_kelas', '=', 'siswa.kelas_id')
         .where('absen.waktu_absen', '>', masuk.masuk)
+        .andWhere('absen.keterangan', 'T')
 }
 
 const dataKetidakhadiranKelas = async (kelas_id, trx = db) => {
