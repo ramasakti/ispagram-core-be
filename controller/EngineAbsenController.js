@@ -3,15 +3,15 @@ const UserModel = require('../Model/UserModel')
 const AbsenStafModel = require('../Model/AbsenStafModel')
 const AbsenSiswaModel = require('../Model/AbsenSiswaModel')
 const HariModel = require('../Model/HariModel')
+const SiswaModel = require('../Model/SiswaModel')
 const Moment = require('../utilities/Moment')
 
 const engine = async (req, res) => {
     try {
         // console.log(req.user)
         const username = req.params.username
-        const user = await UserModel.getUserByUsername(username)
-
-        if (!user) return response(404, null, `ID Anda Tidak Terdaftar!`, res)
+        const rfid = await SiswaModel.getSiswaByRFID(username)
+        const user = await UserModel.getUserByUsername(username) ?? rfid
         
         if (user.role === 'Siswa') {
             const absen = await AbsenSiswaModel.dataAbsensiSiswaIndividu(username)

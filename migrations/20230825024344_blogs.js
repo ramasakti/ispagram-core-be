@@ -11,6 +11,8 @@ exports.up = function (knex) {
         table.string('description');
         table.text('content');
         table.string('uploader');
+        table.string('status');
+        table.integer('hit').defaultTo(0);
         table.timestamps(true, true);
 
         table.foreign('uploader').references('username').inTable('users');

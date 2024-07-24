@@ -1,23 +1,69 @@
 const response = require('../Response')
 const BlogModel = require('../Model/BlogModel')
 
-const article = async (req, res) => {
+const index = async (req, res) => {
     try {
-        const articles = await BlogModel.getAllArticle()
+        const jumbotron = await BlogModel.getArticleByStatus('Jumbotron')
+        const second = await BlogModel.getArticleByStatus('Second')
+        const third = await BlogModel.getArticleByStatusWithLimit('Third', 3)
+        const popular = await BlogModel.getPopularArticle(5)
+        const newest = await BlogModel.getNewestArticle(4)
 
-        return response(200, articles, `Data Semua Artikel`, res)
+        const data = { second, jumbotron, third, popular, newest }
+        return response(200, data, ``, res)
     } catch (error) {
         console.error(error)
         return response(500, null, `Internal Server Error!`, res)
     }
 }
 
+const article = async (req, res) => {
+    try {
+        const articles = await BlogModel.getAllArticle()
+        const parsed = articles.map(item => {
+            let categories = []
+            if (item.categories) {
+                try {
+                    const jsonString = '[' + item.categories.trim() + ']'
+                    categories = JSON.parse(jsonString)
+                } catch (parseError) {
+                    console.error(`JSON parse error for categories: ${item.categories}`, parseError)
+                }
+            }
+
+            return {
+                ...item,
+                categories: categories
+            }
+        })
+
+        return response(200, parsed, 'Data Semua Artikel', res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, 'Internal Server Error!', res)
+    }
+}
+
 const detail = async (req, res) => {
     try {
         const slug = req.params.slug
-        const article = await BlogModel.getArticleBySlug(slug)
+        let article = await BlogModel.getArticleBySlug(slug)
 
         if (!article) return response(404, null, `Article Not Found`, res)
+
+        const jsonString = '[' + article.categories.trim() + ']'
+        const categories = JSON.parse(jsonString)
+        
+        let cat = []
+        categories.map(item => {
+            const b = article.categories = {
+                label: item.name,
+                value: item.id_category
+            }
+            cat.push(b)
+        })
+
+        article.categories = cat
 
         return response(200, article, `Artikel ${article.title}`, res)
     } catch (error) {
@@ -28,7 +74,10 @@ const detail = async (req, res) => {
 
 const store = async (req, res) => {
     try {
-        const { slug, title, description, content, uploader } = req.body
+        const { slug, title, description, category, content, uploader, status } = req.body
+
+        console.log(req.body);
+        if (!slug || !title || !description || !content || !uploader || !status) return response(400, null, `Wajib Mengisi Semua Field!`, res)
 
         if (!req.file) return response(400, null, `Wajib Upload Banner!`, res)
 
@@ -38,10 +87,10 @@ const store = async (req, res) => {
         }
 
         await BlogModel.insertArticle({
-            slug, banner, title, description, content, uploader
+            slug, banner, title, description, category, content, uploader, status
         })
 
-        return response(201, {}, `Berhasil Menambah Artikel`, res)
+        return response(201, req.body, `Berhasil Menambah Artikel`, res)
     } catch (error) {
         console.error(error)
         return response(500, null, `Internal Server Error!`, res)
@@ -51,23 +100,23 @@ const store = async (req, res) => {
 const update = async (req, res) => {
     try {
         const slug = req.params.slug
-        const { title, description, content } = req.body
+        const { title, description, category, content, status } = req.body
 
         if (req.file) {
             if (!req.file.mimetype.startsWith('image/')) {
                 return response(400, null, `File yang diunggah bukan gambar!`, res)
             }
-            
+
             const banner = req.file.path
             await BlogModel.updateArticleBySlug(slug, {
-                banner, title, description, content
+                banner, title, description, content, status
             })
         }
 
         await BlogModel.updateArticleBySlug(slug, {
             title, description, content
         })
-        
+
         return response(201, {}, `Berhasil Update Data Artikel`, res)
     } catch (error) {
         console.error(error)
@@ -88,10 +137,41 @@ const destroy = async (req, res) => {
     }
 }
 
+const category = async (req, res) => {
+    try {
+        const id_category = req.params.id_category
+
+        const featured = await BlogModel.getFeaturedArticleInCategory(id_category)
+        const popular = await BlogModel.getPopularArticleInCategoryWithLimit(id_category, 5)
+        const newest = await BlogModel.getNewestArticleInCategoryWithLimit(id_category, 3)
+
+        const data = { featured, popular, newest }
+        return response(200, data, ``, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal Server Error!`, res)
+    }
+}
+
+const blogCategory = async (req, res) => {
+    try {
+        const id_category = req.params.id_category
+        const blogCategory = await BlogModel.getArticleInCategory(id_category)
+
+        return response(200, blogCategory, ``, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal Server Error!`, res)
+    }
+}
+
 module.exports = {
+    index,
     article,
     detail,
     store,
     update,
-    destroy
+    destroy,
+    category,
+    blogCategory
 };

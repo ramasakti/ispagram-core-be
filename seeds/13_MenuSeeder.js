@@ -48,18 +48,11 @@ exports.seed = async function (knex) {
 			order: 5
 		},
 		{
-			name: 'Blog',
+			name: 'Artikel',
 			type: 1,
 			route: '/web/blog',
 			section_id: 1,
 			order: 6
-		},
-		{
-			name: 'Galeri',
-			type: 1,
-			route: '/web/galeri',
-			section_id: 1,
-			order: 7
 		},
 		{
 			name: 'Users',
@@ -121,6 +114,12 @@ exports.seed = async function (knex) {
 			type: 2,
 			section_id: 3,
 			order: 5
+		},
+		{
+			name: 'Point Kedisiplinan',
+			type: 2,
+			section_id: 3,
+			order: 6
 		},
 		{
 			name: 'Data Guru',

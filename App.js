@@ -30,9 +30,12 @@ const log = []
 
 const acceptedHost = [
     `http://${getServerIP()}:3000`,
+    `http://${getServerIP()}:8080`,
     'http://localhost:3000',
     'https://smaispa.sch.id',
+    'https://api.smaispa.sch.id',
     'https://smparditamawaru.sch.id',
+    'https://api.smparditamawaru.sch.id',
     'ispagram.vercel.app',
     'http://ispagram.vercel.app',
     'https://ispagram.vercel.app',

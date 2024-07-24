@@ -14,6 +14,14 @@ const getSiswaAndUserInfoByID = async (id_siswa, trx = db) => {
         .first()
 }
 
+const getSiswaByRFID = async (rfid, trx = db) => {
+    return await trx('siswa')
+        .join('detail_siswa', 'detail_siswa.id_siswa', '=', 'siswa.id_siswa')
+        .join('users', 'users.username', '=', 'siswa.id_siswa')
+        .where('siswa.rfid', rfid)
+        .first()
+}
+
 const getDetailSiswaByID = async (id_siswa, trx = db) => await trx('detail_siswa').where('detail_siswa.id_siswa', id_siswa).first()
 
 const getSiswaByKelas = async (id_kelas, trx = db) => {
@@ -43,6 +51,7 @@ module.exports = {
     getSiswaByID,
     getSiswaAndUserInfoByID,
     getDetailSiswaByID,
+    getSiswaByRFID,
     getSiswaByKelas,
     insertSiswa,
     updateSiswaByID,
