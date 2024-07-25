@@ -19,9 +19,13 @@ const updateHari = async (req, res) => {
         // Tangkap inputan
         let { nama_hari, diniyah, jam_diniyah, masuk, istirahat, pulang, jampel, piket, status } = req.body
 
+        if (diniyah && !jam_diniyah) return response(400, null, `Semua Form Wajib Diisi!`, res)
+
         // Ubah format waktu
-        jam_diniyah.mulai = moment(jam_diniyah.mulai, 'HH:mm:ss').format('HH:mm:ss')
-        jam_diniyah.sampai = moment(jam_diniyah.sampai, 'HH:mm:ss').format('HH:mm:ss')
+        if (jam_diniyah) {
+            jam_diniyah.mulai = moment(jam_diniyah.mulai, 'HH:mm:ss').format('HH:mm:ss')
+            jam_diniyah.sampai = moment(jam_diniyah.sampai, 'HH:mm:ss').format('HH:mm:ss')
+        }
         masuk = moment(masuk, 'HH:mm:ss').format('HH:mm:ss')
         pulang = moment(pulang, 'HH:mm:ss').format('HH:mm:ss')
         jampel = moment(jampel, 'HH:mm:ss').format('HH:mm:ss')
@@ -39,7 +43,7 @@ const updateHari = async (req, res) => {
 
         // Update hari
         await HariModel.updateHariByID(id_hari, {
-            nama_hari, diniyah, jam_diniyah, masuk, istirahat, piket, status
+            nama_hari, diniyah, jam_diniyah: jam_diniyah ?? null, masuk, istirahat, piket, status
         })
 
         return response(201, {}, `Berhasil edit hari!`, res)
