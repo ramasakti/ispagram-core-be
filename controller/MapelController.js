@@ -1,5 +1,7 @@
+const db = require('../Config')
 const response = require('../Response')
 const MapelModel = require('../Model/MapelModel')
+const ExcelJS = require('exceljs')
 
 const mapel = async (req, res) => {
     try {
@@ -69,10 +71,40 @@ const mapelByKelas = async (req, res) => {
     }
 }
 
+const importMapel = async (req, res) => {
+    const trx = await db.transaction();
+    try {
+        if (!req.file) return response(400, null, `No file uploaded!`, res);
+
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(req.file.buffer);
+        const worksheet = workbook.getWorksheet(1);
+        const rows = worksheet.getSheetValues();
+
+        const data = rows.slice(2).map(row => ({
+            nama_mapel: row[1],
+            kelas_id: row[2],
+        }));
+
+        for (const mapel of data) {
+            await MapelModel.insertMapel({
+                nama_mapel: mapel.nama_mapel,
+                kelas_id: mapel.kelas_id
+            })
+        }
+
+        return response(201, {}, `Berhasil Import Mapel`, res)
+    } catch (error) {
+        console.error(error)
+        return response(400, null, `Internal Server Error!`, res)
+    }
+}
+
 module.exports = {
     mapel,
     store,
     update,
     destroy,
-    mapelByKelas
+    mapelByKelas,
+    importMapel
 };
