@@ -43,7 +43,7 @@ const updateHari = async (req, res) => {
 
         // Update hari
         await HariModel.updateHariByID(id_hari, {
-            nama_hari, diniyah, jam_diniyah: jam_diniyah ?? null, masuk, istirahat, piket, status
+            nama_hari, diniyah, jam_diniyah: jam_diniyah ?? null, masuk, istirahat, jampel, piket, status
         })
 
         return response(201, {}, `Berhasil edit hari!`, res)

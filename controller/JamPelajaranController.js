@@ -8,8 +8,10 @@ const jamPelajaran = async (req, res) => {
         const jamPelajaran = await db('jam_pelajaran')
             .whereNot('keterangan', 'like', '%Istirahat%')
             .whereNot('keterangan', 'like', '%Diniyah%')
-            .select()
-        return response(200, jamPelajaran, `Berhasil get data jam pelajaran!`, res)
+            .orderBy('mulai', 'ASC')
+            .orderBy('id_jampel', 'ASC')
+
+            return response(200, jamPelajaran, `Berhasil get data jam pelajaran!`, res)
     } catch (error) {
         console.error(error)
         return response(500, null, `Internal Server Error`, res)
@@ -48,36 +50,44 @@ const detailJampel = async (req, res) => {
 }
 
 const storeJampel = async (req, res) => {
-    const { hari, keterangan, mulai, selesai } = req.body
-    if (!hari || !keterangan || !mulai || !selesai) return response(400, null, `Semua field wajib diisi!`, res)
-    if (await existingHari.existingHari(hari) === null) return response(400, mull, `Format hari tidak sesuai!`, res)
+    const { hari, keterangan, mulai, selesai } = req.body;
+    if (!hari || !keterangan || !mulai || !selesai) return response(400, null, `Semua field wajib diisi!`, res);
+    if (await existingHari.existingHari(hari) === null) return response(400, null, `Format hari tidak sesuai!`, res);
 
     try {
         const result = await db('jam_pelajaran')
             .where(function (query) {
                 query
-                    .whereBetween('mulai', [mulai, selesai])
-                    .orWhereBetween('selesai', [mulai, selesai])
+                    .where(function (subquery) {
+                        subquery
+                            .where('mulai', '<', mulai)
+                            .andWhere('selesai', '>', mulai)
+                    })
+                    .orWhere(function (subquery) {
+                        subquery
+                            .where('mulai', '<', selesai)
+                            .andWhere('selesai', '>', selesai)
+                    });
             })
-            .where('hari', hari)
+            .where('hari', hari);
 
         if (result.length < 1) {
             await db('jam_pelajaran').insert({
                 hari: hari,
                 keterangan: keterangan,
                 mulai: mulai,
-                selesai: selesai + ':59',
-            })
+                selesai: selesai + ':00',
+            });
 
-            return response(201, {}, `Berhasil menambah jam pelajaran baru!`, res)
+            return response(201, {}, `Berhasil menambah jam pelajaran baru!`, res);
         } else {
-            return response(400, null, `Gagal! jam pelajaran berbenturan`, res)
+            return response(400, null, `Gagal! jam pelajaran berbenturan`, res);
         }
+    } catch (error) {
+        return response(500, null, `Internal server error!`, res);
     }
-    catch (error) {
-        return response(500, null, `Internal server error!`, res)
-    }
-}
+};
+
 
 const updateJampel = async (req, res) => {
     const { mulai, selesai, hari, keterangan, id_jampel } = req.body
