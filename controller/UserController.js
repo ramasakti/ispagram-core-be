@@ -107,13 +107,13 @@ const update = async (req, res) => {
 const forgetPassword = async (req, res) => {
     try {
         const { email } = req.body
-        const detailUser = await UserModel.getUserWithGuruByEmail(email)
+        const detailUser = await UserModel.getUserWithRoleByEmail(email)
         if (!detailUser) return response(400, null, `Email tidak terdaftar!`, res)
 
         const randomPassword = crypto.randomBytes(Math.ceil(8 / 2)).toString('hex').slice(0, 8)
-        await UserModel.updateUserPasswordByEmail(email, randomPassword)
+        await UserModel.updateUserPasswordByEmail(email, await bcrypt.hash(randomPassword, 10))
 
-        const text = `Assalamualaikum Warahmatullahi Wabarakatuh! ${detailUser.name}\n\nSesuai dengan permintaan anda perihal reset password, berikut adalah detail akun yang digunakan untuk login di aplikasi Ispagram\nUsername: ${detailUser.username}\nPassword: ${randomPassword}\n\nNote: Segera ganti password anda agar mudah diingat`
+        const text = `Assalamualaikum Warahmatullahi Wabarakatuh! ${detailUser.nama_guru ?? detailUser.nama_siswa}\n\nSesuai dengan permintaan anda perihal reset password, berikut adalah detail akun yang digunakan untuk login di aplikasi Ispagram\nUsername: ${detailUser.username}\nPassword: ${randomPassword}\n\nNote: Segera ganti password anda agar mudah diingat`
         sendMail.credentialInfo(email, `Informasi Reset Password`, text)
 
         return response(200, null, `Berhasil reset password! Cek kotak masuk email untuk mengetahui password baru anda!`, res)

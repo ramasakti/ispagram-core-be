@@ -2,18 +2,18 @@ const nodemailer = require('nodemailer')
 const db = require('../Config')
 
 const transporter = nodemailer.createTransport({
-    host: "mail.smaispa.sch.id",
-    port: 465,
+    host: process.env.SMPTP_HOST,
+    port: process.env.SMPTP_PORT,
     secure: true,
     auth: {
-        user: process.env.EMAIL_SMTP, // Ganti dengan email pengirim
-        pass: process.env.PASSWORD_SMTP // Ganti dengan kata sandi email pengirim
+        user: process.env.SMPTP_MAIL, // Ganti dengan email pengirim
+        pass: process.env.SMPTP_PASS // Ganti dengan kata sandi email pengirim
     }
 })
 
 const credentialInfo = (to, subject, text) => {
     const mailOptions = {
-        from: '"SMA Islam Parlaungan" <admin@smaispa.sch.id>', // Alamat email pengirim
+        from: `${process.env.SMPTP_NAME} <${process.env.SMPTP_MAIL}>`, // Alamat email pengirim
         to, // Alamat email penerima
         subject, // Subjek email
         text // Isi email
