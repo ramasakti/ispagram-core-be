@@ -11,6 +11,7 @@ router.route('/mapel')
     .post(MapelController.store)
 
 router.route('/mapel/import/excel')
+    .get(MapelController.downloadTemplate)
     .post(upload.single('file'), MapelController.importMapel)
 
 router.route('/mapel/:id_mapel')

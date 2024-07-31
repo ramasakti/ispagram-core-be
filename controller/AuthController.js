@@ -5,6 +5,7 @@ const moment = require('../utilities/Moment')
 const UserModel = require('../Model/UserModel')
 const KelasModel = require('../Model/KelasModel')
 const HariModel = require('../Model/HariModel')
+const RoleModel = require('../Model/RoleModel')
 
 const validTokens = {};
 
@@ -48,17 +49,18 @@ const auth = async (req, res) => {
 
         // Manipulasi role
         if (user.role === 'Guru') {
-            const piket = await HariModel.getHariByHari(moment().format('dddd'))
+            const piket = await HariModel.getHariWithPiketByPiket(user.username)
             const walas = await KelasModel.getKelasByWalas(user.username)
-
+            
             // Jika terjadwal piket
             if (piket) {
-                const dataUser = {
+                const role = await RoleModel.getRoleByRole('Piket')
+                let dataUser = {
                     username: user.username,
                     name: user.name,
                     email: user.email,
                     avatar: user.avatar,
-                    id_role: 9,
+                    id_role: role.id_role,
                     role: 'Piket',
                 }
 
@@ -73,12 +75,13 @@ const auth = async (req, res) => {
 
             // Jika wali kelas
             if (walas) {
+                const role = await RoleModel.getRoleByRole('Wali Kelas')
                 const dataUser = {
                     username: user.username,
                     name: user.name,
                     email: user.email,
                     avatar: user.avatar,
-                    id_role: 10,
+                    id_role: role.id_role,
                     role: 'Walas',
                     walas: true,
                     kelas_id: walas.id_kelas

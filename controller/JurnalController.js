@@ -3,10 +3,10 @@ const response = require('../Response')
 const moment = require('../utilities/Moment')
 const JurnalModel = require('../Model/JurnalModel')
 
-const insertingJurnal = async (req, res) => {
+const store = async (req, res) => {
     try {
         const { id_jadwal, inval, guru, materi } = req.body
-        if (!id_jadwal || !guru || !materi) return response(400, req.body, `Semua data wajib diisi!`, res)
+        if (!id_jadwal || !materi) return response(400, req.body, `Semua data wajib diisi!`, res)
 
         const jadwal = await db('jadwal').join('jam_pelajaran', 'jam_pelajaran.id_jampel', '=', 'jadwal.jampel').where('id_jadwal', id_jadwal).first()
         if (!jadwal) return response(404, null, `Jadwal tidak ditemukan!`, res)
@@ -18,9 +18,10 @@ const insertingJurnal = async (req, res) => {
 
         await db('jurnal').insert({
             tanggal: moment().format('YYYY-MM-DD'),
+            waktu: moment().format('HH:mm:ss'),
             jadwal_id: id_jadwal,
             inval,
-            guru_id: guru,
+            guru_id: guru ?? jadwal.guru_id,
             materi
         })
 
@@ -47,6 +48,6 @@ const jurnal = async (req, res) => {
 }
 
 module.exports = {
-    insertingJurnal,
+    store,
     jurnal
 };

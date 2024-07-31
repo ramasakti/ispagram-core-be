@@ -4,6 +4,6 @@ const JurnalController = require('../controller/JurnalController')
 
 router.route('/jurnal')
     .get(JurnalController.jurnal)
-    .post(JurnalController.insertingJurnal)
+    .post(JurnalController.store)
 
 module.exports = router

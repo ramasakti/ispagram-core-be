@@ -89,6 +89,7 @@ const rekapIndividu = async (id_siswa, trx = db) => {
             db.raw('SUM(CASE WHEN rekap_siswa.keterangan = "T" THEN 1 ELSE 0 END) AS T')
         )
         .join('rekap_siswa', 'siswa.id_siswa', '=', 'rekap_siswa.siswa_id')
+        .join('detail_siswa', 'siswa.id_siswa', '=', 'detail_siswa.id_siswa')
         .where('siswa.id_siswa', id_siswa)
         .groupBy('siswa.id_siswa', 'detail_siswa.nama_siswa')
         .first()
