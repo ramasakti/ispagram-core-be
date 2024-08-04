@@ -22,4 +22,7 @@ router.route('/siswa/:id_siswa')
 router.route('/siswa/import/excel')
     .post(upload.single('file'), SiswaController.importSiswa)
 
+router.route('/siswa/template/excel')
+    .get(SiswaController.exportExcel)
+
 module.exports = router

@@ -2,14 +2,15 @@ const db = require('../Config')
 const response = require('../Response')
 const moment = require('../utilities/Moment')
 const existingHari = require('../utilities/HariUtils')
+const HariModel = require('../Model/HariModel')
 
 const jamPelajaran = async (req, res) => {
     try {
         const jamPelajaran = await db('jam_pelajaran')
             .whereNot('keterangan', 'like', '%Istirahat%')
             .whereNot('keterangan', 'like', '%Diniyah%')
-            .orderBy('mulai', 'ASC')
             .orderBy('id_jampel', 'ASC')
+            .orderBy('mulai', 'ASC')
 
             return response(200, jamPelajaran, `Berhasil get data jam pelajaran!`, res)
     } catch (error) {
@@ -26,7 +27,7 @@ const jamPelajaranFree = async (req, res) => {
             .select('jadwal.jampel')
             .join('jam_pelajaran', 'jam_pelajaran.id_jampel', '=', 'jadwal.jampel')
             .join('mapel', 'mapel.id_mapel', '=', 'jadwal.mapel')
-            .where('mapel.kelas_id', kelas)
+            .where('jadwal.kelas_id', kelas)
 
         let idJamPelajaranFilled = []
         jamPelajaranFilled.map(item => idJamPelajaranFilled.push(item.jampel))
@@ -35,7 +36,7 @@ const jamPelajaranFree = async (req, res) => {
             .whereNotIn('id_jampel', idJamPelajaranFilled)
             .whereNot('keterangan', 'like', '%Istirahat%')
             .whereNot('keterangan', 'like', '%Diniyah%')
-
+        
         return response(200, jamPelajaranFree, `Data Jam Pelajaran`, res)
     } catch (error) {
         console.error(error)
@@ -139,7 +140,7 @@ const deleteJampel = async (req, res) => {
 }
 
 const generateJampel = async (req, res) => {
-    const hariData = await db.select('*').from('hari').where('status', 1);
+    const hariData = await HariModel.getAllHariActive()
     const jamPelajaranData = [];
 
     hariData.forEach((hari) => {

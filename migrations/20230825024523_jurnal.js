@@ -8,7 +8,7 @@ exports.up = function (knex) {
         table.date('tanggal');
         table.time('waktu');
         table.integer('jadwal_id').unsigned();
-        table.boolean('inval');
+        table.boolean('inval').defaultTo(false);
         table.string('guru_id').nullable();
         table.text('materi');
         table.string('created_by');

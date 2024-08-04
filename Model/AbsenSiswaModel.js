@@ -33,9 +33,9 @@ const dataKetidakhadiranKelas = async (kelas_id, trx = db) => {
 
 const dataAbsensiSiswaIndividu = async (id_siswa, trx = db) => {
     return await trx('absen')
-        .select('detail_siswa.nama_siswa', 'absen.waktu_absen')
+        .select('detail_siswa.nama_siswa', 'absen.waktu_absen', 'users.avatar')
         .join('detail_siswa', 'absen.id_siswa', '=', 'detail_siswa.id_siswa')
-        .select('detail_siswa.nama_siswa', 'absen.waktu_absen')
+        .join('users', 'users.username', '=', 'absen.id_siswa')
         .where('detail_siswa.id_siswa', id_siswa)
         .first()
 }

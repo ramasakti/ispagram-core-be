@@ -11,4 +11,10 @@ router.route('/jadwal/:id_jadwal')
     .put(JadwalController.update)
     .delete(JadwalController.destroy)
 
+router.route('/jadwal/template/excel')
+    .get(JadwalController.exportExcel)
+
+router.route('/jadwal/import/excel')
+    .post(JadwalController.importExcel)
+
 module.exports = router

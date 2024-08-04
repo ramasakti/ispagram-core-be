@@ -147,6 +147,115 @@ const destroy = async (req, res) => {
     }
 }
 
+const templateExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sheet1');
+
+    const kelas = await KelasModel.getAllKelas();
+
+    // Sheet for kelas data
+    const dataKelasSheet = workbook.addWorksheet('DataKelas');
+    dataKelasSheet.state = 'hidden';
+    kelas.forEach((kls, index) => {
+        dataKelasSheet.getCell(`A${index + 2}`).value = `${kls.tingkat} ${kls.jurusan}`;
+        dataKelasSheet.getCell(`B${index + 2}`).value = kls.id_kelas;
+    });
+
+    // Data validation using range references
+    const kelasValidation = {
+        type: 'list',
+        allowBlank: true,
+        formulae: [`DataKelas!$A$2:$A$${kelas.length + 1}`]
+    };
+
+    for (let i = 2; i <= 1500; i++) {
+        worksheet.getCell(`E${i}`).dataValidation = kelasValidation;
+        worksheet.getCell(`J${i}`).value = { formula: `VLOOKUP(B${i},'DataKelas'!$A$2:$B$${kelas.length + 1},2,FALSE)` };
+    }
+    worksheet.getCell('A1').value = 'NIS / ID Siswa';
+    worksheet.getCell('B1').value = 'RFID';
+    worksheet.getCell('C1').value = 'Email';
+    worksheet.getCell('D1').value = 'Nama Siswa';
+    worksheet.getCell('E1').value = 'Kelas';
+    worksheet.getCell('F1').value = 'Alamat';
+    worksheet.getCell('G1').value = 'Telp';
+    worksheet.getCell('H1').value = 'Tempat Lahir';
+    worksheet.getCell('I1').value = 'Tanggal Lahir';
+    worksheet.getCell('J1').value = 'ID Kelas';
+
+    worksheet.eachRow({ includeEmpty: true }, function (row, rowNumber) {
+        row.eachCell({ includeEmpty: true }, function (cell, colNumber) {
+            cell.protection = { locked: true };
+        });
+    });
+
+    for (let row = 2; row <= 1500; row++) {
+        worksheet.getCell(`A${row}`).protection = { locked: false };
+        worksheet.getCell(`B${row}`).protection = { locked: false };
+        worksheet.getCell(`C${row}`).protection = { locked: false };
+        worksheet.getCell(`D${row}`).protection = { locked: false };
+        worksheet.getCell(`E${row}`).protection = { locked: false };
+        worksheet.getCell(`F${row}`).protection = { locked: false };
+        worksheet.getCell(`G${row}`).protection = { locked: false };
+        worksheet.getCell(`H${row}`).protection = { locked: false };
+        worksheet.getCell(`I${row}`).protection = { locked: false };
+    }
+
+    worksheet.protect('parlaungan1980', {
+        selectLockedCells: true,
+        selectUnlockedCells: true
+    });
+
+    worksheet.getColumn('A').width = 9;
+    worksheet.getColumn('B').width = 9;
+    worksheet.getColumn('C').width = 25;
+    worksheet.getColumn('D').width = 25;
+    worksheet.getColumn('E').width = 25;
+    worksheet.getColumn('F').width = 100;
+    worksheet.getColumn('G').width = 10;
+    worksheet.getColumn('H').width = 10;
+    worksheet.getColumn('I').width = 10;
+    worksheet.getColumn('J').width = 10;
+
+    const borderStyle = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+    };
+
+    for (let row = 1; row <= 1500; row++) {
+        worksheet.getCell(`A${row}`).border = borderStyle;
+        worksheet.getCell(`B${row}`).border = borderStyle;
+        worksheet.getCell(`C${row}`).border = borderStyle;
+        worksheet.getCell(`D${row}`).border = borderStyle;
+        worksheet.getCell(`E${row}`).border = borderStyle;
+        worksheet.getCell(`F${row}`).border = borderStyle;
+        worksheet.getCell(`G${row}`).border = borderStyle;
+        worksheet.getCell(`H${row}`).border = borderStyle;
+        worksheet.getCell(`I${row}`).border = borderStyle;
+        worksheet.getCell(`J${row}`).border = borderStyle;
+    }
+
+    return workbook;
+}
+
+const exportExcel = async (req, res) => {
+    try {
+        const workbook = await templateExcel();
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=Template Excel Import Jadwal.xlsx');
+
+        await workbook.xlsx.write(res);
+
+        res.end();
+    } catch (error) {
+        console.error(error)
+        return response(400, null, `Internal Server Error!`, res)
+    }
+}
+
 const importSiswa = async (req, res) => {
     try {
         if (!req.file) return response(400, null, `No file uploaded!`, res);
@@ -161,7 +270,7 @@ const importSiswa = async (req, res) => {
             rfid: row[2],
             email: row[3],
             nama_siswa: row[4],
-            kelas_id: row[5],
+            kelas_id: row[10],
             alamat: row[6],
             telp: row[7],
             tempat_lahir: row[8],
@@ -177,6 +286,7 @@ const importSiswa = async (req, res) => {
             if (existingSiswaID.includes(row.id_siswa)) {
                 return response(400, null, `Data siswa ${row.id_siswa} already exists!`, res);
             } else if (!existingKelasID.find(kelas => kelas.id_kelas == row.kelas_id)) {
+                console.log(data);
                 return response(400, null, `Data kelas tidak valid!`, res);
             } else {
                 filteredData.push(row);
@@ -227,4 +337,4 @@ const importSiswa = async (req, res) => {
 
 
 
-module.exports = { siswa, siswaKelas, detail, store, update, destroy, importSiswa }
+module.exports = { siswa, siswaKelas, detail, store, update, destroy, importSiswa, exportExcel }

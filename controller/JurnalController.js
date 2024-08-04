@@ -37,8 +37,13 @@ const jurnal = async (req, res) => {
         const { tanggal, kelas } = req.query
         if (!tanggal || !kelas) return response(400, null, `Form Tidak Lengkap!`, res)
 
-        const jurnal = await JurnalModel.getJurnalByDateAndKelas(tanggal, kelas)
+        let jurnal = await JurnalModel.getJurnalByDateAndKelas(tanggal, kelas)
         if (jurnal.length < 1) return response(200, null, `Jurnal Kosong!`, res)
+
+        jurnal = jurnal.map(item => ({
+            ...item,
+            tanggal: moment().format('YYYY-MM-DD')
+        }))
         
         return response(200, jurnal, `Data Jurnal Tanggal ${tanggal} kelas ${jurnal.tingkat}`, res)
     } catch (error) {
@@ -47,7 +52,24 @@ const jurnal = async (req, res) => {
     }
 }
 
+const update = async (req, res) => {
+    try {
+        const id_jurnal = req.params.id_jurnal
+        const { inval, guru_id, materi } = req.body
+
+        await JurnalModel.updateJurnalByID(id_jurnal, {
+            inval, guru_id, materi
+        })
+
+        return response(201, {}, `Berhasil update jurnal`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal Server Error!`, res)
+    }
+}
+
 module.exports = {
     store,
-    jurnal
+    jurnal,
+    update
 };

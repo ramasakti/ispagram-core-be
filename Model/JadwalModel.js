@@ -1,4 +1,5 @@
 const db = require('../Config')
+const Moment = require('../utilities/Moment')
 
 const getAllJadwal = async (trx = db) => await trx('jadwal')
 
@@ -6,19 +7,61 @@ const getJadwalByID = async (id_jadwal, trx = db) => await trx('jadwal').where('
 
 const getFullJadwalByDateNow = async (tanggal, trx = db) => {
     return await trx('jadwal')
+        .select(
+            'jadwal.id_jadwal',
+            'jadwal.jampel',
+            'jam_pelajaran.hari',
+            'jam_pelajaran.keterangan',
+            'jam_pelajaran.mulai',
+            'jam_pelajaran.selesai',
+            'guru.id_guru',
+            'guru.nama_guru',
+            'mapel.id_mapel as mapel',
+            'mapel.nama_mapel',
+            'kelas.id_kelas as kelas_id',
+            'kelas.tingkat',
+            'kelas.jurusan',
+            'jurnal.id_jurnal',
+            'jurnal.inval'
+        )
         .join('jam_pelajaran', 'jadwal.jampel', '=', 'jam_pelajaran.id_jampel')
         .join('mapel', 'mapel.id_mapel', '=', 'jadwal.mapel')
-        .join('kelas', 'kelas.id_kelas', '=', 'mapel.kelas_id')
+        .join('kelas', 'kelas.id_kelas', '=', 'jadwal.kelas_id')
         .join('guru', 'guru.id_guru', '=', 'jadwal.guru_id')
-        .leftJoin('jurnal', 'jurnal.jadwal_id', '=', 'jadwal.id_jadwal')
-        .where('jurnal.tanggal', tanggal)
-        .orWhereNull('jurnal.tanggal')
+        .leftJoin('jurnal', function () {
+            this.on('jurnal.jadwal_id', '=', 'jadwal.id_jadwal')
+                .andOn(function () {
+                    this.on('jurnal.tanggal', '=', trx.raw('?', [tanggal]))
+                        .orOnNull('jurnal.tanggal');
+                });
+        })
         .orderBy('kelas.id_kelas', 'ASC')
-        .orderBy('jam_pelajaran.id_jampel', 'ASC')
+        .orderBy('jam_pelajaran.mulai', 'ASC');
 }
 
-const getJadwalInARow = async (trx = db) => {
-
+const getJadwalInARowByGuru = async (guru_id, trx = db) => {
+    return await trx('jadwal')
+        .select(
+            'jadwal.id_jadwal',
+            'guru.id_guru',
+            'guru.nama_guru',
+            'jam_pelajaran.keterangan',
+            'jam_pelajaran.mulai',
+            'jam_pelajaran.selesai',
+            'mapel.nama_mapel AS mapel'
+        )
+        .join('jam_pelajaran', 'jam_pelajaran.id_jampel', '=', 'jadwal.jampel')
+        .join('guru', 'guru.id_guru', '=', 'jadwal.guru_id')
+        .join('mapel', 'mapel.id_mapel', '=', 'jadwal.mapel')
+        .whereIn('jadwal.mapel', function () {
+            this.select('jadwal.mapel')
+                .from('jadwal')
+                .join('jam_pelajaran', 'jam_pelajaran.id_jampel', '=', 'jadwal.jampel')
+                .where('jam_pelajaran.mulai', '<=', Moment().format('HH:mm:ss'))
+                .andWhere('jam_pelajaran.selesai', '>=', Moment().format('HH:mm:ss'));
+        })
+        .andWhere('guru.id_guru', guru_id)
+        .orderBy('jam_pelajaran.mulai', 'ASC')
 }
 
 const getJadwalByGuru = async (id_guru, trx = db) => {
@@ -41,6 +84,7 @@ module.exports = {
     getAllJadwal,
     getJadwalByID,
     getFullJadwalByDateNow,
+    getJadwalInARowByGuru,
     insertJadwal,
     updateJadwal
 };

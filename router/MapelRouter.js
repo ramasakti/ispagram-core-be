@@ -18,7 +18,4 @@ router.route('/mapel/:id_mapel')
     .put(MapelController.update)
     .delete(MapelController.destroy)
 
-router.route('/mapel/kelas/:kelas_id')
-    .get(MapelController.mapelByKelas)
-
 module.exports = router
