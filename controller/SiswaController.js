@@ -170,7 +170,7 @@ const templateExcel = async () => {
 
     for (let i = 2; i <= 1500; i++) {
         worksheet.getCell(`E${i}`).dataValidation = kelasValidation;
-        worksheet.getCell(`J${i}`).value = { formula: `VLOOKUP(B${i},'DataKelas'!$A$2:$B$${kelas.length + 1},2,FALSE)` };
+        worksheet.getCell(`J${i}`).value = { formula: `VLOOKUP(E${i},'DataKelas'!$A$2:$B$${kelas.length + 1},2,FALSE)` };
     }
     worksheet.getCell('A1').value = 'NIS / ID Siswa';
     worksheet.getCell('B1').value = 'RFID';
@@ -180,7 +180,7 @@ const templateExcel = async () => {
     worksheet.getCell('F1').value = 'Alamat';
     worksheet.getCell('G1').value = 'Telp';
     worksheet.getCell('H1').value = 'Tempat Lahir';
-    worksheet.getCell('I1').value = 'Tanggal Lahir';
+    worksheet.getCell('I1').value = 'Tanggal Lahir (YYYY-MM-DD)';
     worksheet.getCell('J1').value = 'ID Kelas';
 
     worksheet.eachRow({ includeEmpty: true }, function (row, rowNumber) {
@@ -209,12 +209,12 @@ const templateExcel = async () => {
     worksheet.getColumn('A').width = 9;
     worksheet.getColumn('B').width = 9;
     worksheet.getColumn('C').width = 25;
-    worksheet.getColumn('D').width = 25;
-    worksheet.getColumn('E').width = 25;
-    worksheet.getColumn('F').width = 100;
-    worksheet.getColumn('G').width = 10;
-    worksheet.getColumn('H').width = 10;
-    worksheet.getColumn('I').width = 10;
+    worksheet.getColumn('D').width = 30;
+    worksheet.getColumn('E').width = 20;
+    worksheet.getColumn('F').width = 80;
+    worksheet.getColumn('G').width = 20;
+    worksheet.getColumn('H').width = 17;
+    worksheet.getColumn('I').width = 17;
     worksheet.getColumn('J').width = 10;
 
     const borderStyle = {
@@ -258,40 +258,45 @@ const exportExcel = async (req, res) => {
 
 const importSiswa = async (req, res) => {
     try {
-        if (!req.file) return response(400, null, `No file uploaded!`, res);
+        if (!req.file) return response(400, null, 'No file uploaded!', res);
 
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.load(req.file.buffer);
         const worksheet = workbook.getWorksheet(1);
-        const rows = worksheet.getSheetValues();
 
-        const data = rows.slice(2).map(row => ({
-            id_siswa: row[1],
-            rfid: row[2],
-            email: row[3],
-            nama_siswa: row[4],
-            kelas_id: row[10],
-            alamat: row[6],
-            telp: row[7],
-            tempat_lahir: row[8],
-            tanggal_lahir: row[9]
-        }));
+        // Skip header row and get sheet values
+        const rows = worksheet.getSheetValues().slice(2);
+
+        // Filter out empty rows
+        const data = rows.filter(row => row.length > 1 && row[1] && row[2] && row[3] && row[4] && row[10])
+            .map(row => ({
+                id_siswa: row[1],
+                rfid: row[2],
+                email: row[3],
+                nama_siswa: row[4],
+                kelas_id: row[10].result,
+                alamat: row[6],
+                telp: row[7],
+                tempat_lahir: row[8],
+                tanggal_lahir: row[9]
+            }));
+
+        if (data.length === 0) return response(400, null, 'No valid data to import!', res);
 
         const existingKelasID = await KelasModel.getAllKelas();
         const existingSiswaID = await SiswaModel.getAllIDSiswa();
         const siswaRole = await RoleModel.getRoleByRole('Siswa');
 
-        const filteredData = [];
-        for (const row of data) {
+        const filteredData = data.filter(row => {
             if (existingSiswaID.includes(row.id_siswa)) {
-                return response(400, null, `Data siswa ${row.id_siswa} already exists!`, res);
+                return false;
             } else if (!existingKelasID.find(kelas => kelas.id_kelas == row.kelas_id)) {
-                console.log(data);
-                return response(400, null, `Data kelas tidak valid!`, res);
-            } else {
-                filteredData.push(row);
+                return false;
             }
-        }
+            return true;
+        });
+
+        if (filteredData.length === 0) return response(400, null, 'All data is either invalid or already exists!', res);
 
         const trx = await db.transaction();
 
@@ -319,19 +324,19 @@ const importSiswa = async (req, res) => {
                     tanggal_lahir: siswa.tanggal_lahir
                 }, trx);
 
-                await AbsenSiswaModel.insertAbsen(siswa.id_siswa , trx);
+                await AbsenSiswaModel.insertAbsen(siswa.id_siswa, trx);
             }
 
             await trx.commit();
-            return response(200, null, `Berhasil import siswa!`, res);
+            return response(200, null, 'Berhasil import siswa!', res);
         } catch (error) {
             await trx.rollback();
             console.error(error);
-            return response(400, null, `Gagal import siswa!`, res);
+            return response(400, null, 'Gagal import siswa!', res);
         }
     } catch (error) {
         console.error(error);
-        return response(500, null, `Internal Server Error!`, res);
+        return response(500, null, 'Internal Server Error!', res);
     }
 };
 
