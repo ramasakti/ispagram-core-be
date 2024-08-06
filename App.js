@@ -42,7 +42,7 @@ const acceptedHost = [
     'arditama.vercel.app',
     'http://arditama.vercel.app',
     'https://arditama.vercel.app',
-    'https://ispagram.smpislamparlaungan.sch.id',
+    'https://smpispa.vercel.app',
 ]
 
 const corsOptions = {
