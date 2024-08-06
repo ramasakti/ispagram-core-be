@@ -22,7 +22,7 @@ const users = async (req, res) => {
 const detail = async (req, res) => {
     const username = req.params.username
 
-    const detailUser = await UserModel.getUserWithGuruByUsername(username)
+    const detailUser = await UserModel.getUserWithRoleByUsername(username)
     if (!detailUser) return response(400, null, `User tidak terdaftar!`, res)
 
     if (detailUser.role === 'Guru') {

@@ -4,9 +4,14 @@ const UserController = require('../controller/UserController')
 
 const multer = require('multer')
 const path = require('path')
+const os = require('os')
+const fs = require('fs')
+const { uploadFileToFTP } = require('../utilities/FTP')
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'upload');
+        const tempDir = os.tmpdir()
+        cb(null, tempDir);
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
@@ -24,7 +29,16 @@ router.route('/users')
 
 router.route('/user/:username')
     .get(UserController.detail)
-    .put(upload.single('avatar'), UserController.update)
+    .put(upload.single('avatar'), async (req, res, next) => {
+        if (req.file) {
+            const localFilePath = req.file.path
+            const remoteFilePath = `/${req.file.filename}`
+            await uploadFileToFTP(localFilePath, remoteFilePath)
+            req.file.path = remoteFilePath // Update file path to remote path
+            fs.unlinkSync(localFilePath) // Delete local file after upload
+        }
+        next()
+    }, UserController.update)
 
 router.route('/reset')
     .post(UserController.forgetPassword)
