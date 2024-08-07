@@ -1,7 +1,6 @@
 const knex = require('knex')
 
-console.log('Connecting to the database');
-console.log(process.env.DB_HOST);
+console.log('Connecting to the database' + process.env.DB_HOST);
 const db = knex({
     client: 'mysql',
     connection: {

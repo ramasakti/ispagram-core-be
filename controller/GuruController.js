@@ -13,15 +13,7 @@ const nodb = async (req, res) => response(200, {}, `Ok`, res)
 
 const guru = async (req, res) => {
     try {
-        console.log("Mulai pengambilan data guru");
-        const startTime = Date.now();
-        try {
-            var guru = await GuruModel.getAllGuru();
-        } catch (error) {
-            console.error(error)
-        }
-        const endTime = Date.now();
-        console.log(`Data guru berhasil diambil dalam ${endTime - startTime}ms`);
+        const guru = await GuruModel.getAllGuru();
 
         const dataGuru = guru.map(item => {
             return {
