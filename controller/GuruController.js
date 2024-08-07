@@ -12,7 +12,7 @@ const db = require('../Config')
 const nodb = async (req, res) => {
     const { exec } = require('child_process');
 
-    exec('ping smpislamparlaungan.sch.id', (error, stdout, stderr) => {
+    exec('ping smaispa.sch.id', (error, stdout, stderr) => {
         if (error) {
             console.error(`exec error: ${error}`);
             return;
