@@ -19,9 +19,8 @@ const nodb = async (req, res) => {
         }
         console.log(`stdout: ${stdout}`);
         console.error(`stderr: ${stderr}`);
+        return response(200, {stderr, stdout}, `Ok`, res)
     });
-
-    return response(200, {}, `Ok`, res)
 }
 
 const guru = async (req, res) => {
