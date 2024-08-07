@@ -9,6 +9,8 @@ const UserUtils = require('../utilities/UserUtils')
 const GuruUtils = require('../utilities/GuruUtils')
 const db = require('../Config')
 
+const nodb = async (req, res) => response(200, {}, `Ok`, res)
+
 const guru = async (req, res) => {
     try {
         console.log("Mulai pengambilan data guru");
@@ -159,4 +161,4 @@ const destroy = async (req, res) => {
     }
 }
 
-module.exports = { guru, dataStaf, store, update, destroy }
+module.exports = { nodb, guru, dataStaf, store, update, destroy }
