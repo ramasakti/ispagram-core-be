@@ -12,9 +12,12 @@ const db = require('../Config')
 const guru = async (req, res) => {
     try {
         console.log("Mulai pengambilan data guru");
-        console.log(db)
         const startTime = Date.now();
-        const guru = await GuruModel.getAllGuru();
+        try {
+            var guru = await GuruModel.getAllGuru();
+        } catch (error) {
+            console.error(error)
+        }
         const endTime = Date.now();
         console.log(`Data guru berhasil diambil dalam ${endTime - startTime}ms`);
 
