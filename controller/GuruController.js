@@ -7,10 +7,12 @@ const UserModel = require('../Model/UserModel')
 const DetailGuruModel = require('../Model/DetailGuruModel')
 const UserUtils = require('../utilities/UserUtils')
 const GuruUtils = require('../utilities/GuruUtils')
+const db = require('../Config')
 
 const guru = async (req, res) => {
     try {
         console.log("Mulai pengambilan data guru");
+        console.log(db)
         const startTime = Date.now();
         const guru = await GuruModel.getAllGuru();
         const endTime = Date.now();
