@@ -10,9 +10,12 @@ const GuruUtils = require('../utilities/GuruUtils')
 
 const guru = async (req, res) => {
     try {
-        // Ambil data guru kemudian kembalikan tanggal lahir dengan format Y-m-d 
-        // Hal ini dilakukan karena jika langsung dikembalikan dari database formatnya tidak sesuai
-        const guru = await GuruModel.getAllGuru()
+        console.log("Mulai pengambilan data guru");
+        const startTime = Date.now();
+        const guru = await GuruModel.getAllGuru();
+        const endTime = Date.now();
+        console.log(`Data guru berhasil diambil dalam ${endTime - startTime}ms`);
+
         const dataGuru = guru.map(item => {
             return {
                 id_guru: item.id_guru,
@@ -24,12 +27,13 @@ const guru = async (req, res) => {
                 tempat_lahir: item.tempat_lahir,
                 tanggal_lahir: moment(item.tanggal_lahir).format('YYYY-MM-DD')
             }
-        })
+        });
 
-        return response(200, dataGuru, `Data Guru`, res)
+        console.log("Data guru berhasil diproses");
+        return response(200, dataGuru, `Data Guru`, res);
     } catch (error) {
-        console.error(error)
-        return response(500, null, `Internal server error!`, res)
+        console.error(error);
+        return response(500, null, `Internal server error!`, res);
     }
 }
 
