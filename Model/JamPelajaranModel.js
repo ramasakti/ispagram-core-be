@@ -11,6 +11,12 @@ const getAllJampelActive = async (trx = db) => {
         .orderBy('mulai', 'ASC')
 }
 
+const getJampelInID = async (id_jampel, trx = db) => {
+    return await db('jam_pelajaran')
+        .select('keterangan')
+        .whereIn('id_jampel', id_jampel)
+}
+
 const getAllAvailableJampel = async (trx = db) => {
     return await trx('jam_pelajaran')
         .select('id_jampel')
@@ -24,6 +30,7 @@ const getJampelByHari = async (hari, trx = db) => {
 module.exports = {
     getAllJampel,
     getAllJampelActive,
+    getJampelInID,
     getAllAvailableJampel,
     getJampelByHari
 };

@@ -300,7 +300,6 @@ const exportExcel = async (req, res) => {
 }
 
 const importExcel = async (req, res) => {
-    const trx = await db.transaction();
     try {
         if (!req.file) return response(400, null, 'No file uploaded!', res);
 
@@ -309,45 +308,54 @@ const importExcel = async (req, res) => {
         const worksheet = workbook.getWorksheet(1);
 
         // Skip header row and get sheet values
-        const rows = worksheet.getSheetValues().slice(2);
+        const rows = worksheet.getSheetValues().slice(2);        
 
         // Filter out empty rows
-        const data = rows.filter(row => row.length > 1 && row[6] && row[7] && row[8] && row[9])
+        const data = rows.filter(row => row.length > 1 && row[1] && row[2] && row[3] && row[4] && row[5] && row[6] && row[7] && row[8] && row[9])
             .map(row => ({
-                kelas_id: row[6],
-                jampel: row[7],
-                guru_id: row[8],
-                mapel: row[9]
-            }));
-
-        if (data.length === 0) {
-            return response(400, null, 'No valid data to import!', res);
-        }
+                kelas_id: row[6].result,
+                jampel: row[7].result,
+                guru_id: row[8].result,
+                mapel: row[9].result
+            }));            
+        if (data.length === 0) return response(400, null, 'No valid data to import!', res);
 
         // Get all existing jam pelajaran
-        const existingJampel = await JamPelajaranModel.getAllJampel();
+        const existingJampel = await JamPelajaranModel.getAllAvailableJampel();
 
-        // Filter data to ensure no duplicate jampel
-        const filteredData = data.filter(row => !existingJampel.includes(row.jampel));
+        // Pisahkan data yang duplikat
+        const duplicatedData = data.filter(row => !existingJampel.includes(row.jampel));
 
-        if (filteredData.length === 0) {
-            return response(400, null, 'All jam pelajaran already exist!', res);
+        if (duplicatedData.length > 0) {
+            // Ambil keterangan dari id_jampel yang duplikat
+            const duplicatedIds = duplicatedData.map(row => row.jampel);
+            const duplicatedJampel = await JamPelajaranModel.getJampelInID(duplicatedIds)
+
+            const duplicatedKeterangan = duplicatedJampel.map(jampel => jampel.keterangan).join(', ');
+            return response(400, null, `Terdapat jam pelajaran yang telah digunakan: ${duplicatedKeterangan}`, res);
         }
 
-        // Insert filtered data into database
-        for (const element of filteredData) {
-            await JadwalModel.insertJadwal({
-                kelas_id: element.kelas_id,
-                jampel: element.jampel,
-                guru_id: element.guru_id,
-                mapel: element.mapel
-            }, trx);
-        }
+        const trx = await db.transaction();
 
-        await trx.commit();
-        return response(200, null, 'Berhasil import data!', res);
+        try {
+            // Insert filtered data into database
+            for (const element of filteredData) {
+                await JadwalModel.insertJadwal({
+                    kelas_id: element.kelas_id,
+                    jampel: element.jampel,
+                    guru_id: element.guru_id,
+                    mapel: element.mapel
+                }, trx);
+            }
+
+            await trx.commit();
+            return response(200, null, 'Berhasil import jadwal!', res);
+        } catch (error) {
+            await trx.rollback();
+            console.error(error);
+            return response(400, null, 'Gagal import jadwal!', res);
+        }
     } catch (error) {
-        await trx.rollback();
         console.error(error);
         return response(500, null, 'Internal Server Error!', res);
     }
