@@ -20,7 +20,7 @@ const databases = {
             host: process.env.DB_HOST,
             user: process.env.DB_USERNAME,
             password: process.env.DB_PASSWORD,
-            database: process.env.DB_PROD,
+            database: process.env.DB_NAME_2,
         },
         pool: {
             min: 2,
@@ -46,7 +46,7 @@ const databases = {
             host: process.env.DB_HOST,
             user: process.env.DB_USERNAME,
             password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME_2,
+            database: process.env.DB_PROD,
         },
         pool: {
             min: 2,
