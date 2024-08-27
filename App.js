@@ -1,16 +1,14 @@
 require('dotenv').config()
 const express = require('express')
 const http = require('http')
-const os = require('os');
+const os = require('os')
 const faceapi = require('face-api.js')
-const WebSocket = require('ws')
 const app = express()
 const server = http.createServer(app)
 const wss = require('./utilities/websocket')
 const path = require('path')
 const initCronJobs = require('./Cron/CronJob')
-const cron = require('node-cron')
-const db = require('./Config')
+const getDatabaseConnection = require('./DynamicDBConf')
 const router = require('./router/Router')
 const cors = require('cors')
 const moment = require('./utilities/Moment')
@@ -53,14 +51,31 @@ const corsOptions = {
         // Cek apakah origin termasuk dalam daftar yang diizinkan
         if (acceptedHost.indexOf(origin) !== -1) {
             callback(null, true);
-        } else if (!origin) {
-            // Blokir permintaan tanpa header origin (contoh: dari localhost)
-            callback(new Error('Not allowed by CORS'));
         } else {
             callback(new Error('Not allowed by CORS'));
         }
     }
 }
+
+const selectDatabase = (req, res, next) => {
+    if (req.method === 'OPTIONS') return next()
+    const dbID = req.headers['x-app-id']
+    if (!dbID) {
+        res.status(401).json({
+            payload: null,
+            message: `Unauthorized`,
+            metadata: {
+                prev: "",
+                next: "",
+                current: ""
+            }
+        })
+    }
+    req.db = getDatabaseConnection(dbID)
+    next()
+}
+
+app.use(selectDatabase)
 
 app.use((req, res, next) => {
     if (req.path.startsWith('/upload')) {
@@ -82,9 +97,9 @@ app.use((req, res, next) => {
                     }
                 })
             } else {
-                next();
+                next()
             }
-        });
+        })
     }
 })
 
@@ -101,51 +116,11 @@ app.use('/upload', express.static('upload', {
     },
 }))
 
-app.get('/logs', (req, res) => {
-    res.json(log);
-})
+app.get('/logs', (req, res) => res.json(log))
 
 initCronJobs()
 
 wss(server)
-
-// const getLabeledFaceDescriptors = () => {
-//     const labeledFaceDescriptors = [];
-
-//     // Ganti label dan path file gambar sesuai dengan keinginan Anda
-//     const labeledFaces = [
-//         { label: "rama", path: "labels/rama/", count: 2 },
-//         { label: "aziz", path: "labels/aziz/", count: 2 },
-//         { label: "sulton", path: "labels/sulton/", count: 2 },
-//         // Tambahkan label dan path file gambar lainnya jika diperlukan
-//     ];
-
-//     return Promise.all(
-//         labeledFaces.map(async (labeledFace) => {
-//             const { label, path, count } = labeledFace;
-//             const descriptions = [];
-
-//             for (let i = 1; i <= count; i++) {
-//                 const img = await faceapi.fetchImage(`${path}${i}.png`);
-//                 const detections = await faceapi
-//                     .detectSingleFace(img)
-//                     .withFaceLandmarks()
-//                     .withFaceDescriptor();
-//                 descriptions.push(detections.descriptor);
-//             }
-
-//             const labeledFaceDescriptor = new faceapi.LabeledFaceDescriptors(label, descriptions);
-//             labeledFaceDescriptors.push(labeledFaceDescriptor);
-
-//             return labeledFaceDescriptor;
-//         })
-//     ).then(() => labeledFaceDescriptors);
-// }
-
-// async function setupFaceMatcher() {
-//     const labeledFaceDescriptors = await getLabeledFaceDescriptors();
-//     faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
-// }
 
 server.listen(8080, async () => {
     // await setupFaceMatcher();

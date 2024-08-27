@@ -6,7 +6,7 @@ const AccessModel = require('../Model/AccessModel')
 const access = async (req, res) => {
     try {
         const role = req.params.role
-        const access = await AccessModel.getAccessByRole(role)
+        const access = await AccessModel.getAccessByRole(role, req.db)
 
         return response(200, access, ``, res)
     } catch (error) {

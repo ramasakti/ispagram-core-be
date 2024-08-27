@@ -21,7 +21,7 @@ const auth = async (req, res) => {
 
         if (email) {
             // Login dengan OAuth, langsung ambil detail user
-            user = await UserModel.getUserWithRoleByEmail(email)
+            user = await UserModel.getUserWithRoleByEmail(email, req.db)            
             if (!user) return response(404, null, `Not Authorized`, res)
 
             // Buat token
@@ -32,7 +32,7 @@ const auth = async (req, res) => {
             };
         } else {
             // Periksa apakah username terdaftar
-            user = await UserModel.getUserWithRoleByUsername(username)
+            user = await UserModel.getUserWithRoleByUsername(username, req.db)            
             if (!user) return response(404, {}, 'Not Authorized', res)
 
             // Periksa apakah password yang diinputkan sama dengan di database
@@ -49,12 +49,12 @@ const auth = async (req, res) => {
 
         // Manipulasi role
         if (user.role === 'Guru') {
-            const piket = await HariModel.getHariWithPiketByPiket(user.username)
-            const walas = await KelasModel.getKelasByWalas(user.username)
+            const piket = await HariModel.getHariWithPiketByPiket(user.username, req.db)
+            const walas = await KelasModel.getKelasByWalas(user.username, req.db)
             
             // Jika terjadwal piket
             if (piket) {
-                const role = await RoleModel.getRoleByRole('Piket')
+                const role = await RoleModel.getRoleByRole('Piket', req.db)
                 let dataUser = {
                     username: user.username,
                     name: user.name,
@@ -75,7 +75,7 @@ const auth = async (req, res) => {
 
             // Jika wali kelas
             if (walas) {
-                const role = await RoleModel.getRoleByRole('Wali Kelas')
+                const role = await RoleModel.getRoleByRole('Wali Kelas', req.db)
                 const dataUser = {
                     username: user.username,
                     name: user.name,

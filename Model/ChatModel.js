@@ -1,6 +1,4 @@
-const db = require('../Config')
-
-const getAllChatByUser = (username, trx = db) => {
+const getAllChatByUser = (username, trx) => {
     return trx('chat')
         .select('chat.*', db.raw('CASE WHEN guru.id_guru IS NOT NULL THEN guru.nama_guru ELSE siswa.nama_siswa END AS receiver'))
         .join('users', 'users.username', '=', 'chat.to')
@@ -16,7 +14,7 @@ const getAllChatByUser = (username, trx = db) => {
         .orderBy('waktu', 'desc');
 }
 
-const getChatBySenderAndReceiver = (sender, receiver, trx = db) => {
+const getChatBySenderAndReceiver = (sender, receiver, trx) => {
     return trx('chat')
         .where('from', sender)
         .where('to', receiver)
@@ -24,11 +22,11 @@ const getChatBySenderAndReceiver = (sender, receiver, trx = db) => {
         .orWhere('to', sender)
 }
 
-const getChatByID = (id_chat, trx = db) => {
+const getChatByID = (id_chat, trx) => {
     return trx('chat').where('id_chat', id_chat)
 }
 
-const storeChat = (data, trx = db) => {
+const storeChat = (data, trx) => {
     return trx('chat').insert(data)
 }
 

@@ -1,8 +1,17 @@
-const db = require('../Config')
+const getAllMenuWithSectionByRole = async (role, trx) => {
+    return await trx('menu')
+        .select(
+            'menu.id_menu',
+            'menu.name as menu',
+            'menu.route',
+            'section.name as section',
+            trx.raw('CASE WHEN COALESCE(navbar.id_navbar, NULL) THEN TRUE ELSE FALSE END AS navbar')
+        )
+        .leftJoin('section', 'section.id_section', '=', 'menu.section_id')
+        .leftJoin(trx('navbar').where('role_id', role).as('navbar'), 'navbar.menu_id', '=', 'menu.id_menu')
+}
 
-const getAllMenu = async (trx = db) => await trx('menu')
-
-const getAllMenuWithSection = async (trx = db) => {
+const getAllMenuWithSection = async (trx) => {
     return await trx('menu')
         .select(
             'menu.type',
@@ -18,9 +27,9 @@ const getAllMenuWithSection = async (trx = db) => {
         .orderBy('menu.order', 'ASC')
 }
 
-const getMenuByID = async (id_menu, trx = db) => await trx('menu').where('id_menu', id_menu).first()
+const getMenuByID = async (id_menu, trx) => await trx('menu').where('id_menu', id_menu).first()
 
-const getMenuByRole = async (role, trx = db) => {
+const getMenuByRole = async (role, trx) => {
     return await trx('navbar')
         .select(
             'menu.id_menu',
@@ -33,16 +42,16 @@ const getMenuByRole = async (role, trx = db) => {
         .where('navbar.role_id', role)
 }
 
-const getSubmenuByRole = async (menu_id, trx = db) => await trx('submenu').where('menu_id', menu_id)
+const getSubmenuByRole = async (menu_id, trx) => await trx('submenu').where('menu_id', menu_id)
 
-const insertMenu = async (req, trx = db) => await trx('menu').insert(req)
+const insertMenu = async (req, trx) => await trx('menu').insert(req)
 
-const updateMenu = async (id_menu, req, trx = db) => await trx('menu').where('id_menu', id_menu).update(req)
+const updateMenu = async (id_menu, req, trx) => await trx('menu').where('id_menu', id_menu).update(req)
 
-const deleteMenu = async (id_menu, trx = db) => await trx('menu').where('id_menu', id_menu).del()
+const deleteMenu = async (id_menu, trx) => await trx('menu').where('id_menu', id_menu).del()
 
 module.exports = {
-    getAllMenu,
+    getAllMenuWithSectionByRole,
     getAllMenuWithSection,
     getMenuByID,
     getMenuByRole,

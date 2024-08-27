@@ -1,11 +1,10 @@
-const db = require('../Config')
 const Moment = require('../utilities/Moment')
 
-const getAllJadwal = async (trx = db) => await trx('jadwal')
+const getAllJadwal = async (trx) => await trx('jadwal')
 
-const getJadwalByID = async (id_jadwal, trx = db) => await trx('jadwal').where('id_jadwal', id_jadwal).first()
+const getJadwalByID = async (id_jadwal, trx) => await trx('jadwal').where('id_jadwal', id_jadwal).first()
 
-const getFullJadwalByDateNow = async (tanggal, trx = db) => {
+const getFullJadwalByDateNow = async (tanggal, trx) => {
     return await trx('jadwal')
         .select(
             'jadwal.id_jadwal',
@@ -39,7 +38,7 @@ const getFullJadwalByDateNow = async (tanggal, trx = db) => {
         .orderBy('jam_pelajaran.mulai', 'ASC');
 }
 
-const getJadwalInARowByGuru = async (guru_id, trx = db) => {
+const getJadwalInARowByGuru = async (guru_id, trx) => {
     return await trx('jadwal')
         .select(
             'jadwal.id_jadwal',
@@ -64,27 +63,38 @@ const getJadwalInARowByGuru = async (guru_id, trx = db) => {
         .orderBy('jam_pelajaran.mulai', 'ASC')
 }
 
-const getJadwalByGuru = async (id_guru, trx = db) => {
+const getJadwalWithJampelByIDJadwal = async (id_jadwal, trx) => {
+    return await trx('jadwal')
+        .join('jam_pelajaran', 'jam_pelajaran.id_jampel', '=', 'jadwal.jampel')
+        .where('id_jadwal', id_jadwal)
+        .first()
+}
+
+const getJadwalByGuru = async (id_guru, trx) => {
 
 }
 
-const getJadwalByHari = async (hari, trx = db) => {
+const getJadwalByHari = async (hari, trx) => {
 
 }
 
-const insertJadwal = async (req, trx = db) => {
+const insertJadwal = async (req, trx) => {
     return await trx('jadwal').insert(req)
 }
 
-const updateJadwal = async (id_jadwal, req, trx = db) => {
+const updateJadwal = async (id_jadwal, req, trx) => {
     return await trx('jadwal').where('id_jadwal', id_jadwal).update(req)
 }
+
+const deleteJadwalByID = async (id_jadwal, trx) => await trx('jadwal').where('id_jadwal', id_jadwal).del()
 
 module.exports = {
     getAllJadwal,
     getJadwalByID,
     getFullJadwalByDateNow,
     getJadwalInARowByGuru,
+    getJadwalWithJampelByIDJadwal,
     insertJadwal,
-    updateJadwal
+    updateJadwal,
+    deleteJadwalByID
 };

@@ -11,11 +11,11 @@ const biodata = async (req, res) => {
         const username = req.params.username
 
         // Periksa di database apakah user terdaftar
-        const detailUser = await UserModel.getUserByUsername(username)
+        const detailUser = await UserModel.getUserByUsername(username, req.db)
         if (!detailUser) return response(400, null, `User tidak terdaftar!`, res)
 
         if (detailUser.role !== 'Siswa') {
-            const guru = await GuruModel.getDetailGuruByID(username)
+            const guru = await GuruModel.getDetailGuruByID(username, req.db)
             const data = {
                 id_guru: guru.id_guru,
                 nama_guru: guru.nama_guru,
@@ -31,7 +31,7 @@ const biodata = async (req, res) => {
 
             return response(200, data, `Detail Biodata`, res)
         } else {
-            const siswa = await SiswaModel.getSiswaByID(username)
+            const siswa = await SiswaModel.getSiswaByID(username, req.db)
             const data = {
                 nama_siswa: siswa.nama_siswa,
                 alamat:  siswa.alamat,
@@ -77,13 +77,13 @@ const updateBiodata = async (req, res) => {
         const username = req.params.username
 
         // Periksa di database apakah user terdaftar
-        const detailUser = await UserModel.getUserByUsername(username)
+        const detailUser = await UserModel.getUserByUsername(username, req.db)
 
         if (!detailUser) return response(400, null, `User tidak terdaftar!`, res)
 
         if (detailUser.role !== 'Siswa') {
             const { nama, alamat, whatsapp, tempat_lahir, tanggal_lahir, sk_pengangkatan, nik, no_kk, scan_kk, norek } = req.body
-            const guru = await GuruModel.getDetailGuruByID(username)
+            const guru = await GuruModel.getDetailGuruByID(username, req.db)
 
             await GuruModel.updateGuru(username, {
                 nama_guru: nama ? nama : guru.nama_guru,
@@ -91,15 +91,15 @@ const updateBiodata = async (req, res) => {
                 telp: whatsapp ? whatsapp : guru.telp,
                 tempat_lahir: tempat_lahir ? tempat_lahir : guru.tempat_lahir,
                 tanggal_lahir: tanggal_lahir ? tanggal_lahir : guru.tanggal_lahir
-            })
+            }, req.db)
 
             await GuruModel.updateDetailGuru(username, {
                 sk_pengangkatan, nik, no_kk, scan_kk, norek
-            })
+            }, req.db)
 
             return response(201, {}, `Berhasil update data!`, res)
         } else {
-            const siswa = await SiswaModel.getDetailSiswaByID(username)
+            const siswa = await SiswaModel.getDetailSiswaByID(username, req.db)
 
             const { nama_siswa, alamat, telp, tempat_lahir, tanggal_lahir, nisn, nik, nokk, scan_kk, transportasi, anak, jenis_tinggal, askol, scan_ijazah, ibu, nik_ibu, pendidikan_ibu, profesi_ibu, penghasilan_ibu, telp_ibu, ayah, nik_ayah, pendidikan_ayah, profesi_ayah, penghasilan_ayah, telp_ayah, tinggi, berat } = req.body
 
@@ -132,7 +132,7 @@ const updateBiodata = async (req, res) => {
                 telp_ayah,
                 tinggi,
                 berat
-            })
+            }, req.db)
 
             return response(201, {}, `Berhasil update data!`, res)
         }
@@ -144,7 +144,7 @@ const updateBiodata = async (req, res) => {
 
 const transport = async (req, res) => {
     try {
-        const transportasi = await BiodataModel.getAllTransportasi()
+        const transportasi = await BiodataModel.getAllTransportasi(req.db)
         return response(200, transportasi, `Data Transportasi`, res)
     } catch (error) {
         console.error(error)
@@ -154,7 +154,7 @@ const transport = async (req, res) => {
 
 const jeting = async (req, res) => {
     try {
-        const jeting = await BiodataModel.getAllJeting()
+        const jeting = await BiodataModel.getAllJeting(req.db)
         return response(200, jeting, `Data Jenis Tinggal`, res)
     } catch (error) {
         console.error(error)
@@ -164,7 +164,7 @@ const jeting = async (req, res) => {
 
 const pendidikan = async (req, res) => {
     try {
-        const pendidikan = await BiodataModel.getAllPendidikan()
+        const pendidikan = await BiodataModel.getAllPendidikan(req.db)
         return response(200, pendidikan, `Data Pendidikan`, res)
     } catch (error) {
         console.error(error)
@@ -174,7 +174,7 @@ const pendidikan = async (req, res) => {
 
 const profesi = async (req, res) => {
     try {
-        const profesi = await BiodataModel.getAllProfesi()
+        const profesi = await BiodataModel.getAllProfesi(req.db)
         return response(200, profesi, `Data Profesi`, res)
     } catch (error) {
         console.error(error)

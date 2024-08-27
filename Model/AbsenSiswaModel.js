@@ -1,10 +1,9 @@
-const db = require('../Config')
 const Moment = require('../utilities/Moment')
-const AbsenSiswaUtils = require('../utilities/AbsenSiswaUtils')
+const HariModel = require('../Model/HariModel')
 
-const dataAllAbsensiSiswa = async (trx = db) => await trx('absen').join('detail_siswa', 'absen.id_siswa', '=', 'detail_siswa.id_siswa')
+const dataAllAbsensiSiswa = async (trx) => await trx('absen').join('detail_siswa', 'absen.id_siswa', '=', 'detail_siswa.id_siswa')
 
-const dataAllKetidakhadiranSiswa = async (trx = db) => {
+const dataAllKetidakhadiranSiswa = async (trx) => {
     return await trx('absen')
         .select('detail_siswa.nama_siswa', 'absen.keterangan', 'kelas.id_kelas', 'kelas.tingkat', 'kelas.jurusan')
         .join('detail_siswa', 'detail_siswa.id_siswa', '=', 'absen.id_siswa')
@@ -13,8 +12,8 @@ const dataAllKetidakhadiranSiswa = async (trx = db) => {
         .whereNull('absen.waktu_absen')
 }
 
-const getAllSiswaTerlambat = async (trx = db) => {
-    const masuk = await AbsenSiswaUtils.jamMasuk()
+const getAllSiswaTerlambat = async (trx) => {
+    const masuk = await HariModel.getHariByHari(Moment().format('dddd'))
     return await trx('absen')
         .select('detail_siswa.nama_siswa', 'absen.keterangan', 'absen.waktu_absen', 'kelas.id_kelas', 'kelas.tingkat', 'kelas.jurusan')
         .join('detail_siswa', 'absen.id_siswa', '=', 'detail_siswa.id_siswa')
@@ -24,14 +23,14 @@ const getAllSiswaTerlambat = async (trx = db) => {
         .andWhere('absen.keterangan', 'T')
 }
 
-const dataKetidakhadiranKelas = async (kelas_id, trx = db) => {
+const dataKetidakhadiranKelas = async (kelas_id, trx) => {
     return await trx('absen')
         .join('siswa', 'siswa.id_siswa', '=', 'absen.id_siswa')
         .join('detail_siswa', 'absen.id_siswa', '=', 'detail_siswa.id_siswa')
         .where('siswa.kelas_id', kelas_id)
 }
 
-const dataAbsensiSiswaIndividu = async (id_siswa, trx = db) => {
+const dataAbsensiSiswaIndividu = async (id_siswa, trx) => {
     return await trx('absen')
         .select('detail_siswa.nama_siswa', 'absen.waktu_absen', 'users.avatar')
         .join('detail_siswa', 'absen.id_siswa', '=', 'detail_siswa.id_siswa')
@@ -40,9 +39,9 @@ const dataAbsensiSiswaIndividu = async (id_siswa, trx = db) => {
         .first()
 }
 
-const insertAbsen = async (id_siswa, trx = db) => await trx('absen').insert({ id_siswa })
+const insertAbsen = async (id_siswa, trx) => await trx('absen').insert({ id_siswa })
 
-const updateHadir = async (id_siswa, trx = db) => {
+const updateHadir = async (id_siswa, trx) => {
     return await trx('absen').where('id_siswa', id_siswa).update({
         waktu_absen: Moment().format('HH:mm:ss'),
         izin: null,
@@ -50,7 +49,7 @@ const updateHadir = async (id_siswa, trx = db) => {
     })
 }
 
-const updateAbsenOrTerlambat = async (id_siswa, keterangan, trx = db) => {
+const updateAbsenOrTerlambat = async (id_siswa, keterangan, trx) => {
     return await trx('absen')
         .where('id_siswa', id_siswa)
         .update({
@@ -60,15 +59,15 @@ const updateAbsenOrTerlambat = async (id_siswa, keterangan, trx = db) => {
         })
 }
 
-const rekap = async (kelas, dari, sampai, trx = db) => {
+const rekap = async (kelas, dari, sampai, trx) => {
     return await trx('siswa')
         .select(
             's.id_siswa',
             'detail_siswa.nama_siswa',
-            db.raw('SUM(CASE WHEN rs.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
-            db.raw('SUM(CASE WHEN rs.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
-            db.raw('SUM(CASE WHEN rs.keterangan = "A" THEN 1 ELSE 0 END) AS A'),
-            db.raw('SUM(CASE WHEN rs.keterangan = "T" THEN 1 ELSE 0 END) AS T')
+            trx.raw('SUM(CASE WHEN rs.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
+            trx.raw('SUM(CASE WHEN rs.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
+            trx.raw('SUM(CASE WHEN rs.keterangan = "A" THEN 1 ELSE 0 END) AS A'),
+            trx.raw('SUM(CASE WHEN rs.keterangan = "T" THEN 1 ELSE 0 END) AS T')
         )
         .from('siswa AS s')
         .join('detail_siswa', 'detail_siswa.id_siswa', '=', 's.id_siswa')
@@ -78,15 +77,15 @@ const rekap = async (kelas, dari, sampai, trx = db) => {
         .groupBy('s.id_siswa', 'detail_siswa.nama_siswa')
 }
 
-const rekapIndividu = async (id_siswa, trx = db) => {
+const rekapIndividu = async (id_siswa, trx) => {
     return await trx('siswa')
         .select(
             'siswa.id_siswa',
             'detail_siswa.nama_siswa',
-            db.raw('SUM(CASE WHEN rekap_siswa.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
-            db.raw('SUM(CASE WHEN rekap_siswa.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
-            db.raw('SUM(CASE WHEN rekap_siswa.keterangan = "A" THEN 1 ELSE 0 END) AS A'),
-            db.raw('SUM(CASE WHEN rekap_siswa.keterangan = "T" THEN 1 ELSE 0 END) AS T')
+            trx.raw('SUM(CASE WHEN rekap_siswa.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
+            trx.raw('SUM(CASE WHEN rekap_siswa.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
+            trx.raw('SUM(CASE WHEN rekap_siswa.keterangan = "A" THEN 1 ELSE 0 END) AS A'),
+            trx.raw('SUM(CASE WHEN rekap_siswa.keterangan = "T" THEN 1 ELSE 0 END) AS T')
         )
         .join('rekap_siswa', 'siswa.id_siswa', '=', 'rekap_siswa.siswa_id')
         .join('detail_siswa', 'siswa.id_siswa', '=', 'detail_siswa.id_siswa')
@@ -95,26 +94,26 @@ const rekapIndividu = async (id_siswa, trx = db) => {
         .first()
 }
 
-const statistikHarian = async (trx = db) => {
+const statistikHarian = async (trx) => {
     return await trx('absen')
         .select(
-            db.raw('SUM(CASE WHEN absen.waktu_absen IS NOT NULL AND absen.keterangan = "H" THEN 1 ELSE 0 END) AS H'),
-            db.raw('SUM(CASE WHEN absen.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
-            db.raw('SUM(CASE WHEN absen.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
-            db.raw('SUM(CASE WHEN absen.keterangan = "A" OR absen.keterangan = "" OR absen.keterangan IS NULL AND absen.waktu_absen IS NULL THEN 1 ELSE 0 END) AS A'),
-            db.raw('SUM(CASE WHEN absen.keterangan = "T" THEN 1 ELSE 0 END) AS T')
+            trx.raw('SUM(CASE WHEN absen.waktu_absen IS NOT NULL AND absen.keterangan = "H" THEN 1 ELSE 0 END) AS H'),
+            trx.raw('SUM(CASE WHEN absen.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
+            trx.raw('SUM(CASE WHEN absen.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
+            trx.raw('SUM(CASE WHEN absen.keterangan = "A" OR absen.keterangan = "" OR absen.keterangan IS NULL AND absen.waktu_absen IS NULL THEN 1 ELSE 0 END) AS A'),
+            trx.raw('SUM(CASE WHEN absen.keterangan = "T" THEN 1 ELSE 0 END) AS T')
         )
         .first();
 }
 
-const statistikMingguan = async (trx = db) => {
+const statistikMingguan = async (trx) => {
     return await trx('rekap_siswa')
         .select(
             'tanggal',
-            db.raw('SUM(CASE WHEN rekap_siswa.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
-            db.raw('SUM(CASE WHEN rekap_siswa.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
-            db.raw('SUM(CASE WHEN rekap_siswa.keterangan = "A" THEN 1 ELSE 0 END) AS A'),
-            db.raw('SUM(CASE WHEN rekap_siswa.keterangan = "T" THEN 1 ELSE 0 END) AS T')
+            trx.raw('SUM(CASE WHEN rekap_siswa.keterangan = "S" THEN 1 ELSE 0 END) AS S'),
+            trx.raw('SUM(CASE WHEN rekap_siswa.keterangan = "I" THEN 1 ELSE 0 END) AS I'),
+            trx.raw('SUM(CASE WHEN rekap_siswa.keterangan = "A" THEN 1 ELSE 0 END) AS A'),
+            trx.raw('SUM(CASE WHEN rekap_siswa.keterangan = "T" THEN 1 ELSE 0 END) AS T')
         )
         .where('tanggal', '<=', Moment().format('YYYY-MM-DD'))
         .groupBy('rekap_siswa.tanggal')
@@ -122,14 +121,14 @@ const statistikMingguan = async (trx = db) => {
         .limit(7)
 }
 
-const whatsapp = async (id_siswa, trx = db) => {
+const whatsapp = async (id_siswa, trx) => {
     return await trx('siswa')
         .select('siswa.id_siswa', 'detail_siswa.nama_siswa', 'detail_siswa.telp', 'detail_siswa.ayah', 'detail_siswa.telp_ayah', 'detail_siswa.ibu', 'detail_siswa.telp_ibu')
         .join('detail_siswa', 'detail_siswa.id_siswa', '=', 'siswa.id_siswa')
         .where('siswa.id_siswa', id_siswa).first()
 }
 
-const updateAbsenToDefault = async (trx = db) => {
+const updateAbsenToDefault = async (trx) => {
     return await trx('absen').update({
         waktu_absen: null,
         keterangan: ''

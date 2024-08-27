@@ -1,26 +1,24 @@
-const db = require('../Config')
+const getAllPembayaran = async (trx) => await trx('pembayaran')
 
-const getAllPembayaran = async (trx = db) => await trx('pembayaran')
+const getPembayaranActive = async (trx) => await trx('pembayaran').where('active', true)
 
-const getPembayaranActive = async (trx = db) => await trx('pembayaran').where('active', true)
+const getPembayaranByKelas = async (kelas_id, trx) => await trx('pembayaran').where('kelas_id', kelas_id)
 
-const getPembayaranByKelas = async (kelas_id, trx = db) => await trx('pembayaran').where('kelas_id', kelas_id)
+const getPembayaranByID = async (id_pembayaran, trx) => await trx('pembayaran').where('id_pembayaran', id_pembayaran).first()
 
-const getPembayaranByID = async (id_pembayaran, trx = db) => await trx('pembayaran').where('id_pembayaran', id_pembayaran).first()
-
-const getPembayaranInID = async (array_id, trx = db) => {
+const getPembayaranInID = async (array_id, trx) => {
     return await trx('pembayaran')
         .select('id_pembayaran', 'nama_pembayaran', 'nominal')
         .whereIn('pembayaran.id_pembayaran', array_id)
 }
 
-const getTransaksiPembayaranBySiswaAndInID = async (array_pembayaran, siswa, trx = db) => {
+const getTransaksiPembayaranBySiswaAndInID = async (array_pembayaran, siswa, trx) => {
     return await trx('transaksi')
         .select(
             'id_pembayaran',
             'nama_pembayaran',
             'nominal',
-            db.raw('SUM(terbayar) as terbayar')
+            trx.raw('SUM(terbayar) as terbayar')
         )
         .join('pembayaran', 'pembayaran.id_pembayaran', '=', 'transaksi.pembayaran_id')
         .where('transaksi.siswa_id', siswa)
@@ -29,19 +27,19 @@ const getTransaksiPembayaranBySiswaAndInID = async (array_pembayaran, siswa, trx
         .groupBy('pembayaran.id_pembayaran')
 }
 
-const insertPembayaran = async (req, trx = db) => await trx('pembayaran').insert(req)
+const insertPembayaran = async (req, trx) => await trx('pembayaran').insert(req)
 
-const updatePembayaran = async (id_pembayaran, req, trx = db) => await trx('pembayaran').where('id_pembayaran', id_pembayaran).update(req)
+const updatePembayaran = async (id_pembayaran, req, trx) => await trx('pembayaran').where('id_pembayaran', id_pembayaran).update(req)
 
-const deletePembayaran = async (id_pembayaran, trx = db) => await trx('pembayaran').where('id_pembayaran', id_pembayaran).del()
+const deletePembayaran = async (id_pembayaran, trx) => await trx('pembayaran').where('id_pembayaran', id_pembayaran).del()
 
-const getTagihanSiswa = async (id_siswa, id_pembayaran, trx = db) => {
+const getTagihanSiswa = async (id_siswa, id_pembayaran, trx) => {
     return await trx('transaksi')
         .select(
             'id_pembayaran',
             'nama_pembayaran',
             'nominal',
-            db.raw('SUM(terbayar) as terbayar')
+            trx.raw('SUM(terbayar) as terbayar')
         )
         .join('pembayaran', 'pembayaran.id_pembayaran', '=', 'transaksi.pembayaran_id')
         .where('transaksi.siswa_id', id_siswa)
@@ -49,23 +47,23 @@ const getTagihanSiswa = async (id_siswa, id_pembayaran, trx = db) => {
         .groupBy('pembayaran.id_pembayaran')
 }
 
-const updateStatusPembayaran = async (status, trx = db) => await trx('pembayaran').update({ active: status })
+const updateStatusPembayaran = async (status, trx) => await trx('pembayaran').update({ active: status })
 
-const getTagihanPembayaranBySiswa = async (id_siswa, trx = db) => {
+const getTagihanPembayaranBySiswa = async (id_siswa, trx) => {
     return await trx('pembayaran')
         .join('transaksi', 'transaksi.pembayaran_id', 'pembayaran.id_pembayaran')
         .where('transaksi.siswa_id', id_siswa)
         .select('pembayaran.*', 'transaksi.terbayar', 'transaksi.kwitansi', 'transaksi.waktu_transaksi');
 }
 
-const getTagihanTunggakanBySiswa = async (id_siswa, trx = db) => {
+const getTagihanTunggakanBySiswa = async (id_siswa, trx) => {
     return await trx('tunggakan')
         .select(
             'pembayaran.id_pembayaran',
             'pembayaran.nama_pembayaran',
             'pembayaran.nominal',
             'pembayaran.active',
-            db.raw('SUM(terbayar) as terbayar')
+            trx.raw('SUM(terbayar) as terbayar')
         )
         .join('pembayaran', 'pembayaran.id_pembayaran', '=', 'tunggakan.pembayaran_id')
         .leftJoin('transaksi', function () {
@@ -77,7 +75,7 @@ const getTagihanTunggakanBySiswa = async (id_siswa, trx = db) => {
 
 }
 
-const getTunggakanAlumni = async (trx = db) => {
+const getTunggakanAlumni = async (trx) => {
     return trx('alumni')
         .join('detail_siswa', 'alumni.nis', 'detail_siswa.id_siswa')
         .leftJoin('tunggakan', 'detail_siswa.id_siswa', 'tunggakan.id_siswa')

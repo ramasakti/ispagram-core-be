@@ -1,6 +1,4 @@
-const db = require('../Config')
-
-const getAllArticle = async (trx = db) => {
+const getAllArticle = async (trx) => {
     return await trx('blog')
         .select(
             'blog.*',
@@ -16,7 +14,7 @@ const getAllArticle = async (trx = db) => {
         .groupBy('blog.id_blog')
 }
 
-const getArticleBySlug = async (slug, trx = db) => {
+const getArticleBySlug = async (slug, trx) => {
     return await trx('blog')
         .select(
             'blog.*',
@@ -32,29 +30,29 @@ const getArticleBySlug = async (slug, trx = db) => {
         .first();
 }
 
-const getArticleByStatus = async (status, trx = db) => await trx('blog').where('status', status).first()
+const getArticleByStatus = async (status, trx) => await trx('blog').where('status', status).first()
 
-const getPopularArticle = async (limit, trx = db) => await trx('blog').orderBy('hit', 'desc').limit(limit)
+const getPopularArticle = async (limit, trx) => await trx('blog').orderBy('hit', 'desc').limit(limit)
 
-const getArticleByStatusWithLimit = async (status, limit, trx = db) => await trx('blog').where('status', status).limit(limit)
+const getArticleByStatusWithLimit = async (status, limit, trx) => await trx('blog').where('status', status).limit(limit)
 
-const getSimilarArticle = async (trx = db) => await trx('blog').where()
+const getSimilarArticle = async (trx) => await trx('blog').where()
 
-const getNewestArticle = async (limit, trx = db) => await trx('blog').orderBy('created_at', 'asc').limit(limit)
+const getNewestArticle = async (limit, trx) => await trx('blog').orderBy('created_at', 'asc').limit(limit)
 
-const insertArticle = async (req, trx = db) => await trx('blog').insert(req)
+const insertArticle = async (req, trx) => await trx('blog').insert(req)
 
-const updateArticleBySlug = async (slug, req, trx = db) => await trx('blog').where('slug', slug).update(req)
+const updateArticleBySlug = async (slug, req, trx) => await trx('blog').where('slug', slug).update(req)
 
-const updateArticleByID = async (id_blog, req, trx = db) => await trx('blog').where('id_blog', id_blog).update(req)
+const updateArticleByID = async (id_blog, req, trx) => await trx('blog').where('id_blog', id_blog).update(req)
 
-const deleteArticleBySlug = async (slug, trx = db) => await trx('blog').where('slug', slug).del()
+const deleteArticleBySlug = async (slug, trx) => await trx('blog').where('slug', slug).del()
 
-const getAllCategory = async (trx = db) => await trx('master_category')
+const getAllCategory = async (trx) => await trx('master_category')
 
-const getCategoryByID = async (id_category, trx = db) => await trx('master_category').where('id_category', id_category).first()
+const getCategoryByID = async (id_category, trx) => await trx('master_category').where('id_category', id_category).first()
 
-const getArticleInCategory = async (id_category, trx = db) => {
+const getArticleInCategory = async (id_category, trx) => {
     return await trx('blog')
         .select(
             'blog.id_blog',
@@ -67,7 +65,7 @@ const getArticleInCategory = async (id_category, trx = db) => {
         .orderBy('blog.hit', 'desc')
 }
 
-const getFeaturedArticleInCategory = async (id_category, trx = db) => {
+const getFeaturedArticleInCategory = async (id_category, trx) => {
     return await trx('blog')
         .join('data_category', 'blog.id_blog', 'data_category.blog_id')
         .join('master_category', 'data_category.category_id', 'master_category.id_category')
@@ -90,7 +88,7 @@ const getFeaturedArticleInCategory = async (id_category, trx = db) => {
         .first();
 }
 
-const getPopularArticleInCategoryWithLimit = async (id_category, limit, trx = db) => {
+const getPopularArticleInCategoryWithLimit = async (id_category, limit, trx) => {
     return await trx('blog')
         .select(
             'blog.id_blog',
@@ -113,7 +111,7 @@ const getPopularArticleInCategoryWithLimit = async (id_category, limit, trx = db
         .limit(limit)
 }
 
-const getNewestArticleInCategoryWithLimit = async (id_category, limit, trx = db) => {
+const getNewestArticleInCategoryWithLimit = async (id_category, limit, trx) => {
     return await trx('blog')
         .select(
             'blog.id_blog',

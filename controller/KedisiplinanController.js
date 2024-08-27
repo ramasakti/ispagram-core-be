@@ -13,8 +13,7 @@ const kedisiplinan = async (req, res) => {
         const dari = tanggalArray[0]
         const sampai = tanggalArray[1]
 
-        const kedisiplinan = await KedisiplinanModel.getKedisiplinanByDateRangeAndKelas(kelas, dari, sampai)
-        console.log(kedisiplinan);
+        const kedisiplinan = await KedisiplinanModel.getKedisiplinanByDateRangeAndKelas(kelas, dari, sampai, req.db)
 
         return response(200, kedisiplinan, ``, res)
     } catch (error) {
@@ -30,7 +29,7 @@ const store = async (req, res) => {
 
         await KedisiplinanModel.insertKedisiplinan({
             siswa_id, point, tanggal
-        })
+        }, req.db)
 
         return response(201, {}, ``, res)
     } catch (error) {
@@ -45,7 +44,7 @@ const update = async (req, res) => {
 
         await KedisiplinanModel.updateKedisiplinan(id_kedisiplinan, {
             siswa_id, point, tanggal
-        })
+        }, req.db)
 
         return response(201, {}, ``, res)
     } catch (error) {
@@ -58,7 +57,7 @@ const destroy = async (req, res) => {
     try {
         const id_kedisiplinan = req.params.id_kedisiplinan
 
-        await KedisiplinanModel.deleteKedisiplinan(id_kedisiplinan)
+        await KedisiplinanModel.deleteKedisiplinan(id_kedisiplinan, req.db)
 
         return response(201, {}, ``, res)
     } catch (error) {

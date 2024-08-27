@@ -1,13 +1,11 @@
-const db = require('../Config')
-
-const getAllMasterCategory = async (trx = db) => {
+const getAllMasterCategory = async (trx) => {
     return await trx('master_category')
         .leftJoin('blog', 'blog.status', 'master_category.name')
 }
 
-const insertMasterCategory = async (req, trx = db) => await trx('master_category').insert(req)
+const insertMasterCategory = async (req, trx) => await trx('master_category').insert(req)
 
-const updateMasterCategoryByID = async (id_category, req, trx = db) => await trx('master_category').where('id_category', id_category).update(req)
+const updateMasterCategoryByID = async (id_category, req, trx) => await trx('master_category').where('id_category', id_category).update(req)
 
 module.exports = {
     getAllMasterCategory,

@@ -47,8 +47,8 @@ const formatNavbarData = (navbarData, submenuData) => {
 const navbar = async (req, res) => {
     try {
         const role = req.params.role;
-        const navbarData = await NavbarModel.getNavbarByRole(role);
-        const submenuData = await NavbarModel.getSubmenu();
+        const navbarData = await NavbarModel.getNavbarByRole(role, req.db);
+        const submenuData = await NavbarModel.getSubmenu(req.db);
 
         const formattedNavbarData = formatNavbarData(navbarData, submenuData);
 
@@ -65,9 +65,9 @@ const update = async (req, res) => {
         const { access, menu } = req.body
 
         if (access) {
-            await NavbarModel.insertNavbar({ menu_id: menu, role_id: role })
+            await NavbarModel.insertNavbar({ menu_id: menu, role_id: role }, req.db)
         }else{
-            await NavbarModel.deleteNavbarByMenuAndRole(menu, role)
+            await NavbarModel.deleteNavbarByMenuAndRole(menu, role, req.db)
         }
 
         return response(201, {}, `Berhasil ${access ? 'tambah akses' : 'delete akses'} navbar`, res)

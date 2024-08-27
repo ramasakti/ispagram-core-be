@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer')
-const db = require('../Config')
+const UserModel = require('../Model/UserModel')
 
 const transporter = nodemailer.createTransport({
     host: process.env.SMPTP_HOST,
@@ -28,8 +28,8 @@ const credentialInfo = (to, subject, text) => {
     })
 }
 
-const existingEmail = async (email) => {
-    const existingEmail = await db('users').where('email', email).first()
+const existingEmail = async (email, trx) => {
+    const existingEmail = await UserModel.getUserByEmail(email, trx)
     if (!existingEmail) return null
     return existingEmail
 }

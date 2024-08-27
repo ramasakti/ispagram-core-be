@@ -3,11 +3,11 @@ const BlogModel = require('../Model/BlogModel')
 
 const index = async (req, res) => {
     try {
-        const jumbotron = await BlogModel.getArticleByStatus('Jumbotron')
-        const second = await BlogModel.getArticleByStatus('Second')
-        const third = await BlogModel.getArticleByStatusWithLimit('Third', 3)
-        const popular = await BlogModel.getPopularArticle(5)
-        const newest = await BlogModel.getNewestArticle(4)
+        const jumbotron = await BlogModel.getArticleByStatus('Jumbotron', req.db)
+        const second = await BlogModel.getArticleByStatus('Second', req.db)
+        const third = await BlogModel.getArticleByStatusWithLimit('Third', 3, req.db)
+        const popular = await BlogModel.getPopularArticle(5, req.db)
+        const newest = await BlogModel.getNewestArticle(4, req.db)
 
         const data = { second, jumbotron, third, popular, newest }
         return response(200, data, ``, res)
@@ -19,7 +19,7 @@ const index = async (req, res) => {
 
 const article = async (req, res) => {
     try {
-        const articles = await BlogModel.getAllArticle()
+        const articles = await BlogModel.getAllArticle(req.db)
         const parsed = articles.map(item => {
             let categories = []
             if (item.categories) {
@@ -47,7 +47,7 @@ const article = async (req, res) => {
 const detail = async (req, res) => {
     try {
         const slug = req.params.slug
-        let article = await BlogModel.getArticleBySlug(slug)
+        let article = await BlogModel.getArticleBySlug(slug, req.db)
 
         if (!article) return response(404, null, `Article Not Found`, res)
 
@@ -76,7 +76,6 @@ const store = async (req, res) => {
     try {
         const { slug, title, description, category, content, uploader, status } = req.body
 
-        console.log(req.body);
         if (!slug || !title || !description || !content || !uploader || !status) return response(400, null, `Wajib Mengisi Semua Field!`, res)
 
         if (!req.file) return response(400, null, `Wajib Upload Banner!`, res)
@@ -88,7 +87,7 @@ const store = async (req, res) => {
 
         await BlogModel.insertArticle({
             slug, banner, title, description, category, content, uploader, status
-        })
+        }, req.db)
 
         return response(201, req.body, `Berhasil Menambah Artikel`, res)
     } catch (error) {
@@ -110,7 +109,7 @@ const update = async (req, res) => {
             const banner = req.file.path
             await BlogModel.updateArticleBySlug(slug, {
                 banner, title, description, content, status
-            })
+            }, req.db)
         }
 
         await BlogModel.updateArticleBySlug(slug, {
@@ -128,7 +127,7 @@ const destroy = async (req, res) => {
     try {
         const slug = req.params.slug
 
-        await BlogModel.deleteArticleBySlug(slug)
+        await BlogModel.deleteArticleBySlug(slug, req.db)
 
         return response(201, {}, `Berhasil Delete Data Artikel`, res)
     } catch (error) {
@@ -141,9 +140,9 @@ const category = async (req, res) => {
     try {
         const id_category = req.params.id_category
 
-        const featured = await BlogModel.getFeaturedArticleInCategory(id_category)
-        const popular = await BlogModel.getPopularArticleInCategoryWithLimit(id_category, 5)
-        const newest = await BlogModel.getNewestArticleInCategoryWithLimit(id_category, 3)
+        const featured = await BlogModel.getFeaturedArticleInCategory(id_category, req.db)
+        const popular = await BlogModel.getPopularArticleInCategoryWithLimit(id_category, 5, req.db)
+        const newest = await BlogModel.getNewestArticleInCategoryWithLimit(id_category, 3, req.db)
 
         const data = { featured, popular, newest }
         return response(200, data, ``, res)
@@ -156,7 +155,7 @@ const category = async (req, res) => {
 const blogCategory = async (req, res) => {
     try {
         const id_category = req.params.id_category
-        const blogCategory = await BlogModel.getArticleInCategory(id_category)
+        const blogCategory = await BlogModel.getArticleInCategory(id_category, req.db)
 
         return response(200, blogCategory, ``, res)
     } catch (error) {

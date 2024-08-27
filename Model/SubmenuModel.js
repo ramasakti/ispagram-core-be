@@ -1,6 +1,4 @@
-const db = require('../Config')
-
-const getAllSubmenuWithMenu = async (trx = db) => {
+const getAllSubmenuWithMenu = async (trx) => {
     return await trx('submenu')
         .select(
             'submenu.id_submenu',
@@ -13,17 +11,17 @@ const getAllSubmenuWithMenu = async (trx = db) => {
         .join('menu', 'menu.id_menu', '=', 'submenu.menu_id')
 }
 
-const getSubmenuByMenu = async (menu, trx = db) => await trx('submenu').where('menu_id', menu)
+const getSubmenuByMenu = async (menu, trx) => await trx('submenu').where('menu_id', menu)
 
-const getSubmenuByID = async (id_submenu, trx = db) => await trx('submenu').where('id_submenu', id_submenu).first()
+const getSubmenuByID = async (id_submenu, trx) => await trx('submenu').where('id_submenu', id_submenu).first()
 
-const insertSubmenu = async (req, trx = db) => await trx('submenu').insert(req)
+const insertSubmenu = async (req, trx) => await trx('submenu').insert(req)
 
-const updateSubmenu = async (id_submenu, req, trx = db) => await trx('submenu').where('id_submenu', id_submenu).update(req)
+const updateSubmenu = async (id_submenu, req, trx) => await trx('submenu').where('id_submenu', id_submenu).update(req)
 
-const deleteSubmenuByID = async (id_submenu, trx = db) => await trx('submenu').where('id_submenu', id_submenu).del()
+const deleteSubmenuByID = async (id_submenu, trx) => await trx('submenu').where('id_submenu', id_submenu).del()
 
-const deleteSubmenuByMenu = async (menu, trx = db) => await trx('submenu').where('menu_id', menu).del()
+const deleteSubmenuByMenu = async (menu, trx) => await trx('submenu').where('menu_id', menu).del()
 
 module.exports = {
     getAllSubmenuWithMenu,

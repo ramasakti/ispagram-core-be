@@ -8,9 +8,9 @@ const TransaksiPembayaranSiswaModel = require('../Model/TransaksiPembayaranSiswa
 
 const dataSiswaGuruKelas = async (req, res) => {
     try {
-        const siswa = await SiswaModel.getAllIDSiswa()
-        const kelas = await KelasModel.getAllKelas()
-        const guru = await GuruModel.getAllGuru()
+        const siswa = await SiswaModel.getAllIDSiswa(req.db)
+        const kelas = await KelasModel.getAllKelas(req.db)
+        const guru = await GuruModel.getAllGuru(req.db)
 
         const data = {
             siswa: siswa.length,
@@ -27,7 +27,7 @@ const dataSiswaGuruKelas = async (req, res) => {
 
 const diagramAbsenHarianSiswa = async (req, res) => {
     try {
-        const diagramHarian = await AbsenSiswaModel.statistikHarian()
+        const diagramHarian = await AbsenSiswaModel.statistikHarian(req.db)
 
         if (!diagramHarian.H && !diagramHarian.S && !diagramHarian.I && !diagramHarian.A && !diagramHarian.T) {
             return response(200, [0, 0, 0, 0, 0], `Absen Kosong`, res)
@@ -42,7 +42,7 @@ const diagramAbsenHarianSiswa = async (req, res) => {
 
 const grafikAbsenMingguanSiswa = async (req, res) => {
     try {
-        const data = await AbsenSiswaModel.statistikMingguan()
+        const data = await AbsenSiswaModel.statistikMingguan(req.db)
         const statistik = data.map(item => {
             return {
                 Sakit: item.S,
@@ -89,7 +89,7 @@ const grafikKeuangan = async (req, res) => {
         const dari = tanggal[0]
         const sampai = tanggal[1]
 
-        const transaksi = await TransaksiPembayaranSiswaModel.getSumTransactionEveryDay(dari, sampai)
+        const transaksi = await TransaksiPembayaranSiswaModel.getSumTransactionEveryDay(dari, sampai, req.db)
 
         let series = {
             "name": "Pemasukan",

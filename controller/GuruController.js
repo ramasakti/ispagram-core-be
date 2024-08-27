@@ -7,25 +7,10 @@ const UserModel = require('../Model/UserModel')
 const DetailGuruModel = require('../Model/DetailGuruModel')
 const UserUtils = require('../utilities/UserUtils')
 const GuruUtils = require('../utilities/GuruUtils')
-const db = require('../Config')
-
-const nodb = async (req, res) => {
-    const { exec } = require('child_process');
-
-    exec('ping smaispa.sch.id', (error, stdout, stderr) => {
-        if (error) {
-            console.error(`exec error: ${error}`);
-            return;
-        }
-        console.log(`stdout: ${stdout}`);
-        console.error(`stderr: ${stderr}`);
-        return response(200, {stderr, stdout}, `Ok`, res)
-    });
-}
 
 const guru = async (req, res) => {
     try {
-        const guru = await GuruModel.getAllGuru();
+        const guru = await GuruModel.getAllGuru(req.db)
 
         const dataGuru = guru.map(item => {
             return {
@@ -38,18 +23,18 @@ const guru = async (req, res) => {
                 tempat_lahir: item.tempat_lahir,
                 tanggal_lahir: moment(item.tanggal_lahir).format('YYYY-MM-DD')
             }
-        });
+        })
 
         return response(200, dataGuru, `Data Guru`, res);
     } catch (error) {
-        console.error(error);
-        return response(500, null, `Internal server error!`, res);
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
     }
 }
 
 const dataStaf = async (req, res) => {
     try {
-        const staf = await GuruModel.getAllGuruStaf()
+        const staf = await GuruModel.getAllGuruStaf(req.db)
         return response(200, staf, `Data Staf`, res)
     } catch (error) {
         console.error(error)
@@ -66,11 +51,11 @@ const store = async (req, res) => {
         if (!id_guru || !email || !nama_guru || !telp) return response(400, null, `Formulir yang dikirim tidak lengkap!`, res)
 
         // Periksa apakah ID sudah digunakan
-        const existingGuru = await GuruUtils.existingGuru(id_guru)
+        const existingGuru = await GuruUtils.existingGuru(id_guru, req.db)
         if (existingGuru != null) return response(400, null, `ID guru telah digunakan!`, res)
 
         // Periksa apakah email sudah digunakan
-        const existingEmail = await UserUtils.existingEmail(email)
+        const existingEmail = await UserUtils.existingEmail(email, req.db)
         if (existingEmail != null) return response(400, null, `Email telah digunakan!`, res)
 
         // Buatkan random password
@@ -82,17 +67,17 @@ const store = async (req, res) => {
             password: await bcrypt.hash(randomPassword, 10),
             email,
             role: 6
-        })
+        }, req.db)
 
         // Insert ke tabel guru
         await GuruModel.insertGuru({
             id_guru, staf: staf ?? false, rfid, nama_guru, alamat, telp, tempat_lahir, tanggal_lahir
-        })
+        }, req.db)
 
         // Cek tabel detail_guru
-        const detail_guru = await GuruModel.getDetailGuruByID(id_guru)
+        const detail_guru = await GuruModel.getDetailGuruByID(id_guru, req.db)
         // Insert ke tabel detail_guru
-        if (!detail_guru) await DetailGuruModel.insertDetailGuru(id_guru)
+        if (!detail_guru) await DetailGuruModel.insertDetailGuru(id_guru, req.db)
 
         // Teks yang akan dikirim ke email yang didaftarkan
         const text = `Assalamualaikum ${nama_guru} \n\n Berikut adalah detail akun yang digunakan untuk login di aplikasi Ispagram \n Username: ${id_guru} \n Password: ${randomPassword} \n\n Note: Segera ganti password anda agar mudah diingat`
@@ -117,23 +102,23 @@ const update = async (req, res) => {
         }
 
         // Periksa apakah ID guru terdaftar
-        const existingGuru = await GuruModel.getGuruAndUserInfoByID(id_guru)
+        const existingGuru = await GuruModel.getGuruAndUserInfoByID(id_guru, req.db)
         if (!existingGuru) return response(400, null, `ID guru tidak terdaftar!`, res)
 
         // Periksa apakah guru pernah terdaftar
-        const detailGuru = await GuruModel.getDetailGuruByID(id_guru)
-        if (!detailGuru) await DetailGuruModel.insertDetailGuru(id_guru)
+        const detailGuru = await GuruModel.getDetailGuruByID(id_guru, req.db)
+        if (!detailGuru) await DetailGuruModel.insertDetailGuru(id_guru, req.db)
 
         // Periksa apakah email sudah digunakan
         if (email) {
-            const existingEmail = await UserUtils.existingEmail(email)
+            const existingEmail = await UserUtils.existingEmail(email, req.db)
             if (existingEmail != null && existingEmail.email !== detailGuru.email) return response(400, null, `Email telah digunakan!`, res)
         }
 
         // Update ke database
         await GuruModel.updateGuru(id_guru, {
             rfid, nama_guru, alamat, telp, tempat_lahir, tanggal_lahir, staf
-        })
+        }, req.db)
 
         return response(201, {}, `Berhasil update data guru!`, res)
     } catch (error) {
@@ -148,14 +133,14 @@ const destroy = async (req, res) => {
         const id_guru = req.params.id_guru
 
         // Periksa apakah id guru terdaftar
-        const detailGuru = GuruModel.getDetailGuruByID(id_guru)
+        const detailGuru = GuruModel.getDetailGuruByID(id_guru, req.db)
         if (!detailGuru) return response(400, null, `ID guru tidak terdaftar!`, res)
 
         // Delete dari tabel guru
-        await GuruModel.deleteGuru(id_guru)
+        await GuruModel.deleteGuru(id_guru, req.db)
 
         // Delete dari tabel users
-        await UserModel.deleteUserByUsername(id_guru)
+        await UserModel.deleteUserByUsername(id_guru, req.db)
 
         return response(201, {}, `Berhasil delete guru`, res)
     } catch (error) {
@@ -164,4 +149,4 @@ const destroy = async (req, res) => {
     }
 }
 
-module.exports = { nodb, guru, dataStaf, store, update, destroy }
+module.exports = { guru, dataStaf, store, update, destroy }

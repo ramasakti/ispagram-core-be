@@ -6,7 +6,7 @@ const ExcelJS = require('exceljs')
 
 const mapel = async (req, res) => {
     try {
-        const mapel = await MapelModel.getAllMapel()
+        const mapel = await MapelModel.getAllMapel(req.db)
         return response(200, mapel, ``, res)
     } catch (error) {
         console.error(error)
@@ -19,7 +19,7 @@ const store = async (req, res) => {
         const { nama_mapel } = req.body
         if (!nama_mapel) return response(400, null, `Semua Form Wajib Diisi!`, res)
 
-        await MapelModel.insertMapel({ nama_mapel })
+        await MapelModel.insertMapel({ nama_mapel }, req.db)
 
         return response(200, mapel, `Berhasil menambahkan mata pelajaran`, res)
     } catch (error) {
@@ -34,7 +34,7 @@ const update = async (req, res) => {
         const { nama_mapel } = req.body
         if (!id_mapel || !nama_mapel) return response(400, null, `Semua Form Wajib Diisi!`, res)
 
-        await MapelModel.updateMapel(id_mapel, { nama_mapel })
+        await MapelModel.updateMapel(id_mapel, { nama_mapel }, req.db)
 
         return response(201, mapel, `Berhasil update mata pelajaran`, res)
     } catch (error) {
@@ -45,10 +45,10 @@ const update = async (req, res) => {
 
 const destroy = async (req, res) => {
     try {
-        const mapel = await MapelModel.getMapelByID(req.params.id_mapel)
+        const mapel = await MapelModel.getMapelByID(req.params.id_mapel, req.db)
         if (!mapel) return response(404, null, `Mapel tidak ditemukan!`, res)
 
-        await MapelModel.deleteMapel(req.params.id_mapel)
+        await MapelModel.deleteMapel(req.params.id_mapel, req.db)
 
         return response(201, {}, `Berhasil menghapus mata pelajaran`, res)
     } catch (error) {
@@ -58,7 +58,7 @@ const destroy = async (req, res) => {
 }
 
 const importMapel = async (req, res) => {
-    const trx = await db.transaction();
+    const trx = await req.db.transaction();
     try {
         if (!req.file) return response(400, null, `No file uploaded!`, res);
 
@@ -76,7 +76,7 @@ const importMapel = async (req, res) => {
             await MapelModel.insertMapel({
                 nama_mapel: mapel.nama_mapel,
                 kelas_id: mapel.kelas_id
-            })
+            }, trx)
         }
 
         return response(201, {}, `Berhasil Import Mapel`, res)
@@ -90,7 +90,7 @@ const template = async () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Sheet1');
 
-    const kelas = await KelasModel.getAllKelas();
+    const kelas = await KelasModel.getAllKelas(req.db);
 
     const options = kelas.map(option => `${option.tingkat} ${option.jurusan}`).join(',');
 

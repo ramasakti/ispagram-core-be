@@ -5,7 +5,7 @@ const TransaksiPembayaranSiswaModel = require('../Model/TransaksiPembayaranSiswa
 
 const pembayaran = async (req, res) => {
     try {
-        const pembayaran = await PembayaranSiswaModel.getAllPembayaran()
+        const pembayaran = await PembayaranSiswaModel.getAllPembayaran(req.db)
 
         const pembayaranParsed = pembayaran.map(item => {
             const kelasArray = item.kelas ? JSON.parse(item.kelas).kelas : []
@@ -39,7 +39,7 @@ const store = async (req, res) => {
     
         await PembayaranSiswaModel.insertPembayaran({
             nama_pembayaran, nominal, kelas: objectKelas
-        })
+        }, req.db)
 
         return response(201, {}, `Berhasil menambahkan pembayaran baru`, res)
     } catch (error) {
@@ -70,12 +70,12 @@ const update = async (req, res) => {
             var objectKelas = { kelas: req.body.kelas }
         }
 
-        const transaksi = await TransaksiPembayaranSiswaModel.getTransactionByPembayaran(id_pembayaran)
+        const transaksi = await TransaksiPembayaranSiswaModel.getTransactionByPembayaran(id_pembayaran, req.db)
         if (transaksi > 0) return response(400, null, `Pembayaran tidak dapat dirubah karena terdapat transaksi`, res)
 
         await PembayaranSiswaModel.updatePembayaran(id_pembayaran, {
             nama_pembayaran, nominal, kelas: JSON.stringify(objectKelas)
-        })
+        }, req.db)
 
         return response(201, {}, `Berhasil mengubah pembayaran`, res)
     } catch (error) {
@@ -87,14 +87,14 @@ const update = async (req, res) => {
 const destroy = async (req, res) => {
     try {
         const id_pembayaran = req.params.id_pembayaran
-        const detailPembayaran = await PembayaranSiswaModel.getPembayaranByID(id_pembayaran)
+        const detailPembayaran = await PembayaranSiswaModel.getPembayaranByID(id_pembayaran, req.db)
     
         if (!detailPembayaran) return response(400, null, `Pembayaran tidak ditemukan!`, res)
     
-        const transaksi = await TransaksiPembayaranSiswaModel.getTransactionByPembayaran(id_pembayaran)
+        const transaksi = await TransaksiPembayaranSiswaModel.getTransactionByPembayaran(id_pembayaran, req.db)
         if (transaksi > 0) return response(400, null, `Pembayaran tidak dapat dihapus karena terdapat transaksi`, res)
     
-        await PembayaranSiswaModel.deletePembayaran(id_pembayaran)
+        await PembayaranSiswaModel.deletePembayaran(id_pembayaran, req.db)
     
         return response(201, {}, `Berhasil hapus data pembayaran!`, res)
     } catch (error) {

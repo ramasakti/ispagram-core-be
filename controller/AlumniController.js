@@ -1,4 +1,3 @@
-const db = require('../Config')
 const response = require('../Response')
 const AlumniModel = require('../Model/AlumniModel')
 const PembayaranSiswaModel = require('../Model/PembayaranSiswaModel')
@@ -10,7 +9,7 @@ const ExcelJS = require('exceljs')
 
 const alumni = async (req, res) => {
     try {
-        const alumni = await AlumniModel.getAllAlumni()
+        const alumni = await AlumniModel.getAllAlumni(req.db)
 
         return response(200, alumni, `Data Alumni`, res)
     } catch (error) {
@@ -22,7 +21,7 @@ const alumni = async (req, res) => {
 const alumniTahun = async (req, res) => {
     try {
         const tahunLulus = req.params.tahun
-        const alumni = await AlumniModel.getAlumniByTahunLulus(tahunLulus)
+        const alumni = await AlumniModel.getAlumniByTahunLulus(tahunLulus, req.db)
 
         return response(200, alumni, `Data Alumni Tahun ${tahunLulus}`, res) 
     } catch (error) {
@@ -49,7 +48,7 @@ const update = async (req, res) => {
 
 const tunggakan = async (req, res) => {
     try {
-        const tunggakan = await PembayaranSiswaModel.getTunggakanAlumni()
+        const tunggakan = await PembayaranSiswaModel.getTunggakanAlumni(req.db)
 
         return response(200, tunggakan, `Data Tunggakan Alumni`, res) 
     } catch (error) {
@@ -79,7 +78,7 @@ const importAlumni = async (req, res) => {
             tahun_lulus: row[2]
         }));
 
-        const trx = await db.transaction();
+        const trx = await req.db.transaction();
 
         try {
             for (const alumni of data) {

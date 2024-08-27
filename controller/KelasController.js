@@ -10,7 +10,7 @@ const AlumniModel = require('../Model/AlumniModel')
 
 const kelas = async (req, res) => {
     try {
-        const kelas = await KelasModel.getAllKelasWithWalas()
+        const kelas = await KelasModel.getAllKelasWithWalas(req.db)
         return response(200, kelas, 'Berhasil get data kelas!', res)
     } catch (error) {
         console.error(error)
@@ -23,7 +23,7 @@ const detail = async (req, res) => {
         const kelas_id = req.params.kelas_id
         if (!kelas_id) return response(400, null, `Kelas tidak ditemukan!`, res)
 
-        const detailKelas = await KelasModel.getKelasWithWalasByID(kelas_id)
+        const detailKelas = await KelasModel.getKelasWithWalasByID(kelas_id, req.db)
 
         return response(200, detailKelas, 'Berhasil get detail kelas!', res)
     } catch (error) {
@@ -39,7 +39,7 @@ const store = async (req, res) => {
         if (!tingkat || !jurusan || !walas) return response(409, null, `Gagal!`, res)
 
         // Masukkan ke database
-        await KelasModel.insertKelas({ tingkat, jurusan, walas })
+        await KelasModel.insertKelas({ tingkat, jurusan, walas }, req.db)
 
         return response(200, {}, 'Berhasil tambah kelas!', res)
     } catch (error) {
@@ -57,7 +57,7 @@ const update = async (req, res) => {
         // Query ke database
         await KelasModel.updateKelas(id_kelas, {
             tingkat, jurusan, walas
-        })
+        }, req.db)
 
         return response(201, {}, 'Berhasil update data kelas!', res)
     } catch (error) {
@@ -72,17 +72,17 @@ const destroy = async (req, res) => {
         const id_kelas = req.params.kelas_id
 
         // Ambil informasi kelas
-        const detailKelas = await KelasModel.getKelasById(id_kelas)
+        const detailKelas = await KelasModel.getKelasById(id_kelas, req.db)
 
         // Jika kelas tidak ditemukan
         if (!detailKelas) return response(404, null, `Data kelas yang akan dihapus tidak teridentifikasi`, res)
 
         // Periksa apakah kelas memiliki siswa
-        const existingSiswa = await SiswaModel.getSiswaByKelas(id_kelas)
+        const existingSiswa = await SiswaModel.getSiswaByKelas(id_kelas, req.db)
         if (existingSiswa.length > 0) return response(400, null, `Gagal hapus kelas! Terdapat siswa yang terdaftar pada kelas yang akan dihapus`, res)
 
         // Hapus kelas dari tabel kelas
-        await KelasModel.deleteKelas(id_kelas)
+        await KelasModel.deleteKelas(id_kelas, req.db)
 
         return response(202, {}, 'Berhasil hapus kelas', res)
     } catch (error) {
@@ -92,14 +92,14 @@ const destroy = async (req, res) => {
 }
 
 const graduate = async (req, res) => {
-    const trx = await db.transaction()
+    const trx = await req.db.transaction()
     try {
         // Ambil data tunggakan semua siswa
-        const siswas = await SiswaModel.getAllSiswaActive()
+        const siswas = await SiswaModel.getAllSiswaActive(req.db)
 
         // Update tunggakan
         for (const siswa of siswas) {
-            const tunggakans = await getTunggakanSiswaAktif(siswa.id_siswa)
+            const tunggakans = await getTunggakanSiswaAktif(siswa.id_siswa, trx)
             for (const tunggakan of tunggakans) {
                 if ((tunggakan.terbayar !== tunggakan.nominal && tunggakan.terbayar === 0) || (tunggakan.terbayar !== 0 && tunggakan.terbayar !== tunggakan.nominal)) {
                     await TransaksiPembayaranSiswaModel.updateTunggakanBySiswa({
@@ -145,18 +145,18 @@ const graduate = async (req, res) => {
     }
 }
 
-async function getTunggakanSiswaAktif(id_siswa) {
+async function getTunggakanSiswaAktif(id_siswa, trx) {
     try {
-        const siswa = await SiswaModel.getSiswaByID(id_siswa)
+        const siswa = await SiswaModel.getSiswaByID(id_siswa, trx)
         if (!siswa) return response(400, null, `Siswa Tidak Terdaftar`, res)
 
         const kelas = siswa.kelas_id.toString()
 
-        const dataPembayaran = await PembayaranSiswaModel.getPembayaranActive()
+        const dataPembayaran = await PembayaranSiswaModel.getPembayaranActive(trx)
         const pembayaran = dataPembayaran.filter(item => item.kelas.includes(kelas))
         const idPembayaranArray = pembayaran.map(item => item.id_pembayaran)
 
-        const detailTagihan = await PembayaranSiswaModel.getTransaksiPembayaranBySiswaAndInID(idPembayaranArray, id_siswa)
+        const detailTagihan = await PembayaranSiswaModel.getTransaksiPembayaranBySiswaAndInID(idPembayaranArray, id_siswa, trx)
 
         let tagihan = []
         for (var i = 0; i < pembayaran.length; i++) {

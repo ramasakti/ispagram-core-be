@@ -1,4 +1,3 @@
-const db = require('../Config')
 const response = require('../Response')
 const Moment = require('../utilities/Moment')
 const SiswaModel = require('../Model/SiswaModel')
@@ -11,7 +10,7 @@ const ExcelJS = require('exceljs')
 
 const siswa = async (req, res) => {
     try {
-        const dataSiswa = await SiswaModel.getAllSiswa()
+        const dataSiswa = await SiswaModel.getAllSiswa(req.db)
         return response(200, dataSiswa, 'Get Data Siswa', res)
     } catch (error) {
         console.error(error)
@@ -22,7 +21,7 @@ const siswa = async (req, res) => {
 const siswaKelas = async (req, res) => {
     try {
         const id_kelas = req.params.kelas_id
-        const siswaKelas = await SiswaModel.getSiswaByKelas(id_kelas)
+        const siswaKelas = await SiswaModel.getSiswaByKelas(id_kelas, req.db)
         return response(200, siswaKelas, `Data Siswa Kelas`, res)
     } catch (error) {
         console.error(error)
@@ -33,7 +32,7 @@ const siswaKelas = async (req, res) => {
 const detail = async (req, res) => {
     try {
         const id_siswa = req.params.id_siswa
-        const detailSiswa = await SiswaModel.getDetailSiswaByID(id_siswa)
+        const detailSiswa = await SiswaModel.getDetailSiswaByID(id_siswa, req.db)
 
         if (!detailSiswa) return response(400, null, `ID siswa tidak terdaftar! Data siswa tidak ditemukan!`, res)
 
@@ -45,7 +44,7 @@ const detail = async (req, res) => {
 }
 
 const store = async (req, res) => {
-    const trx = await db.transaction()
+    const trx = await req.db.transaction()
     try {
         const { id_siswa, rfid, nama_siswa, kelas_id, alamat, telp, tempat_lahir, tanggal_lahir } = req.body
 
@@ -93,7 +92,7 @@ const store = async (req, res) => {
 }
 
 const update = async (req, res) => {
-    const trx = await db.transaction()
+    const trx = await req.db.transaction()
     try {
         const id_siswa = req.params.id_siswa
         const { rfid, nama_siswa, kelas_id, alamat, telp, tempat_lahir, tanggal_lahir } = req.body
@@ -126,7 +125,7 @@ const update = async (req, res) => {
 }
 
 const destroy = async (req, res) => {
-    const trx = await db.transaction()
+    const trx = await req.db.transaction()
     try {
         const id_siswa = req.params.id_siswa
 
@@ -147,11 +146,11 @@ const destroy = async (req, res) => {
     }
 }
 
-const templateExcel = async () => {
+const templateExcel = async (trx) => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Sheet1');
 
-    const kelas = await KelasModel.getAllKelas();
+    const kelas = await KelasModel.getAllKelas(trx);
 
     // Sheet for kelas data
     const dataKelasSheet = workbook.addWorksheet('DataKelas');
@@ -242,7 +241,7 @@ const templateExcel = async () => {
 
 const exportExcel = async (req, res) => {
     try {
-        const workbook = await templateExcel();
+        const workbook = await templateExcel(req.db);
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', 'attachment; filename=Template Excel Import Jadwal.xlsx');
@@ -283,8 +282,8 @@ const importSiswa = async (req, res) => {
 
         if (data.length === 0) return response(400, null, 'No valid data to import!', res);
 
-        const existingKelasID = await KelasModel.getAllKelas();
-        const existingSiswaID = await SiswaModel.getAllIDSiswa();
+        const existingKelasID = await KelasModel.getAllKelas(req.db);
+        const existingSiswaID = await SiswaModel.getAllIDSiswa(req.db);
         const siswaRole = await RoleModel.getRoleByRole('Siswa');
 
         const filteredData = data.filter(row => {
@@ -298,7 +297,7 @@ const importSiswa = async (req, res) => {
 
         if (filteredData.length === 0) return response(400, null, 'All data is either invalid or already exists!', res);
 
-        const trx = await db.transaction();
+        const trx = await req.db.transaction();
 
         try {
             for (const siswa of filteredData) {

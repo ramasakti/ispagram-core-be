@@ -1,10 +1,9 @@
-const db = require('../Config')
 const WhatsAppModel = require('../Model/WhatsAppModel')
 const response = require('../Response')
 
 const primary = async (req, res) => {
     try {
-        const primary = await WhatsAppModel.getPrimaryWhatsApp()
+        const primary = await WhatsAppModel.getPrimaryWhatsApp(req.db)
         return response(200, primary, ``, res)
     } catch (error) {
         console.error(error)
@@ -28,7 +27,7 @@ const connect = async (req, res) => {
             token: connect.token,
             name: name,
             connected: 1
-        })
+        }, req.db)
 
         if (!qrcode.status) return response(400, null, `${qrcode.reason}`, res)
 

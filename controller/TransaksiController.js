@@ -15,7 +15,7 @@ const dataTransaksi = async (req, res) => {
         if (!dari || !sampai) return response(400, null, `Semua form wajib diisi!`, res)
 
         // Query ke database
-        const transaksi = await TransaksiPembayaranSiswaModel.getAllTransactionByDateRange(dari, sampai)
+        const transaksi = await TransaksiPembayaranSiswaModel.getAllTransactionByDateRange(dari, sampai, req.db)
 
         // Destruktur sebelum mereturn
         const dataTransaksi = transaksi.map(item => {
@@ -39,17 +39,17 @@ const tagihan = async (req, res) => {
         const id_siswa = req.params.id_siswa
 
         let tagihan = []
-        const siswa = await SiswaModel.getSiswaByID(id_siswa)
-        const tunggakan = await PembayaranSiswaModel.getTagihanTunggakanBySiswa(id_siswa)
+        const siswa = await SiswaModel.getSiswaByID(id_siswa, req.db)
+        const tunggakan = await PembayaranSiswaModel.getTagihanTunggakanBySiswa(id_siswa, req.db)
 
         if (siswa) var kelas = siswa.kelas_id.toString()
 
         if (kelas) {
-            const dataPembayaran = await PembayaranSiswaModel.getPembayaranActive()
+            const dataPembayaran = await PembayaranSiswaModel.getPembayaranActive(req.db)
             const pembayaran = dataPembayaran.filter(item => item.kelas.includes(kelas))
             const arrayIDPembayaran = pembayaran.map(item => item.id_pembayaran)
     
-            const detailTagihan = await PembayaranSiswaModel.getTransaksiPembayaranBySiswaAndInID(arrayIDPembayaran, id_siswa)
+            const detailTagihan = await PembayaranSiswaModel.getTransaksiPembayaranBySiswaAndInID(arrayIDPembayaran, id_siswa, req.db)
     
             for (var i = 0; i < pembayaran.length; i++) {
                 var found = false;
@@ -78,9 +78,9 @@ const detailTagihanSiswa = async (req, res) => {
         const { siswa, selectedPayments } = req.body
         if (!siswa || !selectedPayments) return response(400, null, `Semua field wajib diisi!`, res)
 
-        const detailTagihanSiswa = await PembayaranSiswaModel.getPembayaranInID(selectedPayments)
+        const detailTagihanSiswa = await PembayaranSiswaModel.getPembayaranInID(selectedPayments, req.db)
 
-        const trx = await TransaksiPembayaranSiswaModel.getTransactionByPembayaranAndIDSiswa(selectedPayments, siswa)
+        const trx = await TransaksiPembayaranSiswaModel.getTransactionByPembayaranAndIDSiswa(selectedPayments, siswa, req.db)
 
         const tagihan = detailTagihanSiswa.map(detail => ({
             ...detail,
@@ -99,7 +99,7 @@ const detailTagihanSiswa = async (req, res) => {
 const transaksiSiswa = async (req, res) => {
     try {
         const id_siswa = req.params.id_siswa
-        const transaksi = await TransaksiPembayaranSiswaModel.getTransactionBySiswa(id_siswa)
+        const transaksi = await TransaksiPembayaranSiswaModel.getTransactionBySiswa(id_siswa, req.db)
 
         const dataTransaksi = transaksi.map(item => {
             return {
@@ -130,7 +130,7 @@ const transaksi = async (req, res) => {
             delete item.cssClass
         })
 
-        const trx = await TransaksiPembayaranSiswaModel.getTransactionByPembayaranAndIDSiswa(selectedPayments, siswa)
+        const trx = await TransaksiPembayaranSiswaModel.getTransactionByPembayaranAndIDSiswa(selectedPayments, siswa, req.db)
 
         const mergedArray = dataPembayaranSiswa.map(detail => ({
             ...detail,
@@ -160,13 +160,13 @@ const transaksi = async (req, res) => {
             return response(400, null, errorMessage, res)
         } else {
             dataPembayaranSiswa.map(async item => {
-                await db('transaksi').insert({
+                await TransaksiPembayaranSiswaModel.createTransaction({
                     kwitansi: `K${moment().format('YYYYMMDDhhmmssms')}`,
                     waktu_transaksi: moment().format('YYYY-MM-DD hh:mm:ss'),
                     siswa_id: siswa,
                     pembayaran_id: item.id_pembayaran,
                     terbayar: item.membayar
-                })
+                }, req.db)
             })
 
             return response(201, {}, `Berhasil melakukan pembayaran!`, res)
@@ -180,7 +180,7 @@ const transaksi = async (req, res) => {
 const detail = async (req, res) => {
     try {
         const kwitansi = req.params.kwitansi
-        const detail = await TransaksiPembayaranSiswaModel.getDetailTransactionByID(kwitansi)
+        const detail = await TransaksiPembayaranSiswaModel.getDetailTransactionByID(kwitansi, req.db)
         return response(200, detail, `Detail Transaksi`, res)
     } catch (error) {
         console.error(error)

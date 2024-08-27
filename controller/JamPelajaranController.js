@@ -3,16 +3,13 @@ const response = require('../Response')
 const moment = require('../utilities/Moment')
 const existingHari = require('../utilities/HariUtils')
 const HariModel = require('../Model/HariModel')
+const JamPelajaranModel = require('../Model/JamPelajaranModel')
 
 const jamPelajaran = async (req, res) => {
     try {
-        const jamPelajaran = await db('jam_pelajaran')
-            .whereNot('keterangan', 'like', '%Istirahat%')
-            .whereNot('keterangan', 'like', '%Diniyah%')
-            .orderBy('id_jampel', 'ASC')
-            .orderBy('mulai', 'ASC')
+        const jamPelajaran = await JamPelajaranModel.getAllTrueJampel(req.db)
 
-            return response(200, jamPelajaran, `Berhasil get data jam pelajaran!`, res)
+        return response(200, jamPelajaran, `Berhasil get data jam pelajaran!`, res)
     } catch (error) {
         console.error(error)
         return response(500, null, `Internal Server Error`, res)
@@ -23,19 +20,12 @@ const jamPelajaranFree = async (req, res) => {
     try {
         const kelas = req.params.id_kelas
 
-        const jamPelajaranFilled = await db('jadwal')
-            .select('jadwal.jampel')
-            .join('jam_pelajaran', 'jam_pelajaran.id_jampel', '=', 'jadwal.jampel')
-            .join('mapel', 'mapel.id_mapel', '=', 'jadwal.mapel')
-            .where('jadwal.kelas_id', kelas)
+        const jamPelajaranFilled = await JamPelajaranModel.getAllJampelFilledByKelas(kelas, req.db)
 
         let idJamPelajaranFilled = []
         jamPelajaranFilled.map(item => idJamPelajaranFilled.push(item.jampel))
 
-        const jamPelajaranFree = await db('jam_pelajaran')
-            .whereNotIn('id_jampel', idJamPelajaranFilled)
-            .whereNot('keterangan', 'like', '%Istirahat%')
-            .whereNot('keterangan', 'like', '%Diniyah%')
+        const jamPelajaranFree = await JamPelajaranModel.getAllJampelFreeByFilled(idJamPelajaranFilled, req.db)
         
         return response(200, jamPelajaranFree, `Data Jam Pelajaran`, res)
     } catch (error) {
@@ -45,40 +35,32 @@ const jamPelajaranFree = async (req, res) => {
 }
 
 const detailJampel = async (req, res) => {
-    if (!req.params.hari) return response(400, null, `Hari tidak terdaftar`, res)
-    const detailJampel = await db('jam_pelajaran').where('hari', req.params.hari).select()
-    return response(200, detailJampel, `Detail jam pelajaran`, res)
+    try {
+        if (!req.params.hari) return response(400, null, `Hari tidak terdaftar`, res)
+        const detailJampel = await JamPelajaranModel.getJampelByHari(req.params.hari, req.db)
+
+        return response(200, detailJampel, `Detail jam pelajaran`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal Server Error`, res)
+    }
 }
 
 const storeJampel = async (req, res) => {
     const { hari, keterangan, mulai, selesai } = req.body;
     if (!hari || !keterangan || !mulai || !selesai) return response(400, null, `Semua field wajib diisi!`, res);
-    if (await existingHari.existingHari(hari) === null) return response(400, null, `Format hari tidak sesuai!`, res);
+    if (await existingHari.existingHari(hari, req.db) === null) return response(400, null, `Format hari tidak sesuai!`, res);
 
     try {
-        const result = await db('jam_pelajaran')
-            .where(function (query) {
-                query
-                    .where(function (subquery) {
-                        subquery
-                            .where('mulai', '<', mulai)
-                            .andWhere('selesai', '>', mulai)
-                    })
-                    .orWhere(function (subquery) {
-                        subquery
-                            .where('mulai', '<', selesai)
-                            .andWhere('selesai', '>', selesai)
-                    });
-            })
-            .where('hari', hari);
+        const result = await JamPelajaranModel.getJampelByTimeAndHari(mulai, selesai, hari, req.db)
 
         if (result.length < 1) {
-            await db('jam_pelajaran').insert({
+            await JamPelajaranModel.insertJampel({
                 hari: hari,
                 keterangan: keterangan,
                 mulai: mulai,
                 selesai: selesai + ':00',
-            });
+            }, req.db)
 
             return response(201, {}, `Berhasil menambah jam pelajaran baru!`, res);
         } else {
@@ -96,31 +78,19 @@ const updateJampel = async (req, res) => {
     if (await existingHari.existingHari(hari) === null) return response(400, mull, `Format hari tidak sesuai!`, res)
 
     try {
-        const result = await db('jam_pelajaran')
-            .where(function (query) {
-                query
-                    .whereBetween('mulai', [mulai, selesai])
-                    .orWhereBetween('selesai', [mulai, selesai])
-            })
-            .where('hari', hari)
+        const result = await JamPelajaranModel.getJampelByTimeAndHari(mulai, selesai, hari, req.db)
 
-        const existingHari = await db('jam_pelajaran')
-            .where('id_jampel', id_jampel)
-            .select('hari')
-            .first()
+        const existingHari = await JamPelajaranModel.getJampelByID(id_jampel, req.db)
 
         if (result.length < 1 || existingHari.hari === hari) {
-            await db('jam_pelajaran')
-                .where('id_jampel', id_jampel)
-                .update({
-                    hari, keterangan, mulai, selesai
-                })
+            await JamPelajaranModel.updateJampelByID(id_jampel, req.db)
 
             return response(201, {}, `Berhasil update jam pelajaran!`, res)
         } else {
             return response(400, null, `Gagal! Jam berbentrokan!`, res)
         }
     } catch (error) {
+        console.error(error)
         return response(500, null, `Internal server error!`, res)
     }
 }
@@ -128,10 +98,10 @@ const updateJampel = async (req, res) => {
 const deleteJampel = async (req, res) => {
     try {
         const id_jampel = req.params.id_jampel
-        const jampel = await db('jam_pelajaran').where('id_jampel', id_jampel).first()
+        const jampel = await JamPelajaranModel.getJampelByID(id_jampel, req.db)
         if (!jampel) return response(400, null, `Gagal! Jam pelajaran tidak ditemukan`, res)
 
-        await db('jam_pelajaran').where('id_jampel', id_jampel).del()
+        await JamPelajaranModel.deleteJampelByID(id_jampel, req.db)
         return response(201, null, `Berhasil hapus jam pelajaran`, res)
     } catch (error) {
         console.error(error)
@@ -140,7 +110,7 @@ const deleteJampel = async (req, res) => {
 }
 
 const generateJampel = async (req, res) => {
-    const hariData = await HariModel.getAllHariActive()
+    const hariData = await HariModel.getAllHariActive(req.db)
     const jamPelajaranData = [];
 
     hariData.forEach((hari) => {
@@ -226,7 +196,7 @@ const generateJampel = async (req, res) => {
 
 const importJampel = async (req, res) => {
     try {
-        await db('jam_pelajaran').insert(req.body)
+        await JamPelajaranModel.insertJampel(req.body, req.db)
         return response(201, {}, `Berhasil generate jadwal`, res)
     } catch (error) {
         console.error(error)

@@ -5,7 +5,7 @@ const HariModel = require('../Model/HariModel')
 
 const hari = async (req, res) => {
     try {
-        const hari = await HariModel.getAllHariWithPiket()
+        const hari = await HariModel.getAllHariWithPiket(req.db)
         return response(200, hari, `Berhasil get data hari!`, res)
     } catch (error) {
         console.error(error)
@@ -39,12 +39,12 @@ const updateHari = async (req, res) => {
         if (!moment(jampel, 'HH:mm:ss', true).isValid()) return response(400, null, `Gagal! data jampel harus format waktu`, res)
 
         // Cek apakah ID guru terdaftar
-        if (await guruUtils.existingGuru(piket) === null) return response(400, null, `Guru piket tidak terdaftar!`, res)
+        if (await guruUtils.existingGuru(piket, req.db) === null) return response(400, null, `Guru piket tidak terdaftar!`, res)
 
         // Update hari
         await HariModel.updateHariByID(id_hari, {
             nama_hari, diniyah, jam_diniyah: jam_diniyah ?? null, masuk, istirahat, jampel, piket, status
-        })
+        }, req.db)
 
         return response(201, {}, `Berhasil edit hari!`, res)
     } catch (error) {

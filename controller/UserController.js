@@ -11,7 +11,7 @@ const UserUtils = require('../utilities/UserUtils')
 
 const users = async (req, res) => {
     try {
-        const users = await UserModel.getAllUsersWithRole()        
+        const users = await UserModel.getAllUsersWithRole(req.db)        
         return response(200, users, `Data Users`, res)
     } catch (error) {
         console.error(error)
@@ -22,12 +22,12 @@ const users = async (req, res) => {
 const detail = async (req, res) => {
     const username = req.params.username
 
-    const detailUser = await UserModel.getUserWithRoleByUsername(username)
+    const detailUser = await UserModel.getUserWithRoleByUsername(username, req.db)
     if (!detailUser) return response(400, null, `User tidak terdaftar!`, res)
 
     if (detailUser.role === 'Guru') {
-        const piket = await HariModel.getHariByHariAndPiket(moment().format('dddd'), detailUser.username)
-        const walas = await KelasModel.getKelasByWalas(detailUser.username)
+        const piket = await HariModel.getHariByHariAndPiket(moment().format('dddd'), detailUser.username, req.db)
+        const walas = await KelasModel.getKelasByWalas(detailUser.username, req.db)
         
         if (piket) {
             const dataUser = {
@@ -68,11 +68,11 @@ const update = async (req, res) => {
         const { email, passwordLama, passwordBaru, id_role } = req.body
         const username = req.params.username
 
-        const detailUser = await UserModel.getUserWithRoleByUsername(username)
+        const detailUser = await UserModel.getUserWithRoleByUsername(username, req.db)
         if (!detailUser) return response(400, null, `User tidak terdaftar!`, res)
     
         if (detailUser.email != email) {
-            const existingEmail = await UserUtils.existingEmail(email)
+            const existingEmail = await UserUtils.existingEmail(email, req.db)
             if (existingEmail != null) return response(400, null, `Email telah digunakan!`, res)
         }
     
@@ -82,20 +82,20 @@ const update = async (req, res) => {
                 return response(400, null, `File yang diunggah bukan gambar!`, res)
             }
     
-            await UserModel.updateUserAvatarByUsername(username, avatar)
+            await UserModel.updateUserAvatarByUsername(username, avatar, req.db)
         }
     
         if (passwordLama) {
             const isPasswordValid = await bcrypt.compareSync(passwordLama, detailUser.password)
     
             if (isPasswordValid) {
-                await UserModel.updateUserPasswordByUsername(username, await bcrypt.hash(passwordBaru, 10))
+                await UserModel.updateUserPasswordByUsername(username, await bcrypt.hash(passwordBaru, 10), req.db)
             }else{
                 return response(400, null, `Password salah!`, res)
             }
         }
     
-        await UserModel.updateUserByUsername(username, { email, role: id_role })
+        await UserModel.updateUserByUsername(username, { email, role: id_role }, req.db)
     
         return response(201, {}, `Berhasil update user!`, res)
     } catch (error) {
@@ -107,11 +107,11 @@ const update = async (req, res) => {
 const forgetPassword = async (req, res) => {
     try {
         const { email } = req.body
-        const detailUser = await UserModel.getUserWithRoleByEmail(email)
+        const detailUser = await UserModel.getUserWithRoleByEmail(email, req.db)
         if (!detailUser) return response(400, null, `Email tidak terdaftar!`, res)
 
         const randomPassword = crypto.randomBytes(Math.ceil(8 / 2)).toString('hex').slice(0, 8)
-        await UserModel.updateUserPasswordByEmail(email, await bcrypt.hash(randomPassword, 10))
+        await UserModel.updateUserPasswordByEmail(email, await bcrypt.hash(randomPassword, 10), req.db)
 
         const text = `Assalamualaikum Warahmatullahi Wabarakatuh! ${detailUser.nama_guru ?? detailUser.nama_siswa}\n\nSesuai dengan permintaan anda perihal reset password, berikut adalah detail akun yang digunakan untuk login di aplikasi Ispagram\nUsername: ${detailUser.username}\nPassword: ${randomPassword}\n\nNote: Segera ganti password anda agar mudah diingat`
         sendMail.credentialInfo(email, `Informasi Reset Password`, text)
@@ -130,7 +130,7 @@ const store = async (req, res) => {
 
         await UserModel.insertUser({
             username, password, email, avatar, role
-        })
+        }, req.db)
 
         return response(201, {}, `Berhasil tambah user!`, res)
     } catch (error) {

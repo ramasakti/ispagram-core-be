@@ -5,7 +5,7 @@ const SectionModel = require('../Model/SectionModel')
 
 const section = async (req, res) => {
     try {
-        const section = await SectionModel.getAllSection()
+        const section = await SectionModel.getAllSection(req.db)
         return response(200, section, `Data Section`, res)
     } catch (error) {
         console.error(error)
@@ -18,7 +18,7 @@ const store = async (req, res) => {
         const { name, icon, order } = req.body
         if (!name || !icon || !order) return response(400, null, `Semua form wajib diisi!`, res)
 
-        await SectionModel.createSection({ name, icon, order })
+        await SectionModel.createSection({ name, icon, order }, req.db)
         return response(201, {}, `Berhasil tambah section!`, res)
     } catch (error) {
         console.error(error)
@@ -31,7 +31,7 @@ const update = async (req, res) => {
         const id_section = req.params.id_section
         if (!id_section) return response(400, null, `Semua form wajib diisi!`, res)
 
-        const detailSection = await SectionModel.getSectionByID(id_section)
+        const detailSection = await SectionModel.getSectionByID(id_section, req.db)
         if (!detailSection) return response(400, null, `Section tidak ditemukan!`, res)
 
         const { name, icon, order } = req.body
@@ -39,7 +39,7 @@ const update = async (req, res) => {
 
         await SectionModel.updateSection(id_section, {
             name, icon, order
-        })
+        }, req.db)
         return response(201, {}, `Berhasil update section!`, res)
     } catch (error) {
         console.error(error)
@@ -64,10 +64,10 @@ const destroy = async (req, res) => {
     try {
         const id_section = req.params.id_section
 
-        const detailSection = await SectionModel.getSectionByID(id_section)
+        const detailSection = await SectionModel.getSectionByID(id_section, req.db)
         if (!detailSection) return response(400, null, `Section tidak ditemukan!`, res)
 
-        await SectionModel.deleteSection(id_section)
+        await SectionModel.deleteSection(id_section, req.db)
         return response(201, {}, `Berhasil delete section`, res)
     } catch (error) {
         console.error(error)

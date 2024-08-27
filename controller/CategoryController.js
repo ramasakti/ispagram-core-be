@@ -4,7 +4,7 @@ const CategoryModel = require('../Model/CategoryModel')
 
 const category = async (req, res) => {
     try {
-        const category = await CategoryModel.getAllMasterCategory()
+        const category = await CategoryModel.getAllMasterCategory(req.db)
 
         return response(200, category, ``, res)
     } catch (error) {
@@ -19,9 +19,9 @@ const store = async (req, res) => {
 
         if (!name) return response(400, null, `Gagal! Wajib Mengisi Nama Kategori`)
 
-        await CategoryModel.insertMasterCategory({ name })
+        await CategoryModel.insertMasterCategory({ name }, req.db)
 
-        if (featured) await BlogModel.updateArticleByID(featured, { status: name })
+        if (featured) await BlogModel.updateArticleByID(featured, { status: name }, req.db)
 
         return response(201, {}, `Berhasil menambah kategori baru!`, res)
     } catch (error) {
@@ -35,8 +35,8 @@ const update = async (req, res) => {
         const id_category = req.params.id_category
         const { name, featured } = req.body
 
-        if (name) await CategoryModel.updateMasterCategoryByID(id_category, { name })
-        if (featured) await BlogModel.updateArticleByID(featured, { status: name })
+        if (name) await CategoryModel.updateMasterCategoryByID(id_category, { name }, req.db)
+        if (featured) await BlogModel.updateArticleByID(featured, { status: name }, req.db)
         
         return response(201, {}, `Berhasil Update Kategori`, res)
     } catch (error) {

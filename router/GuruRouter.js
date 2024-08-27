@@ -13,6 +13,4 @@ router.route('/guru/:id_guru')
     .put(GuruController.update)
     .delete(GuruController.destroy)
 
-router.route('/nodb')
-    .get(GuruController.nodb)
 module.exports = router

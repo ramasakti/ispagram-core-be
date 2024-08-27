@@ -11,7 +11,7 @@ const ExcelJS = require('exceljs')
 
 const jadwal = async (req, res) => {
     try {
-        const jadwalData = await JadwalModel.getFullJadwalByDateNow(moment().format('YYYY-MM-DD'))
+        const jadwalData = await JadwalModel.getFullJadwalByDateNow(moment().format('YYYY-MM-DD'), req.db)
         return response(200, jadwalData, 'Jadwal', res);
     } catch (error) {
         console.error(error);
@@ -26,7 +26,7 @@ const store = async (req, res) => {
         if (!jampel || !guru || !mapel || !kelas) return response(400, null, `Gagal! Inputan tidak lengkap!`, res)
 
         // Ambil data mapel untuk mendapatkan detail kelas
-        const detailMapel = await MapelModel.getMapelByID(mapel)
+        const detailMapel = await MapelModel.getMapelByID(mapel, req.db)
 
         // Parse jampel menjadi JSON
         const jam_pelajaran = JSON.parse(jampel)
@@ -37,7 +37,7 @@ const store = async (req, res) => {
         // Looping jampel 
         for (const item of jam_pelajaran) {
             // Cek apakah jam sudah digunakan 
-            const existingJadwal = await jadwalUtils.existingJadwal(item.value, kelas)
+            const existingJadwal = await jadwalUtils.existingJadwal(item.value, kelas, req.db)
             if (existingJadwal !== null) {
                 hasError = true
                 break
@@ -49,7 +49,7 @@ const store = async (req, res) => {
 
         // Jika tidak ada kesalahan, store ke database
         for (const item of jam_pelajaran) {
-            await JadwalModel.insertJadwal({ jampel: item.value, guru_id: guru, kelas_id: kelas, mapel })
+            await JadwalModel.insertJadwal({ jampel: item.value, guru_id: guru, kelas_id: kelas, mapel }, req.db)
         }
 
         return response(201, {}, `Berhasil menambahkan data jadwal!`, res)
@@ -66,7 +66,6 @@ const update = async (req, res) => {
 
         // Tangkap inputan dan periksa
         let { jampel, id_guru, kelas_id, mapel } = req.body
-        console.log(req.body)
 
         // Periksa apakah inputan lengkap
         if (!jampel || !id_guru || !mapel || !kelas_id) return response(400, null, `Semua inputan wajib diisi!`, res)
@@ -76,20 +75,20 @@ const update = async (req, res) => {
             jampel = JSON.parse(jampel)
 
             // Periksa jadwal apakah berbentrokan
-            const existingJadwal = await jadwalUtils.existingJadwal(jampel.value, kelas_id)
+            const existingJadwal = await jadwalUtils.existingJadwal(jampel.value, kelas_id, req.db)
             if (existingJadwal !== null) return response(400, null, `Jam Pelajaran telah digunakan!`, res)
 
             // Update tabel jadwal
             await JadwalModel.updateJadwal(id_jadwal, {
                 jampel: jampel.value, guru_id: id_guru, kelas_id, mapel
-            })
+            }, req.db)
         } catch (error) {
             jampel = req.body.jampel
 
             // Update tabel jadwal
             await JadwalModel.updateJadwal(id_jadwal, {
                 jampel, guru_id: id_guru, kelas_id, mapel
-            })
+            }, req.db)
         }
 
         return response(201, {}, `Berhasil update jadwal!`, res)
@@ -105,12 +104,12 @@ const destroy = async (req, res) => {
         const id_jadwal = req.params.id_jadwal
 
         // Cek apakah jam berbentrokan
-        const existingJadwal = await db('jadwal').where('id_jadwal', id_jadwal).first()
+        const existingJadwal = await JadwalModel.getJadwalByID(id_jadwal, req.db)
 
         if (!existingJadwal) return response(400, null, `Jadwal tidak ditemukan!`, res)
 
         // Insert ke tabel
-        await db('jadwal').where('id_jadwal', id_jadwal).del()
+        await JadwalModel.deleteJadwalByID(id_jadwal, req.db)
 
         return response(201, {}, `Berhasil delete jadwal`, res)
     } catch (error) {
@@ -125,10 +124,10 @@ const jadwalGrup = async (req, res) => {
         const id_jadwal = req.params.id_jadwal
 
         // Cek apakah jam berbentrokan
-        const existingJadwal = await db('jadwal').join('jam_pelajaran', 'jam_pelajaran.id_jampel', '=', 'jadwal.jampel').where('id_jadwal', id_jadwal).first()
+        const existingJadwal = await JadwalModel.getJadwalWithJampelByIDJadwal(id_jadwal, req.db)
         if (!existingJadwal) return response(400, null, `Jadwal tidak ditemukan!`, res)
 
-        const jadwal = await db('jadwal')
+        const jadwal = await req.db('jadwal')
             .join('jam_pelajaran', 'jam_pelajaran.id_jampel', '=', 'jadwal.jampel')
             .where('mapel', existingJadwal.mapel)
             .where('kelas_id', existingJadwal.kelas_id)
@@ -146,10 +145,10 @@ const templateExcel = async () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Sheet1');
 
-    const kelas = await KelasModel.getAllKelas();
-    const jampel = await JamPelajaranModel.getAllJampelActive();
-    const guru = await GuruModel.getAllGuru();
-    const mapel = await MapelModel.getAllMapel();
+    const kelas = await KelasModel.getAllKelas(req.db);
+    const jampel = await JamPelajaranModel.getAllJampelActive(req.db);
+    const guru = await GuruModel.getAllGuru(req.db);
+    const mapel = await MapelModel.getAllMapel(req.db);
 
     // Sheet for kelas data
     const dataKelasSheet = workbook.addWorksheet('DataKelas');
@@ -308,7 +307,7 @@ const importExcel = async (req, res) => {
         const worksheet = workbook.getWorksheet(1);
 
         // Skip header row and get sheet values
-        const rows = worksheet.getSheetValues().slice(2);        
+        const rows = worksheet.getSheetValues().slice(2);
 
         // Filter out empty rows
         const data = rows.filter(row => row.length > 1 && row[1] && row[2] && row[3] && row[4] && row[5] && row[6] && row[7] && row[8] && row[9])
@@ -317,11 +316,11 @@ const importExcel = async (req, res) => {
                 jampel: row[7].result,
                 guru_id: row[8].result,
                 mapel: row[9].result
-            }));            
+            }));
         if (data.length === 0) return response(400, null, 'No valid data to import!', res);
 
         // Get all existing jam pelajaran
-        const existingJampel = await JamPelajaranModel.getAllAvailableJampel();
+        const existingJampel = await JamPelajaranModel.getAllAvailableJampel(req.db);
 
         // Pisahkan data yang duplikat
         const duplicatedData = data.filter(row => !existingJampel.includes(row.jampel));
@@ -329,13 +328,13 @@ const importExcel = async (req, res) => {
         if (duplicatedData.length > 0) {
             // Ambil keterangan dari id_jampel yang duplikat
             const duplicatedIds = duplicatedData.map(row => row.jampel);
-            const duplicatedJampel = await JamPelajaranModel.getJampelInID(duplicatedIds)
+            const duplicatedJampel = await JamPelajaranModel.getJampelInID(duplicatedIds, req.db)
 
             const duplicatedKeterangan = duplicatedJampel.map(jampel => jampel.keterangan).join(', ');
             return response(400, null, `Terdapat jam pelajaran yang telah digunakan: ${duplicatedKeterangan}`, res);
         }
 
-        const trx = await db.transaction();
+        const trx = await req.db.transaction();
 
         try {
             // Insert filtered data into database

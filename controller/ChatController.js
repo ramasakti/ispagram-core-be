@@ -5,7 +5,7 @@ const Moment = require('../utilities/Moment')
 const chat = async (req, res) => {
     try {
         const username = req.params.username
-        const chat = await ChatModel.getAllChatByUser(username)
+        const chat = await ChatModel.getAllChatByUser(username, req.db)
 
         return response(200, chat, `All Chat`, res)
     } catch (error) {
@@ -17,7 +17,7 @@ const chat = async (req, res) => {
 const detailBySenderAndReceiver = async (req, res) => {
     try {
         const { sender, receiver } = req.params
-        const detail = await ChatModel.getChatBySenderAndReceiver(sender, receiver)
+        const detail = await ChatModel.getChatBySenderAndReceiver(sender, receiver, req.db)
 
         return response(200, detail, `Detail Chat`, res)
     } catch (error) {
@@ -29,7 +29,7 @@ const detailBySenderAndReceiver = async (req, res) => {
 const detailByID = async (req, res) => {
     try {
         const id_chat = req.params.id_chat
-        const detail = await ChatModel.getChatByID(id_chat)
+        const detail = await ChatModel.getChatByID(id_chat, req.db)
 
         return response(200, detail, `Detail`, res)
     }catch (error) {
@@ -44,7 +44,7 @@ const store = async (req, res) => {
         
         await ChatModel.storeChat({
             from, to, message, waktu: Moment().format('YYYY-MM-DD HH:mm:ss')
-        })
+        }, req.db)
 
         return response(201, {}, `Chat successfully`, res)
     }catch (error) {

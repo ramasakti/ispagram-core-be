@@ -1,13 +1,14 @@
-const db = require('../Config')
 const Moment = require('./../utilities/Moment')
 
-const getJurnalByJadwalAndDateNow = async (id_jadwal, trx = db) => {
+const getJurnalByJadwalAndDateNow = async (id_jadwal, trx) => {
     return await trx('jurnal')
         .where('jadwal_id', id_jadwal)
         .where('tanggal', Moment().format('YYYY-MM-DD'))
 }
 
-const getJurnalByDateAndKelas = async (tanggal, kelas_id, trx = db) => {
+const getJurnalByDateAndJadwalID = async (date, id_jadwal, trx) => await trx('jurnal').where('tanggal', date).where('jadwal_id', id_jadwal).first()
+
+const getJurnalByDateAndKelas = async (tanggal, kelas_id, trx) => {
     return await trx('jurnal')
         .select(
             'jurnal.*',
@@ -31,17 +32,28 @@ const getJurnalByDateAndKelas = async (tanggal, kelas_id, trx = db) => {
         .where('jadwal.kelas_id', kelas_id)
 }
 
-const updateJurnalByID = async (id_jurnal, req, trx = db) => {
+const updateJurnalByID = async (id_jurnal, req, trx) => {
     return await trx('jurnal')
         .where('id_jurnal', id_jurnal)
         .update(req)
 }
 
-const insertJurnal = async (req, trx = db) => await trx('jurnal').insert(req)
+const insertJurnal = async (req, trx) => await trx('jurnal').insert(req)
 
+const deleteJurnalByID = async (id_jurnal, trx) => await trx('jurnal').where('id_jurnal', id_jurnal).del()
+
+const deleteJurnalByDateAndJadwalID = async (date, id_jadwal, trx) => {
+    return await trx('jurnal')
+        .where('tanggal', date)
+        .where('jadwal_id', id_jadwal)
+        .del()
+}
 module.exports = {
     getJurnalByJadwalAndDateNow,
     getJurnalByDateAndKelas,
+    getJurnalByDateAndJadwalID,
     updateJurnalByID,
-    insertJurnal
+    insertJurnal,
+    deleteJurnalByID,
+    deleteJurnalByDateAndJadwalID
 };

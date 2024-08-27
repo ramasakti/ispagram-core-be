@@ -1,14 +1,12 @@
-const db = require('../Config')
+const getAllMapel = async (trx) => await trx('mapel')
 
-const getAllMapel = async (trx = db) => await trx('mapel')
+const getMapelByID = async (id_mapel, trx) => await trx('mapel').where('id_mapel', id_mapel).first()
 
-const getMapelByID = async (id_mapel, trx = db) => await trx('mapel').where('id_mapel', id_mapel).first()
+const insertMapel = async (req, trx) => await trx('mapel').insert(req)
 
-const insertMapel = async (req, trx = db) => await trx('mapel').insert(req)
+const updateMapel = async (id_mapel, req, trx) => await trx('mapel').where('id_mapel', id_mapel).update(req)
 
-const updateMapel = async (id_mapel, req, trx = db) => await trx('mapel').where('id_mapel', id_mapel).update(req)
-
-const deleteMapel = async (id_mapel, trx = db) => await trx('mapel').where('id_mapel', id_mapel).del()
+const deleteMapel = async (id_mapel, trx) => await trx('mapel').where('id_mapel', id_mapel).del()
 
 module.exports = {
     getAllMapel,

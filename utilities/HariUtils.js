@@ -1,7 +1,7 @@
-const db = require('../Config')
+const HariModel = require('../Model/HariModel')
 
-const existingHari = async (nama_hari) => {
-    const existingHari = await db('hari').where('nama_hari', nama_hari).first()
+const existingHari = async (nama_hari, trx) => {
+    const existingHari = await HariModel.getHariByHari(nama_hari, trx)
     if (!existingHari) return null
     return existingHari
 }

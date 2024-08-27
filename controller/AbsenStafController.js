@@ -12,7 +12,7 @@ const rekap = async (req, res) => {
         const dari = tanggalArray[0]
         const sampai = tanggalArray[1]
 
-        const rekap = await AbsenStafModel.getAbsenStafByDate(dari, sampai)
+        const rekap = await AbsenStafModel.getAbsenStafByDate(dari, sampai, req.db)
         return response(200, rekap, `Rekap Absen Staf dari ${dari} sampai ${sampai}`, res);
     } catch (error) {
         console.error(error)
@@ -25,7 +25,7 @@ const store = async (req, res) => {
         const id_guru = req.params.id_guru
         const keterangan = req.body.keterangan
 
-        const absen = await AbsenStafModel.getAbsenNowByGuru(id_guru)
+        const absen = await AbsenStafModel.getAbsenNowByGuru(id_guru, req.db)
         if (absen) return response(400, null, `Sudah Absen!`, res)
 
         await AbsenStafModel.insertAbsenStaf({
@@ -33,7 +33,7 @@ const store = async (req, res) => {
             tanggal: moment().format('YYYY-MM-DD'),
             waktu: moment().format('HH:MM:SS'),
             keterangan
-        })
+        }, req.db)
     } catch (error) {
         console.error(error)
         return response(500, null, `Internal Server Error!`, res)

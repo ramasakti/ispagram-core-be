@@ -4,7 +4,7 @@ const NavlandModel = require('../Model/NavlandModel')
 
 const navland = async (req, res) => {
     try {
-        const navland = await NavlandModel.getAllNavland()
+        const navland = await NavlandModel.getAllNavland(req.db)
 
         return response(200, navland, ``, res)
     } catch (error) {
@@ -18,7 +18,7 @@ const store = async (req, res) => {
         const { name, url, order, active } = req.body
         if (!name || !url || !order) return response(400, null, ``, res)
 
-        await NavlandModel.insertNavland({ name, url, order })
+        await NavlandModel.insertNavland({ name, url, order }, req.db)
 
         return response(201, {}, `Berhasil Tambah Navland`, res)
     } catch (error) {
@@ -32,7 +32,7 @@ const update = async (req, res) => {
         const id_navland = req.params.navland
         const { name, url, order, active } = req.body
 
-        await NavlandModel.updateNavland(id_navland, { name, url, order, active })
+        await NavlandModel.updateNavland(id_navland, { name, url, order, active }, req.db)
 
         return response(201, {}, `Berhasil Update Navland`, res)
     } catch (error) {
@@ -45,7 +45,7 @@ const destroy = async (req, res) => {
     try {
         const id_navland = req.params.navland
 
-        await NavlandModel.deleteNavland(id_navland)
+        await NavlandModel.deleteNavland(id_navland, req.db)
 
         return response(201, {}, `Berhasil Delete Navland`, res)
     } catch (error) {

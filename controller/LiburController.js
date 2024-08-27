@@ -5,7 +5,7 @@ const LiburModel = require('../Model/LiburModel')
 
 const libur = async (req, res) => {
     try {
-        const libur = await LiburModel.getAllLibur()
+        const libur = await LiburModel.getAllLibur(req.db)
         const dataLibur = libur.map(item => {
             return {
                 id_libur: item.id_libur,
@@ -29,14 +29,14 @@ const storeLibur = async (req, res) => {
         if (libur.length === 10) {
             await LiburModel.insertLibur({
                 keterangan, mulai: libur, sampai: libur
-            })
+            }, req.db)
         } else {
             const mulai = libur.substring(0, 10)
             const sampai = libur.substring(14, 24)
 
             await LiburModel.insertLibur({
                 keterangan, mulai, sampai
-            })
+            }, req.db)
         }
 
         return response(201, {}, `Berhasil menambahkan data libur!`, res)
@@ -52,7 +52,7 @@ const updateLibur = async (req, res) => {
         if (!id_libur) return response(400, null, `Gagal! data libur tidak ditemukan`, res)
 
         if (!libur && keterangan) {
-            await LiburModel.updateLibur(id_libur, { keterangan })
+            await LiburModel.updateLibur(id_libur, { keterangan }, req.db)
 
             return response(201, {}, `Berhasil mengubah data libur!`, res)
         }
@@ -60,14 +60,14 @@ const updateLibur = async (req, res) => {
         if (libur.length === 10) {
             await LiburModel.updateLibur(id_libur, {
                 keterangan, mulai: libur, sampai: libur
-            })
+            }, req.db)
         } else {
             const mulai = libur.substring(0, 10)
             const sampai = libur.substring(14, 24)
 
             await LiburModel.updateLibur(id_libur, {
                 keterangan, mulai, sampai
-            })
+            }, req.db)
         }
 
         return response(201, {}, `Berhasil mengubah data libur!`, res)
@@ -80,10 +80,10 @@ const updateLibur = async (req, res) => {
 const deleteLibur = async (req, res) => {
     try {
         const id_libur = req.params.id_libur
-        const dataLibur = await LiburModel.getLiburByID(id_libur)
+        const dataLibur = await LiburModel.getLiburByID(id_libur, req.db)
         if (!dataLibur) return response(400, null, `Gagal! Data libur tidak ditemukan`, res)
 
-        await LiburModel.deleteLibur(id_libur)
+        await LiburModel.deleteLibur(id_libur, req.db)
         return response(201, {}, `Berhasil delete data libur!`, res)
     } catch (error) {
         console.error(error)

@@ -3,7 +3,7 @@ const RoleModel = require('../Model/RoleModel')
 
 const role = async (req, res) => {
     try {
-        const role = await RoleModel.getAllRole()
+        const role = await RoleModel.getAllRole(req.db)
         return response(200, role, ``, res)
     } catch (error) {
         console.error(error)
@@ -14,7 +14,7 @@ const role = async (req, res) => {
 const detail = async (req, res) => {
     try {
         const role = req.params.role
-        const data = await RoleModel.getDetailRoleByIDRole(role)
+        const data = await RoleModel.getDetailRoleByIDRole(role, req.db)
         return response(200, data, ``, res)
     } catch (error) {
         return response(500, null, `Internal Server Error!`, res)
