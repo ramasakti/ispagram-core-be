@@ -40,7 +40,7 @@ const databases = {
             max: 10
         }
     },
-    smpe2861_ispagram: {
+    smas5845_ispagram: {
         client: 'mysql',
         connection: {
             host: process.env.DB_HOST,
