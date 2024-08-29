@@ -284,7 +284,7 @@ const importSiswa = async (req, res) => {
 
         const existingKelasID = await KelasModel.getAllKelas(req.db);
         const existingSiswaID = await SiswaModel.getAllIDSiswa(req.db);
-        const siswaRole = await RoleModel.getRoleByRole('Siswa');
+        const siswaRole = await RoleModel.getRoleByRole('Siswa', req.db);
 
         const filteredData = data.filter(row => {
             if (existingSiswaID.includes(row.id_siswa)) {
