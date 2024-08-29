@@ -1,7 +1,7 @@
 const knex = require('knex')
 
 const db = knex({
-    client: 'mysql',
+    client: 'mysql2',
     connection: {
         host: process.env.DB_HOST,
         user: process.env.DB_USERNAME,

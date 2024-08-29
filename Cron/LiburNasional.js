@@ -1,6 +1,7 @@
 const db = require('../Config')
 const axios = require('axios')
 const moment = require('../utilities/Moment')
+const LiburModel = require('../Model/LiburModel')
 
 const isDateInRange = (date, start, end) => date >= start && date <= end
 
@@ -12,7 +13,7 @@ const hariLibur = async () => {
     
         const liburNasional = data.filter(libur => libur.is_national_holiday === true)
     
-        let dataLibur = await db('libur')
+        let dataLibur = await LiburModel.getAllLibur()
         dataLibur = dataLibur.map(libur => {
             return {
                 id_libur: libur.id_libur,
@@ -37,7 +38,7 @@ const hariLibur = async () => {
         const hasilFilter = filterNationalHolidays(dataLibur, liburNasional)
     
         hasilFilter.map(async item => {
-            await db('libur').insert({
+            await LiburModel.insertLibur({
                 keterangan: item.holiday_name,
                 mulai: item.holiday_date,
                 sampai: item.holiday_date

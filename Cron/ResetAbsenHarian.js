@@ -1,12 +1,19 @@
-const db = require('../Config')
-const moment = require('../utilities/Moment')
+const DynamicDBConf = require('../DynamicDBConf')
+const AbsenSiswaModel = require('../Model/AbsenSiswaModel')
 
 const ResetAbsenHarian = async () => {
-    await db('absen')
-        .whereNull('izin')
-        .update({ waktu_absen: null, keterangan: '' })
+    for (const dbID in DynamicDBConf.databases) {
+        const db = DynamicDBConf.getDatabaseConnection(dbID)
 
-    await db('jadwal').update({ status: '' })
+        // Mulai transaksi
+        await db.transaction(async (trx) => {
+            // Reset Absen Harian
+            await AbsenSiswaModel.updateAbsenToDefault(trx)
+
+            // Reset Jadwal
+            await trx('jadwal').update({ status: '' })
+        }
+    )}
 
     return true
 }

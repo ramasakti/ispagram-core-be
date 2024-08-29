@@ -23,6 +23,8 @@ const getAllSiswaTerlambat = async (trx) => {
         .andWhere('absen.keterangan', 'T')
 }
 
+const getAllNotPresent = async (trx) => await trx('absen').where('keterangan', '!=', 'H').orWhereNull('keterangan')
+
 const dataKetidakhadiranKelas = async (kelas_id, trx) => {
     return await trx('absen')
         .join('siswa', 'siswa.id_siswa', '=', 'absen.id_siswa')
@@ -129,16 +131,30 @@ const whatsapp = async (id_siswa, trx) => {
 }
 
 const updateAbsenToDefault = async (trx) => {
-    return await trx('absen').update({
-        waktu_absen: null,
-        keterangan: ''
-    })
-} 
+    return await trx('absen')
+        .whereNull('izin')
+        .update({
+            waktu_absen: null,
+            keterangan: ''
+        })
+}
+
+const autoAlfa = async (trx) => {
+    return await trx('absen')
+        .whereNull('waktu_absen')
+        .andWhere('keterangan', '')
+        .update({
+            keterangan: 'A'
+        })
+}
+
+const insertRekap = async (req, trx) => await trx('rekap_siswa').insert(req)
 
 module.exports = {
     dataAllAbsensiSiswa,
     dataAllKetidakhadiranSiswa,
     getAllSiswaTerlambat,
+    getAllNotPresent,
     dataKetidakhadiranKelas,
     dataAbsensiSiswaIndividu,
     insertAbsen,
@@ -149,5 +165,7 @@ module.exports = {
     statistikHarian,
     statistikMingguan,
     whatsapp,
-    updateAbsenToDefault
+    updateAbsenToDefault,
+    autoAlfa,
+    insertRekap
 };

@@ -8,7 +8,7 @@ const server = http.createServer(app)
 const wss = require('./utilities/websocket')
 const path = require('path')
 const initCronJobs = require('./Cron/CronJob')
-const getDatabaseConnection = require('./DynamicDBConf')
+const DynamicDBConf = require('./DynamicDBConf')
 const router = require('./router/Router')
 const cors = require('cors')
 const moment = require('./utilities/Moment')
@@ -71,7 +71,7 @@ const selectDatabase = (req, res, next) => {
             }
         })
     }
-    req.db = getDatabaseConnection(dbID)
+    req.db = DynamicDBConf.getDatabaseConnection(dbID)
     next()
 }
 
