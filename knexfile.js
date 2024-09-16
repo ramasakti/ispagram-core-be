@@ -5,7 +5,7 @@
  */
 module.exports = {
 	development: {
-		client: 'mysql',
+		client: 'mysql2',
 		connection: {
 			host: process.env.DB_HOST,
 			port: 3306,
@@ -19,7 +19,7 @@ module.exports = {
 	},
 
 	staging: {
-		client: 'mysql',
+		client: 'mysql2',
 		connection: {
 			host: process.env.DB_HOST,
 			port: 3306,
@@ -33,7 +33,7 @@ module.exports = {
 	},
 
 	production: {
-		client: 'mysql',
+		client: 'mysql2',
 		connection: {
 			host: process.env.DB_HOST,
 			port: 3306,

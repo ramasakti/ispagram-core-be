@@ -49,14 +49,14 @@ const engine = async (req, res) => {
                 const jadwal = await JadwalModel.getJadwalInARowByGuru(username, req.db)
 
                 // Sudah absen dan tidak punya jam mengajar
-                if (absen && jadwal.length < 1) return response(404, null, `${user.name} Sudah Absen!`, res)
+                if (absen && jadwal.length < 1) return response(200, null, `${user.name} Sudah Absen!`, res)
 
                 // Memiliki jadwal
                 if (jadwal.length > 0) {
                     for (const item of jadwal) {
                         // Periksa apakah sudah absen ngajar
-                        const jurnal = await JurnalModel.getJurnalByJadwalAndDateNow(item.id_jadwal, Moment().format('HH:mm:ss'))
-                        if (jurnal.length > 0) return response(304, {}, `Selamat Mengajar! ${user.name}`, res)
+                        const jurnal = await JurnalModel.getJurnalByJadwalAndDateNow(item.id_jadwal, Moment().format('HH:mm:ss'), req.db)
+                        if (jurnal.length > 0) return response(200, {}, `Selamat Mengajar! ${user.name}`, res)
 
                         // Absen mengajar
                         await JurnalModel.insertJurnal({

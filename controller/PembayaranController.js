@@ -8,7 +8,7 @@ const pembayaran = async (req, res) => {
         const pembayaran = await PembayaranSiswaModel.getAllPembayaran(req.db)
 
         const pembayaranParsed = pembayaran.map(item => {
-            const kelasArray = item.kelas ? JSON.parse(item.kelas).kelas : []
+            const kelasArray = item.kelas ? JSON.parse(item.kelas) : []
             return {
                 id_pembayaran: item.id_pembayaran,
                 nama_pembayaran: item.nama_pembayaran,

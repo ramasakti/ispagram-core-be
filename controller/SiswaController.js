@@ -198,6 +198,7 @@ const templateExcel = async (trx) => {
         worksheet.getCell(`G${row}`).protection = { locked: false };
         worksheet.getCell(`H${row}`).protection = { locked: false };
         worksheet.getCell(`I${row}`).protection = { locked: false };
+        worksheet.getCell(`I${row}`).numFmt = 'yyyy-mm-dd';
     }
 
     worksheet.protect('parlaungan1980', {

@@ -185,13 +185,6 @@ exports.seed = async function (knex) {
 			order: 3
 		},
 		{
-			name: 'Inventaris',
-			type: 1,
-			route: '#',
-			section_id: 6,
-			order: 4
-		},
-		{
 			name: 'E Library',
 			type: 1,
 			route: '#',
@@ -218,6 +211,27 @@ exports.seed = async function (knex) {
 			route: '/alumni/transaksi',
 			section_id: 7,
 			order: 2
+		},
+		{
+			name: 'Gedung',
+			type: 1,
+			route: '/sarpras/gedung',
+			section_id: 8,
+			order: 1
+		},
+		{
+			name: 'Ruang',
+			type: 1,
+			route: '/sarpras/ruang',
+			section_id: 8,
+			order: 2
+		},
+		{
+			name: 'Inventaris',
+			type: 1,
+			route: '/sarpras/inventaris',
+			section_id: 8,
+			order: 3
 		},
 	]);
 };

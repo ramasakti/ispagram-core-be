@@ -10,7 +10,10 @@ const middleware = (req, res, next) => {
     const tokenWithoutBearer = token.replace('Bearer ', '')
 
     jwt.verify(tokenWithoutBearer, 'parlaungan1980', (err, user) => {
-        if (err) return response(401, token, 'Token Tidak Valid', res)
+        if (err) {
+            console.log(req.path, token)
+            return response(401, token, 'Token Tidak Valid', res)
+        } 
         req.user = user
         next()
     })

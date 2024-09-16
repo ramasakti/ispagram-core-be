@@ -70,7 +70,7 @@ const update = async (req, res) => {
                 await MenuModel.updateMenu(id_menu, {
                     type, name, route, section_id: id_section, order
                 }, req.db)
-                await SubmenuModel.deleteSubmenuByMenu(id_menu)
+                await SubmenuModel.deleteSubmenuByMenu(id_menu, req.db)
                 break;
             case 2: // Parent of submenu
                 await MenuModel.updateMenu(id_menu, {

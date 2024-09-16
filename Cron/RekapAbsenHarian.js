@@ -8,6 +8,12 @@ const RekapAbsen = async () => {
     try {
         // Iterasi melalui semua database
         for (const dbID in DynamicDBConf.databases) {
+            const isConnected = await DynamicDBConf.testDatabaseConnection(dbID)
+            if (!isConnected) {
+                console.log(`Skipping database '${dbID}' because it is not available.`)
+                continue // Skip ke database berikutnya
+            }
+
             const db = DynamicDBConf.getDatabaseConnection(dbID)
 
             // Mulai transaksi

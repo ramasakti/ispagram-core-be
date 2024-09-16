@@ -66,4 +66,15 @@ const getDatabaseConnection = (dbID) => {
     return knexInstances[dbID]
 }
 
-module.exports = { getDatabaseConnection, databases }
+const testDatabaseConnection = async (dbID) => {
+    try {
+        const db = getDatabaseConnection(dbID)
+        await db.raw('SELECT 1') // Simple query to test connection
+        return true
+    } catch (error) {
+        console.error(`Failed to connect to database '${dbID}':`, error.message)
+        return false
+    }
+}
+
+module.exports = { getDatabaseConnection, testDatabaseConnection, databases }

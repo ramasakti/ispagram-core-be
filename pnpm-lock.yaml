@@ -38,6 +38,9 @@ importers:
       faker:
         specifier: ^6.6.6
         version: 6.6.6
+      js-base64:
+        specifier: ^3.7.7
+        version: 3.7.7
       jsonwebtoken:
         specifier: ^9.0.1
         version: 9.0.1
@@ -572,6 +575,9 @@ packages:
 
   isarray@1.0.0:
     resolution: {integrity: sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==}
+
+  js-base64@3.7.7:
+    resolution: {integrity: sha512-7rCnleh0z2CkXhH67J8K1Ytz0b2Y+yxTPL+/KOJoa20hfnVQ/3/T6W/KflYI4bRHRagNeXeU2bkNGI3v1oS/lw==}
 
   jsonwebtoken@9.0.1:
     resolution: {integrity: sha512-K8wx7eJ5TPvEjuiVSkv167EVboBDv9PZdDoF7BgeQnBLVvZWW9clr2PsQHVJDTKaEIH5JBIwHujGcHp7GgI2eg==}
@@ -1606,6 +1612,8 @@ snapshots:
   is-property@1.0.2: {}
 
   isarray@1.0.0: {}
+
+  js-base64@3.7.7: {}
 
   jsonwebtoken@9.0.1:
     dependencies:
