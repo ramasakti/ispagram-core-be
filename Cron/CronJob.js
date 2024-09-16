@@ -18,8 +18,8 @@ const initCronJobs = async () => {
     console.log('Cron Start')
     await LiburNasional()
     cron.schedule('0 0 1 1 *', LiburNasional);
-    cron.schedule('34 14 * * *', RekapAbsenHarian);
-    cron.schedule('38 14 * * *', ResetAbsenHarian);
+    cron.schedule('59 23 * * *', RekapAbsenHarian);
+    cron.schedule('0 0 * * *', ResetAbsenHarian);
 }
 
 module.exports = initCronJobs
