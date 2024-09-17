@@ -50,7 +50,7 @@ const databases = {
         },
         pool: {
             min: 2,
-            max: 10
+            max: 100
         }
     },
     // Tambahkan konfigurasi database lain di sini
