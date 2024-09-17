@@ -1,5 +1,5 @@
 const response = require('../Response')
-const InventarisModel = require('../Model/inventarisModel')
+const InventarisModel = require('../Model/InventarisModel')
 
 const inventaris = async (req, res) => {
     try {
