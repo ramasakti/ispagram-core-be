@@ -85,6 +85,10 @@ const store = async (req, res) => {
             return response(400, null, `File yang diunggah bukan gambar!`, res)
         }
 
+        const statusArticle = BlogModel.getArticleByStatus(status, req.db)
+        if (status === 'Third' && statusArticle.length > 2) return response(400, null, ``, res)
+        if (status !== 'Third' && statusArticle.length > 1) return response(400, null, ``, res)
+
         await BlogModel.insertArticle({
             slug, banner, title, description, category, content, uploader, status
         }, req.db)

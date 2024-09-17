@@ -1,6 +1,5 @@
 const getAllMasterCategory = async (trx) => {
     return await trx('master_category')
-        .leftJoin('blog', 'blog.status', 'master_category.name')
 }
 
 const insertMasterCategory = async (req, trx) => await trx('master_category').insert(req)
