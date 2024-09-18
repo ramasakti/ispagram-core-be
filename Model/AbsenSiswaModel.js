@@ -13,7 +13,7 @@ const dataAllKetidakhadiranSiswa = async (trx) => {
 }
 
 const getAllSiswaTerlambat = async (trx) => {
-    const masuk = await HariModel.getHariByHari(Moment().format('dddd'))
+    const masuk = await HariModel.getHariByHari(Moment().format('dddd'), trx)
     return await trx('absen')
         .select('detail_siswa.nama_siswa', 'absen.keterangan', 'absen.waktu_absen', 'kelas.id_kelas', 'kelas.tingkat', 'kelas.jurusan')
         .join('detail_siswa', 'absen.id_siswa', '=', 'detail_siswa.id_siswa')
@@ -23,7 +23,7 @@ const getAllSiswaTerlambat = async (trx) => {
         .andWhere('absen.keterangan', 'T')
 }
 
-const getAllNotPresent = async (trx) => await trx('absen').where('keterangan', '!=', 'H').orWhereNull('keterangan')
+const getAllNotPresent = async (trx) => await trx('absen').where('keterangan', '!=', 'H').orWhere('keterangan', '').orWhereNull('keterangan')
 
 const dataKetidakhadiranKelas = async (kelas_id, trx) => {
     return await trx('absen')

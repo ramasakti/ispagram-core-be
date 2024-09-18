@@ -51,7 +51,7 @@ const grafikAbsenMingguanSiswa = async (req, res) => {
                 Terlambat: item.T,
             }
         })
-        let categories = ["Sakit", "Izin", "Alfa", "Terlambat"]
+        let categories = ["Terlambat", "Alfa", "Izin", "Sakit"]
         let series = []
     
         categories.forEach(category => {

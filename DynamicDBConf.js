@@ -69,7 +69,7 @@ const getDatabaseConnection = (dbID) => {
 const testDatabaseConnection = async (dbID) => {
     try {
         const db = getDatabaseConnection(dbID)
-        await db.raw('SELECT 1') // Simple query to test connection
+        await db.raw('SHOW TABLES')
         return true
     } catch (error) {
         console.error(`Failed to connect to database '${dbID}':`, error.message)
