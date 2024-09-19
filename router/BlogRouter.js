@@ -24,7 +24,7 @@ router.route('/blog')
 
 router.route('/blog/:slug')
     .get(BlogController.detail)
-    .put(BlogController.update)
+    .put(upload.single('banner'), BlogController.update)
     .delete(BlogController.destroy)
 
 router.route('/category/:id_category')

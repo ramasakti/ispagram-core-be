@@ -1,5 +1,6 @@
 const response = require('../Response')
 const BlogModel = require('../Model/BlogModel')
+const CategoryModel = require('../Model/CategoryModel')
 
 const index = async (req, res) => {
     try {
@@ -89,6 +90,12 @@ const store = async (req, res) => {
         if (status === 'Third' && statusArticle.length > 2) return response(400, null, ``, res)
         if (status !== 'Third' && statusArticle.length > 1) return response(400, null, ``, res)
 
+        
+        category.forEach(async element => {
+            const statusCategory = CategoryModel.getCategoryByCategory(element, req.db)
+            if (!statusCategory) await CategoryModel.insertMasterCategory({ name: category }, req.db)
+        });
+
         await BlogModel.insertArticle({
             slug, banner, title, description, category, content, uploader, status
         }, req.db)
@@ -103,7 +110,8 @@ const store = async (req, res) => {
 const update = async (req, res) => {
     try {
         const slug = req.params.slug
-        const { title, description, category, content, status } = req.body
+        
+        const { title, description, categories, content, status } = req.body
 
         if (req.file) {
             if (!req.file.mimetype.startsWith('image/')) {
@@ -116,9 +124,20 @@ const update = async (req, res) => {
             }, req.db)
         }
 
+        const statusArticle = BlogModel.getArticleByStatus(status, req.db)
+        if (status === 'Third' && statusArticle.length > 2) return response(400, null, ``, res)
+        if (status !== 'Third' && statusArticle.length > 1) return response(400, null, ``, res)
+
+        console.log(req.body.categories);
+        
+        categories.forEach(async element => {
+            const statusCategory = CategoryModel.getCategoryByCategory(element, req.db)
+            if (!statusCategory) await CategoryModel.insertMasterCategory({ name: category }, req.db)
+        });
+
         await BlogModel.updateArticleBySlug(slug, {
             title, description, content
-        })
+        }, req.db)
 
         return response(201, {}, `Berhasil Update Data Artikel`, res)
     } catch (error) {
