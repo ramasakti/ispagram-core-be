@@ -70,7 +70,7 @@ const store = async (req, res) => {
 
         await UserModel.insertUser({
             username: id_siswa,
-            password: '',
+            password: await bcrypt.hash(id_siswa, 10),
             email: `${id_siswa}@smaispa.sch.id`,
             role: 7
         }, trx)
