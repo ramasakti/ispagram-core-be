@@ -8,7 +8,7 @@ const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
 
 router.route('/siswa')
-    .get(middleware, SiswaController.siswa)
+    .get(SiswaController.siswa)
     .post(SiswaController.store)
 
 router.route('/siswa/kelas/:kelas_id')
