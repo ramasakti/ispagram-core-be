@@ -12,7 +12,7 @@ router.route('/siswa')
     .post(SiswaController.store)
 
 router.route('/siswa/kelas/:kelas_id')
-    .get(middleware, SiswaController.siswaKelas)
+    .get(SiswaController.siswaKelas)
 
 router.route('/siswa/:id_siswa')
     .get(SiswaController.detail)
