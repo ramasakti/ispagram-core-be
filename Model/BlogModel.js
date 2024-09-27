@@ -40,7 +40,7 @@ const getSimilarArticle = async (trx) => await trx('blog').where()
 
 const getNewestArticle = async (limit, trx) => await trx('blog').orderBy('created_at', 'asc').limit(limit)
 
-const insertArticle = async (req, trx) => await trx('blog').insert(req)
+const insertArticle = async (req, trx) => await trx('blog').returning('id_blog').insert(req)
 
 const updateArticleBySlug = async (slug, req, trx) => await trx('blog').where('slug', slug).update(req)
 

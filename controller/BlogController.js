@@ -54,7 +54,7 @@ const detail = async (req, res) => {
 
         const jsonString = '[' + article.categories.trim() + ']'
         const categories = JSON.parse(jsonString)
-        
+
         let cat = []
         categories.map(item => {
             const b = article.categories = {
@@ -75,7 +75,7 @@ const detail = async (req, res) => {
 
 const store = async (req, res) => {
     try {
-        const { slug, title, description, category, content, uploader, status } = req.body
+        let { slug, title, description, category, content, uploader, status } = req.body
 
         if (!slug || !title || !description || !content || !uploader || !status) return response(400, null, `Wajib Mengisi Semua Field!`, res)
 
@@ -90,15 +90,21 @@ const store = async (req, res) => {
         if (status === 'Third' && statusArticle.length > 2) return response(400, null, ``, res)
         if (status !== 'Third' && statusArticle.length > 1) return response(400, null, ``, res)
 
-        
-        category.forEach(async element => {
-            const statusCategory = CategoryModel.getCategoryByCategory(element, req.db)
-            if (!statusCategory) await CategoryModel.insertMasterCategory({ name: category }, req.db)
-        });
-
-        await BlogModel.insertArticle({
-            slug, banner, title, description, category, content, uploader, status
+        const blog = await BlogModel.insertArticle({
+            slug, banner, title, description, content, uploader, status
         }, req.db)
+
+        category = JSON.parse(category)
+        category.map(async element => {
+            const statusCategory = await CategoryModel.getCategoryByCategory(element.label, req.db)
+            if (!statusCategory) {
+                await CategoryModel.insertMasterCategory({ name: element.label }, req.db)
+                const newCategory = await CategoryModel.getCategoryByCategory(element.label, req.db)
+                await CategoryModel.insertDataCategory({ blog_id: blog, category_id: newCategory.id_category }, req.db)
+            }else{
+                await CategoryModel.insertDataCategory({ blog_id: blog, category_id: element.value }, req.db)
+            }
+        });
 
         return response(201, req.body, `Berhasil Menambah Artikel`, res)
     } catch (error) {
@@ -110,8 +116,8 @@ const store = async (req, res) => {
 const update = async (req, res) => {
     try {
         const slug = req.params.slug
-        
-        const { title, description, categories, content, status } = req.body
+        const blog = await BlogModel.getArticleBySlug(slug, req.db)
+        let { title, description, category, content, uploader, status } = req.body
 
         if (req.file) {
             if (!req.file.mimetype.startsWith('image/')) {
@@ -128,15 +134,22 @@ const update = async (req, res) => {
         if (status === 'Third' && statusArticle.length > 2) return response(400, null, ``, res)
         if (status !== 'Third' && statusArticle.length > 1) return response(400, null, ``, res)
 
-        console.log(req.body.categories);
-        
-        categories.forEach(async element => {
-            const statusCategory = CategoryModel.getCategoryByCategory(element, req.db)
-            if (!statusCategory) await CategoryModel.insertMasterCategory({ name: category }, req.db)
+        await CategoryModel.deleteCategoryByBlogID(blog.id_blog, req.db)
+
+        category = JSON.parse(category)
+        category.map(async element => {
+            const statusCategory = await CategoryModel.getCategoryByCategory(element.label, req.db)
+            if (!statusCategory) {
+                await CategoryModel.insertMasterCategory({ name: element.label }, req.db)
+                const newCategory = await CategoryModel.getCategoryByCategory(element.label, req.db)
+                await CategoryModel.insertDataCategory({ blog_id: blog.id_blog, category_id: newCategory.id_category }, req.db)
+            }else{
+                await CategoryModel.insertDataCategory({ blog_id: blog.id_blog, category_id: element.value }, req.db)
+            }
         });
 
         await BlogModel.updateArticleBySlug(slug, {
-            title, description, content
+            title, description, content, uploader, status
         }, req.db)
 
         return response(201, {}, `Berhasil Update Data Artikel`, res)
