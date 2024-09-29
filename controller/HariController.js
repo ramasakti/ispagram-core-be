@@ -13,19 +13,38 @@ const hari = async (req, res) => {
     }
 }
 
+const detail = async (req, res) => {
+    try {
+        const id_hari = req.params.id_hari
+        const detail = await HariModel.getAllJamKhususByHariID(id_hari, req.db)
+
+        return response(200, detail, `Data Jam Khusus`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
+    }
+}
+
 const updateHari = async (req, res) => {
     try {
         const id_hari = req.params.id_hari
         // Tangkap inputan
-        let { nama_hari, diniyah, jam_diniyah, masuk, istirahat, pulang, jampel, piket, status } = req.body
+        let { nama_hari, masuk, pulang, jampel, piket, status, khusus } = req.body
+        console.log(khusus)
 
-        if (diniyah && !jam_diniyah) return response(400, null, `Semua Form Wajib Diisi!`, res)
-
-        // Ubah format waktu
-        if (jam_diniyah) {
-            jam_diniyah.mulai = moment(jam_diniyah.mulai, 'HH:mm:ss').format('HH:mm:ss')
-            jam_diniyah.sampai = moment(jam_diniyah.sampai, 'HH:mm:ss').format('HH:mm:ss')
+        if (khusus.length > 0) {
+            khusus.map(async item => {
+                console.log(item)
+                await HariModel.upsertJamKhusus({
+                    id: item.id,
+                    hari_id: id_hari,
+                    keterangan: item.keterangan,
+                    mulai: item.mulai,
+                    selesai: item.selesai
+                }, req.db)
+            })
         }
+
         masuk = moment(masuk, 'HH:mm:ss').format('HH:mm:ss')
         pulang = moment(pulang, 'HH:mm:ss').format('HH:mm:ss')
         jampel = moment(jampel, 'HH:mm:ss').format('HH:mm:ss')
@@ -38,12 +57,9 @@ const updateHari = async (req, res) => {
         if (!moment(pulang, 'HH:mm:ss', true).isValid()) return response(400, null, `Gagal! data pulang harus format waktu`, res)
         if (!moment(jampel, 'HH:mm:ss', true).isValid()) return response(400, null, `Gagal! data jampel harus format waktu`, res)
 
-        // Cek apakah ID guru terdaftar
-        if (await guruUtils.existingGuru(piket, req.db) === null) return response(400, null, `Guru piket tidak terdaftar!`, res)
-
         // Update hari
         await HariModel.updateHariByID(id_hari, {
-            nama_hari, diniyah, jam_diniyah: jam_diniyah ?? null, masuk, istirahat, jampel, piket, status
+            nama_hari, masuk, jampel, piket, status
         }, req.db)
 
         return response(201, {}, `Berhasil edit hari!`, res)
@@ -53,4 +69,20 @@ const updateHari = async (req, res) => {
     }
 }
 
-module.exports = { hari, updateHari }
+const updateJamKhusus = async (req, res) => {
+    try {
+        const id = req.params.id
+        const { keterangan, mulai, selesai } = req.body[0]
+        if (!keterangan || !mulai || !selesai) return response(400, null, `Semua Form Wajib Diisi!`, res)
+        await HariModel.upsertJamKhusus({
+            id, keterangan, mulai, selesai
+        }, req.db)
+
+        return response(201, {}, `Berhasil update jam khusus!`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal server error!`, res)
+    }
+}
+
+module.exports = { hari, detail, updateHari, updateJamKhusus }

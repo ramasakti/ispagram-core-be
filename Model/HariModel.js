@@ -35,6 +35,10 @@ const updateHariByID = async (id_hari, req, trx) => await trx('hari').where('id_
 
 const updateHariByHari = async (hari, req, trx) => await trx('hari').where('nama_hari', hari).update(req)
 
+const getAllJamKhususByHariID = async (hari_id, trx) => await trx('jam_khusus').where('hari_id', hari_id)
+
+const upsertJamKhusus = async (req, trx) => await trx('jam_khusus').insert(req).onConflict(req).merge()
+
 module.exports = {
     getAllHari,
     getAllHariWithPiket,
@@ -45,5 +49,7 @@ module.exports = {
     getHariWithPiketByHari,
     getHariByHariAndPiket,
     updateHariByID,
-    updateHariByHari
+    updateHariByHari,
+    getAllJamKhususByHariID,
+    upsertJamKhusus
 };

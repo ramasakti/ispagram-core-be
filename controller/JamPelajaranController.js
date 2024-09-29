@@ -26,7 +26,7 @@ const jamPelajaranFree = async (req, res) => {
         jamPelajaranFilled.map(item => idJamPelajaranFilled.push(item.jampel))
 
         const jamPelajaranFree = await JamPelajaranModel.getAllJampelFreeByFilled(idJamPelajaranFilled, req.db)
-        
+
         return response(200, jamPelajaranFree, `Data Jam Pelajaran`, res)
     } catch (error) {
         console.error(error)
@@ -110,89 +110,64 @@ const deleteJampel = async (req, res) => {
 }
 
 const generateJampel = async (req, res) => {
-    const hariData = await HariModel.getAllHariActive(req.db)
+    const hariData = await HariModel.getAllHariActive(req.db);
     const jamPelajaranData = [];
 
-    hariData.forEach((hari) => {
+    for (const hari of hariData) {
+        const jamKhusus = await HariModel.getAllJamKhususByHariID(hari.id_hari, req.db);
         const jampelDuration = moment.duration(hari.jampel).asMinutes();
-        let selesaiSebelumnya = null;
+        let selesaiSebelumnya = moment(hari.masuk, 'HH:mm:ss');
+        let countPelajaran = 1;
 
-        // Input jam diniyah
-        if (hari.diniyah) {
-            const jam_diniyah = JSON.parse(hari.jam_diniyah)
-            let warning = false
-            var jampelStart = moment(jam_diniyah.sampai, 'HH:mm:ss')
+        // Sortir jam khusus berdasarkan waktu mulai
+        jamKhusus.sort((a, b) => moment(a.mulai, 'HH:mm:ss').diff(moment(b.mulai, 'HH:mm:ss')));
 
-            if (selesaiSebelumnya != null && selesaiSebelumnya != jampelStart) {
-                warning = true
-            }
-
-            jamPelajaranData.push({
-                hari: hari.nama_hari,
-                keterangan: 'Diniyah',
-                mulai: jam_diniyah.mulai,
-                selesai: jam_diniyah.sampai,
-                warning
-            })
-        } else {
-            var jampelStart = moment(hari.masuk, 'HH:mm:ss');
-        }
-
-        // Tambahkan jam pelajaran berdasarkan pola
-        for (let i = 1; i <= 10; i++) {
-            const istirahat = JSON.parse(hari.istirahat)
-            let isIstirahat = false
-
-            let jamMulai = jampelStart.clone().add(jampelDuration * (i - 1), 'minutes');
+        while (selesaiSebelumnya < moment(hari.pulang, 'HH:mm:ss')) {
+            let jamMulai = selesaiSebelumnya.clone();
             let jamSelesai = jamMulai.clone().add(jampelDuration, 'minutes');
+            let isKhusus = false;
 
-            for (const istirahatObj of istirahat) {
-                const istirahatMulai = moment(istirahatObj.mulai, 'HH:mm:ss');
-                const istirahatSelesai = moment(istirahatObj.selesai, 'HH:mm:ss');
+            // Cek apakah jam khusus ada di antara jam reguler
+            for (const khusus of jamKhusus) {
+                const khususMulai = moment(khusus.mulai, 'HH:mm:ss');
+                const khususSelesai = moment(khusus.selesai, 'HH:mm:ss');
 
-                if (
-                    (jamMulai.isSameOrAfter(istirahatMulai) && jamMulai.isBefore(istirahatSelesai)) ||
-                    (jamSelesai.isAfter(istirahatMulai) && jamSelesai.isSameOrBefore(istirahatSelesai))
-                ) {
-                    isIstirahat = true;
-                    jamMulai = istirahatObj.mulai
-                    jamSelesai = istirahatObj.selesai
-                    break
+                // Jika jam reguler pas atau overlap dengan jam khusus
+                if (jamMulai.isSameOrAfter(khususMulai) && jamMulai.isBefore(khususSelesai)) {
+                    // Tambahkan jam khusus, atur mulai dari waktu khusus
+                    jamPelajaranData.push({
+                        hari: hari.nama_hari,
+                        keterangan: khusus.keterangan,
+                        mulai: khusus.mulai,
+                        selesai: khusus.selesai,
+                        warning: true
+                    });
+                    selesaiSebelumnya = khususSelesai.clone(); // Update selesai sebelumnya
+                    isKhusus = true;
+                    break;
                 }
             }
 
-            if (!isIstirahat) {
-                if (moment.isMoment(selesaiSebelumnya)) {
-                    selesaiSebelumnya = moment(selesaiSebelumnya).format('HH:mm:ss')
-                }
-                const mulaiSebelumnya = moment(selesaiSebelumnya || jamMulai, 'HH:mm:ss');
-                const selesai = mulaiSebelumnya.add(jampelDuration, 'minutes').format('HH:mm:ss');
+            // Jika tidak ada jam khusus, tambahkan jam reguler
+            if (!isKhusus) {
                 jamPelajaranData.push({
                     hari: hari.nama_hari,
-                    keterangan: `${hari.nama_hari} Ke-${i}`,
-                    mulai: selesaiSebelumnya || moment(jamMulai).format('HH:mm:ss'),
-                    selesai: selesai, // Mengambil selesai dari mulai + jampelDuration
-                    warning: (selesaiSebelumnya != selesaiSebelumnya) ? true : false
+                    keterangan: `${hari.nama_hari} Ke-${countPelajaran}`,
+                    mulai: jamMulai.format('HH:mm:ss'),
+                    selesai: jamSelesai.format('HH:mm:ss'),
+                    warning: false
                 });
-                selesaiSebelumnya = selesai
-            } else {
-                if (moment.isMoment(selesaiSebelumnya)) {
-                    selesaiSebelumnya = moment(selesaiSebelumnya).format('HH:mm:ss')
-                }
-                jamPelajaranData.push({
-                    hari: hari.nama_hari,
-                    keterangan: `${hari.nama_hari} Istirahat`,
-                    mulai: jamMulai,
-                    selesai: jamSelesai,
-                    warning: (jamMulai != selesaiSebelumnya) ? true : false
-                });
-                selesaiSebelumnya = jamSelesai
+                selesaiSebelumnya = jamSelesai.clone();
+                countPelajaran++;
             }
         }
-    });
+    }
 
-    return response(200, jamPelajaranData, `Jampel`, res)
-}
+    // Sortir data berdasarkan jam mulai
+    jamPelajaranData.sort((a, b) => moment(a.mulai, 'HH:mm:ss').diff(moment(b.mulai, 'HH:mm:ss')));
+
+    return response(200, jamPelajaranData, `Jampel`, res);
+};
 
 const importJampel = async (req, res) => {
     try {
