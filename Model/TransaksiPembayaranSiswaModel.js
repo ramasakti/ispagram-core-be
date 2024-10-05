@@ -39,7 +39,7 @@ const getTransactionByPembayaranAndIDSiswa = async (array_pembayaran, id_siswa, 
             'pembayaran_id',
             trx.raw('IFNULL(SUM(transaksi.terbayar), 0) AS terbayar')
         )
-        .join('siswa', 'siswa.id_siswa', '=', 'transaksi.siswa_id')
+        .join('detail_siswa', 'detail_siswa.id_siswa', '=', 'transaksi.siswa_id')
         .whereIn('transaksi.pembayaran_id', array_pembayaran)
         .where('transaksi.siswa_id', id_siswa)
         .groupBy('transaksi.pembayaran_id')

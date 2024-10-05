@@ -8,7 +8,7 @@ const pembayaran = async (req, res) => {
         const pembayaran = await PembayaranSiswaModel.getAllPembayaran(req.db)
 
         const pembayaranParsed = pembayaran.map(item => {
-            const kelasArray = item.kelas ? JSON.parse(item.kelas) : []
+            const kelasArray = item.kelas ?? []
             return {
                 id_pembayaran: item.id_pembayaran,
                 nama_pembayaran: item.nama_pembayaran,
@@ -36,10 +36,17 @@ const store = async (req, res) => {
         const kelas = req.body['kelas']
         if (kelas.length < 1) return response(400, null, `Kelas wajib diisi!`, res)
         const objectKelas = { kelas: kelas.map(item => item.value.toString()) }
-    
-        await PembayaranSiswaModel.insertPembayaran({
+
+        const pembayaran_id = await PembayaranSiswaModel.insertPembayaran({
             nama_pembayaran, nominal, kelas: objectKelas
         }, req.db)
+
+        objectKelas.kelas.forEach(async item => {
+            await PembayaranSiswaModel.insertKelasPembayaran({
+                pembayaran_id: pembayaran_id[0],
+                kelas_id: item
+            }, req.db)
+        });
 
         return response(201, {}, `Berhasil menambahkan pembayaran baru`, res)
     } catch (error) {

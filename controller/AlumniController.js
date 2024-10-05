@@ -97,11 +97,11 @@ const importAlumni = async (req, res) => {
             }
 
             await trx.commit();
-            return response(200, null, `Berhasil import siswa!`, res);
+            return response(200, null, `Berhasil import alumni!`, res);
         } catch (error) {
             await trx.rollback();
             console.error(error);
-            return response(400, null, `Gagal import siswa!`, res);
+            return response(400, null, `Gagal import alumni!`, res);
         }
     } catch (error) {
         console.error(error);

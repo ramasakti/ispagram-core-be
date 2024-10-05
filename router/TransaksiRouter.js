@@ -16,6 +16,6 @@ router.route('/trx/:kwitansi')
     .get(TransaksiController.detail)
 
 router.route('/tagihan/siswa')
-    .post(TransaksiController.detailTagihanSiswa)
+    .post(TransaksiController.detailTagihan)
 
 module.exports = router

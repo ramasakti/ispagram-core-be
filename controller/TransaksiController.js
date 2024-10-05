@@ -37,50 +37,23 @@ const dataTransaksi = async (req, res) => {
 const tagihan = async (req, res) => {
     try {
         const id_siswa = req.params.id_siswa
+        const tagihan = await PembayaranSiswaModel.getTagihanPembayaranByIDSiswa(id_siswa, req.db)
 
-        let tagihan = []
-        const siswa = await SiswaModel.getSiswaByID(id_siswa, req.db)
-        const tunggakan = await PembayaranSiswaModel.getTagihanTunggakanBySiswa(id_siswa, req.db)
-
-        if (siswa) var kelas = siswa.kelas_id.toString()
-
-        if (kelas) {
-            const dataPembayaran = await PembayaranSiswaModel.getPembayaranActive(req.db)
-            const pembayaran = dataPembayaran.filter(item => item.kelas.includes(kelas))
-            const arrayIDPembayaran = pembayaran.map(item => item.id_pembayaran)
-    
-            const detailTagihan = await PembayaranSiswaModel.getTransaksiPembayaranBySiswaAndInID(arrayIDPembayaran, id_siswa, req.db)
-    
-            for (var i = 0; i < pembayaran.length; i++) {
-                var found = false;
-                for (var j = 0; j < detailTagihan.length; j++) {
-                    if (pembayaran[i].id_pembayaran === detailTagihan[j].id_pembayaran) {
-                        pembayaran[i].terbayar = detailTagihan[j].terbayar;
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) pembayaran[i].terbayar = 0;
-                delete pembayaran[i].kelas;
-                tagihan.push(pembayaran[i]);
-            }
-        }
-
-        return response(200, { tagihan, tunggakan }, `Tagihan dan tunggakan`, res)
+        return response(200, tagihan, `Tagihan Pembayaran`, res)
     } catch (error) {
-        console.error(error)
-        return response(500, null, `Internal Server Error`, res)
+        console.error(error);
+        return response(500, null, 'Internal Server Error', res);
     }
 }
 
-const detailTagihanSiswa = async (req, res) => {
+const detailTagihan = async (req, res) => {
     try {
-        const { siswa, selectedPayments } = req.body
-        if (!siswa || !selectedPayments) return response(400, null, `Semua field wajib diisi!`, res)
+        const { siswa, payments } = req.body
+        if (!siswa || !payments) return response(400, null, `Semua field wajib diisi!`, res)
 
-        const detailTagihanSiswa = await PembayaranSiswaModel.getPembayaranInID(selectedPayments, req.db)
+        const detailTagihanSiswa = await PembayaranSiswaModel.getPembayaranInID(payments, req.db)
 
-        const trx = await TransaksiPembayaranSiswaModel.getTransactionByPembayaranAndIDSiswa(selectedPayments, siswa, req.db)
+        const trx = await TransaksiPembayaranSiswaModel.getTransactionByPembayaranAndIDSiswa(payments, siswa, req.db)
 
         const tagihan = detailTagihanSiswa.map(detail => ({
             ...detail,
@@ -118,60 +91,53 @@ const transaksiSiswa = async (req, res) => {
 }
 
 const transaksi = async (req, res) => {
+    const trx = req.db.transaction()
     try {
-        const { siswa, dataPembayaranSiswa } = req.body
+        const { siswa, payments } = req.body
 
-        if (!siswa || !dataPembayaranSiswa) return response(400, null, `Semua field wajib diisi!`, res)
+        if (!siswa || !payments) return response(400, null, `Semua field wajib diisi!`, res)
 
-        const selectedPayments = dataPembayaranSiswa.map(item => item.id_pembayaran.toString())
-
-        dataPembayaranSiswa.map(item => {
+        payments.map(item => {
             delete item.kekurangan
             delete item.cssClass
         })
 
-        const trx = await TransaksiPembayaranSiswaModel.getTransactionByPembayaranAndIDSiswa(selectedPayments, siswa, req.db)
+        const array_pembayaran = payments.map(item => item.id_pembayaran)
 
-        const mergedArray = dataPembayaranSiswa.map(detail => ({
-            ...detail,
-            ...trx.find(trx => trx.pembayaran_id === detail.id_pembayaran)
-        }))
+        const trx = await PembayaranSiswaModel.getTagihanPembayaranWithTransactionInPembayaranIDBySiswaID(array_pembayaran, siswa, trx)
 
-        let errorMessage = null
+        let err = null
 
-        mergedArray.forEach(item => {
-            delete item.pembayaran_id
-
+        trx.forEach(item => {
             if (item.terbayar) {
-                const kekurangan = item.nominal - item.terbayar
-                if (kekurangan === 0) {
-                    errorMessage = `Pembayaran ${item.nama_pembayaran} telah lunas!`
-                } else if (kekurangan < item.membayar) {
-                    errorMessage = `Jumlah yang dibayarkan ${item.membayar} melebihi jumlah kekurangan ${kekurangan} yang harus dibayarkan pada pembayaran ${item.nama_pembayaran}`
+                if (item.kekurangan === 0) {
+                    err = `Pembayaran ${item.nama_pembayaran} telah lunas!`
+                } else if (item.kekurangan < item.membayar) {
+                    err = `Jumlah yang dibayarkan ${item.membayar} melebihi jumlah kekurangan ${kekurangan} yang harus dibayarkan pada pembayaran ${item.nama_pembayaran}`
                 }
             } else {
                 if (item.nominal < item.membayar) {
-                    errorMessage = `Jumlah yang dibayarkan ${item.membayar} melebihi jumlah nominal yang harus dibayarkan (${item.nominal}) pada pembayaran ${item.nama_pembayaran}`
+                    err = `Jumlah yang dibayarkan ${item.membayar} melebihi jumlah nominal yang harus dibayarkan (${item.nominal}) pada pembayaran ${item.nama_pembayaran}`
                 }
             }
         })
 
-        if (errorMessage) {
-            return response(400, null, errorMessage, res)
-        } else {
-            dataPembayaranSiswa.map(async item => {
-                await TransaksiPembayaranSiswaModel.createTransaction({
-                    kwitansi: `K${moment().format('YYYYMMDDhhmmssms')}`,
-                    waktu_transaksi: moment().format('YYYY-MM-DD hh:mm:ss'),
-                    siswa_id: siswa,
-                    pembayaran_id: item.id_pembayaran,
-                    terbayar: item.membayar
-                }, req.db)
-            })
+        if (err) return response(400, null, err, res)
 
-            return response(201, {}, `Berhasil melakukan pembayaran!`, res)
-        }
+        trx.forEach(async item => {
+            await TransaksiPembayaranSiswaModel.createTransaction({
+                kwitansi: `K${moment().format('YYYYMMDDhhmmssms')}`,
+                waktu_transaksi: moment().format('YYYY-MM-DD hh:mm:ss'),
+                siswa_id: siswa,
+                pembayaran_id: item.id_pembayaran,
+                terbayar: item.membayar
+            }, trx)
+        })
+
+        trx.commit()
+        return response(201, {}, `Berhasil melakukan pembayaran!`, res)
     } catch (error) {
+        trx.rollback()
         console.error(error)
         return response(500, null, `Internal Server Error!`, res)
     }
@@ -189,4 +155,4 @@ const detail = async (req, res) => {
 }
 
 
-module.exports = { dataTransaksi, transaksi, detail, detailTagihanSiswa, transaksiSiswa, tagihan }
+module.exports = { dataTransaksi, transaksi, detail, detailTagihan, transaksiSiswa, tagihan }

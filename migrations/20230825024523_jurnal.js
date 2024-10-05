@@ -12,6 +12,7 @@ exports.up = function (knex) {
         table.string('guru_id').nullable();
         table.text('materi');
         table.string('created_by');
+        table.timestamps(true, true);
 
         table.foreign('created_by').references('username').inTable('users');
         table.foreign('guru_id').references('id_guru').inTable('guru').onDelete('cascade').onUpdate('cascade');

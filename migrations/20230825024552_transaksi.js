@@ -12,6 +12,7 @@ exports.up = function (knex) {
         table.integer('terbayar');
         table.string('metode');
         table.string('token');
+        table.timestamps(true, true);
 
         table.foreign('pembayaran_id').references('id_pembayaran').inTable('pembayaran').onDelete('cascade').onUpdate('cascade');
         table.foreign('siswa_id').references('id_siswa').inTable('detail_siswa').onDelete('cascade').onUpdate('cascade');
