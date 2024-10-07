@@ -19,7 +19,7 @@ const engine = async (req, res) => {
 
         if (user.role === 'Siswa') {
             const absen = await AbsenSiswaModel.dataAbsensiSiswaIndividu(user.username, req.db)
-            if (absen.waktu_absen) return response(200, null, `${absen.nama_siswa} Sudah Absen!`, res)
+            if (absen.waktu_absen) return response(200, { avatar: user.avatar }, `${absen.nama_siswa} Sudah Absen!`, res)
 
             const hari = await HariModel.getHariByHari(Moment().format('dddd'), req.db)
             if (hari.masuk < Moment().format('HH:mm:ss')) {
@@ -28,7 +28,7 @@ const engine = async (req, res) => {
                 await AbsenSiswaModel.updateHadir(user.username, req.db)
             }
 
-            return response(201, { avatar: absen.avatar }, `${absen.nama_siswa} Berhasil Absen!`, res)
+            return response(201, { avatar: user.avatar }, `${absen.nama_siswa} Berhasil Absen!`, res)
         } else {
             // Staf
             const staf = await GuruModel.getGuruByID(username, req.db)
@@ -49,7 +49,7 @@ const engine = async (req, res) => {
                 const jadwal = await JadwalModel.getJadwalInARowByGuru(username, req.db)
 
                 // Sudah absen dan tidak punya jam mengajar
-                if (absen && jadwal.length < 1) return response(200, null, `${user.name} Sudah Absen!`, res)
+                if (absen && jadwal.length < 1) return response(200, { avatar: user.avatar }, `${user.name} Sudah Absen!`, res)
 
                 // Memiliki jadwal
                 if (jadwal.length > 0) {
@@ -90,7 +90,7 @@ const engine = async (req, res) => {
                 }
             }
 
-            return response(201, {}, `${user.nama_siswa ?? user.nama_guru} Berhasil Absen!`, res)
+            return response(201, { avatar: user.avatar}, `${user.nama_siswa ?? user.nama_guru} Berhasil Absen!`, res)
         }
     } catch (error) {
         console.error(error)
