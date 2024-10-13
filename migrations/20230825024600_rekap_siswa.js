@@ -10,6 +10,8 @@ exports.up = function (knex) {
         table.string('keterangan', 1);
         table.time('waktu_absen').nullable();
         table.timestamps(true, true);
+
+        table.unique(['tanggal', 'siswa_id']);
     });
 };
 
