@@ -33,7 +33,7 @@ const databases = {
 const knexInstances = {}
 
 const getDatabaseConnection = (dbID) => {
-    if (!databases[dbID]) throw new Error(`Database configuration for ID '${dbID}' not found`)
+    if (!databases[dbID]) throw new Error(`Your app is not registered!`)
 
     if (!knexInstances[dbID]) knexInstances[dbID] = knex(databases[dbID])
     

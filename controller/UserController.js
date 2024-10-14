@@ -8,10 +8,12 @@ const UserModel = require('../Model/UserModel')
 const HariModel = require('../Model/HariModel')
 const KelasModel = require('../Model/KelasModel')
 const UserUtils = require('../utilities/UserUtils')
+const fs = require('fs')
+const { uploadFileToFTP } = require('../utilities/FTP')
 
 const users = async (req, res) => {
     try {
-        const users = await UserModel.getAllUsersWithRole(req.db)        
+        const users = await UserModel.getAllUsersWithRole(req.db)
         return response(200, users, `Data Users`, res)
     } catch (error) {
         console.error(error)
@@ -28,7 +30,7 @@ const detail = async (req, res) => {
     if (detailUser.role === 'Guru') {
         const piket = await HariModel.getHariByHariAndPiket(moment().format('dddd'), detailUser.username, req.db)
         const walas = await KelasModel.getKelasByWalas(detailUser.username, req.db)
-        
+
         if (piket) {
             const dataUser = {
                 username: detailUser.username,
@@ -70,33 +72,37 @@ const update = async (req, res) => {
 
         const detailUser = await UserModel.getUserWithRoleByUsername(username, req.db)
         if (!detailUser) return response(400, null, `User tidak terdaftar!`, res)
-    
+
         if (detailUser.email != email) {
             const existingEmail = await UserUtils.existingEmail(email, req.db)
             if (existingEmail != null) return response(400, null, `Email telah digunakan!`, res)
         }
-    
+
         if (req.file) {
-            const avatar = req.file.path
             if (!req.file.mimetype.startsWith('image/')) {
                 return response(400, null, `File yang diunggah bukan gambar!`, res)
             }
-    
+            const localFilePath = req.file.path
+            const remoteFilePath = `/${req.file.filename}`
+            await uploadFileToFTP(localFilePath, remoteFilePath)
+            const avatar = remoteFilePath // Update file path to remote path
+            fs.unlinkSync(localFilePath) // Delete local file after upload
+
             await UserModel.updateUserAvatarByUsername(username, avatar, req.db)
         }
-    
+
         if (passwordLama) {
             const isPasswordValid = await bcrypt.compareSync(passwordLama, detailUser.password)
-    
+
             if (isPasswordValid) {
                 await UserModel.updateUserPasswordByUsername(username, await bcrypt.hash(passwordBaru, 10), req.db)
-            }else{
+            } else {
                 return response(400, null, `Password salah!`, res)
             }
         }
-    
+
         await UserModel.updateUserByUsername(username, { email, role: id_role }, req.db)
-    
+
         return response(201, {}, `Berhasil update user!`, res)
     } catch (error) {
         console.error(error)
@@ -153,7 +159,7 @@ const store = async (req, res) => {
 //             const result = detections.map(d => {
 //                 return faceMatcher.findBestMatch(d.descriptor);
 //             });
-            
+
 //             return response(200, result, `Face Match`, res)
 //         } else {
 //             return response(404, null, `Face Not Found`, res)
