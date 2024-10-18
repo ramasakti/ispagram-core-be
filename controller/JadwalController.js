@@ -141,7 +141,7 @@ const jadwalGrup = async (req, res) => {
     }
 }
 
-const templateExcel = async () => {
+const templateExcel = async (req) => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Sheet1');
 
@@ -284,7 +284,7 @@ const templateExcel = async () => {
 
 const exportExcel = async (req, res) => {
     try {
-        const workbook = await templateExcel();
+        const workbook = await templateExcel(req);
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', 'attachment; filename=Template Excel Import Jadwal.xlsx');

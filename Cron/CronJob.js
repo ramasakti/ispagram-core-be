@@ -1,7 +1,7 @@
-const cron = require('node-cron');
-const LiburNasional = require('./LiburNasional');
-const ResetAbsenHarian = require('./ResetAbsenHarian');
-const RekapAbsenHarian = require('./RekapAbsenHarian');
+const cron = require('node-cron')
+const LiburNasional = require('./LiburNasional')
+const ResetAbsenHarian = require('./ResetAbsenHarian')
+const RekapAbsenHarian = require('./RekapAbsenHarian')
 
 // Node Cron
 //  ┌────────────── second (optional)
@@ -16,9 +16,18 @@ const RekapAbsenHarian = require('./RekapAbsenHarian');
 
 const initCronJobs = async () => {
     await LiburNasional()
-    cron.schedule('0 0 1 1 *', LiburNasional);
-    cron.schedule('59 23 * * *', RekapAbsenHarian);
-    cron.schedule('0 0 * * *', ResetAbsenHarian);
+
+    cron.schedule('0 0 1 1 *', LiburNasional, {
+        timezone: 'Asia/Jakarta'  // WIB
+    })
+
+    cron.schedule('59 23 * * *', RekapAbsenHarian, {
+        timezone: 'Asia/Jakarta'  // WIB
+    })
+
+    cron.schedule('0 0 * * *', ResetAbsenHarian, {
+        timezone: 'Asia/Jakarta'  // WIB
+    })
 }
 
 module.exports = initCronJobs

@@ -198,6 +198,17 @@ const templateExcel = async (trx) => {
         worksheet.getCell(`G${row}`).protection = { locked: false };
         worksheet.getCell(`H${row}`).protection = { locked: false };
         worksheet.getCell(`I${row}`).protection = { locked: false };
+
+        worksheet.getCell(`I${row}`).dataValidation = {
+            type: 'date',
+            operator: 'between',
+            formula1: 'DATE(1900,1,1)', // Start date (earliest allowed)
+            formula2: 'DATE(2100,12,31)', // End date (latest allowed)
+            showErrorMessage: true,
+            errorTitle: 'Invalid Date',
+            error: 'Please enter a valid date in YYYY-MM-DD format.'
+        };
+
         worksheet.getCell(`I${row}`).numFmt = 'yyyy-mm-dd';
     }
 
