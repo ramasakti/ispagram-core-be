@@ -30,9 +30,8 @@ const updateHari = async (req, res) => {
         const id_hari = req.params.id_hari
         // Tangkap inputan
         let { nama_hari, masuk, pulang, jampel, piket, status, khusus } = req.body
-        console.log(khusus)
 
-        if (khusus.length > 0) {
+        if (khusus && khusus.length > 0) {
             khusus.map(async item => {
                 console.log(item)
                 await HariModel.upsertJamKhusus({
