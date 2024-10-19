@@ -15,6 +15,9 @@ router.route('/jadwal/:id_jadwal')
     .put(JadwalController.update)
     .delete(JadwalController.destroy)
 
+router.route('/jadwal/individu/:id_guru')
+    .get(JadwalController.jadwalIndividu)
+
 router.route('/jadwal/template/excel')
     .get(JadwalController.exportExcel)
 

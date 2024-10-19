@@ -9,14 +9,13 @@ const store = async (req, res) => {
         const { id_jadwal, inval, guru, materi } = req.body
         if (!id_jadwal || !materi) return response(400, req.body, `Semua data wajib diisi!`, res)
 
-        
         const jadwal = await JadwalModel.getJadwalWithJampelByIDJadwal(id_jadwal, req.db)
         if (!jadwal) return response(404, null, `Jadwal tidak ditemukan!`, res)
 
         if (jadwal.hari !== moment().format('dddd')) return response(400, null, `Gagal! Jadwal tidak terjadwal hari ini!`, res)
 
-        const jurnal = await JurnalModel.getJurnalByDateAndJadwalID(moment().format('YYYY-MM-DD'), id_jadwal)
-        if (jurnal) await JurnalModel.deleteJurnalByDateAndJadwalID(moment().format('YYYY-MM-DD'), id_jadwal)
+        const jurnal = await JurnalModel.getJurnalByDateAndJadwalID(moment().format('YYYY-MM-DD'), id_jadwal, req.db)
+        if (jurnal) await JurnalModel.deleteJurnalByDateAndJadwalID(moment().format('YYYY-MM-DD'), id_jadwal, req.db)
 
         await JurnalModel.insertJurnal({
             tanggal: moment().format('YYYY-MM-DD'),
@@ -70,8 +69,40 @@ const update = async (req, res) => {
     }
 }
 
+const storeIndividu = async (req, res) => {
+    try {
+        const { id_jadwal, materi } = req.body
+        if (!id_jadwal || !materi) return response(400, req.body, `Semua data wajib diisi!`, res)
+
+        const jadwal = await JadwalModel.getJadwalWithJampelByIDJadwal(id_jadwal, req.db)
+        if (!jadwal) return response(404, null, `Jadwal tidak ditemukan!`, res)
+
+        if (jadwal.hari !== moment().format('dddd')) return response(400, null, `Gagal! Jadwal tidak terjadwal hari ini!`, res)
+
+        if (jadwal.selesai < moment().format('HH:mm:ss')) return response(400, null, `Gagal! Jadwal tidak terjadwal pada jam ini!`, res)
+
+        const jurnal = await JurnalModel.getJurnalByDateAndJadwalID(moment().format('YYYY-MM-DD'), id_jadwal, req.db)
+        if (jurnal) await JurnalModel.deleteJurnalByDateAndJadwalID(moment().format('YYYY-MM-DD'), id_jadwal, req.db)
+
+        await JurnalModel.insertJurnal({
+            tanggal: moment().format('YYYY-MM-DD'),
+            waktu: moment().format('HH:mm:ss'),
+            jadwal_id: id_jadwal,
+            inval: 0,
+            guru_id: jadwal.guru_id,
+            materi
+        }, req.db)
+
+        return response(201, {}, `Berhasil insert jurnal!`, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, `Internal Server Error!`, res)
+    }
+}
+
 module.exports = {
     store,
     jurnal,
-    update
+    update,
+    storeIndividu
 };

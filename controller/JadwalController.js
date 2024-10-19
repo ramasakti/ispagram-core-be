@@ -360,5 +360,25 @@ const importExcel = async (req, res) => {
     }
 };
 
+const jadwalIndividu = async (req, res) => {
+    try {
+        const guru = req.params.id_guru
+        const jadwal = await JadwalModel.getJadwalByGuru(guru, moment().format('YYYY-MM-DD'), req.db)        
 
-module.exports = { jadwal, store, update, destroy, jadwalGrup, exportExcel, importExcel }
+        return response(200, jadwal, ``, res)
+    } catch (error) {
+        console.error(error)
+        return response(500, null, 'Internal Server Error!', res)
+    }
+}
+
+module.exports = {
+    jadwal,
+    store,
+    update,
+    destroy,
+    jadwalGrup,
+    exportExcel,
+    importExcel,
+    jadwalIndividu
+}

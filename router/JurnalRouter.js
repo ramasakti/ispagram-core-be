@@ -6,6 +6,9 @@ router.route('/jurnal')
     .get(JurnalController.jurnal)
     .post(JurnalController.store)
 
+router.route('/jurnal/individu')
+    .post(JurnalController.storeIndividu)
+
 router.route('/jurnal/:id_jurnal')
     .put(JurnalController.update)
 

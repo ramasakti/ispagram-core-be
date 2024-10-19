@@ -70,8 +70,39 @@ const getJadwalWithJampelByIDJadwal = async (id_jadwal, trx) => {
         .first()
 }
 
-const getJadwalByGuru = async (id_guru, trx) => {
-
+const getJadwalByGuru = async (id_guru, tanggal, trx) => {
+    return await trx('jadwal')
+        .select(
+            'jadwal.id_jadwal',
+            'jadwal.jampel',
+            'jam_pelajaran.hari',
+            'jam_pelajaran.keterangan',
+            'jam_pelajaran.mulai',
+            'jam_pelajaran.selesai',
+            'guru.id_guru',
+            'guru.nama_guru',
+            'mapel.id_mapel as mapel',
+            'mapel.nama_mapel',
+            'kelas.id_kelas as kelas_id',
+            'kelas.tingkat',
+            'kelas.jurusan',
+            'jurnal.id_jurnal',
+            'jurnal.inval'
+        )
+        .join('jam_pelajaran', 'jadwal.jampel', '=', 'jam_pelajaran.id_jampel')
+        .join('mapel', 'mapel.id_mapel', '=', 'jadwal.mapel')
+        .join('kelas', 'kelas.id_kelas', '=', 'jadwal.kelas_id')
+        .join('guru', 'guru.id_guru', '=', 'jadwal.guru_id')
+        .leftJoin('jurnal', function () {
+            this.on('jurnal.jadwal_id', '=', 'jadwal.id_jadwal')
+                .andOn(function () {
+                    this.on('jurnal.tanggal', '=', trx.raw('?', [tanggal]))
+                        .orOnNull('jurnal.tanggal');
+                });
+        })
+        .where('jadwal.guru_id', id_guru)
+        .orderBy('kelas.id_kelas', 'ASC')
+        .orderBy('jam_pelajaran.mulai', 'ASC')
 }
 
 const getJadwalByHari = async (hari, trx) => {
@@ -96,5 +127,6 @@ module.exports = {
     getJadwalWithJampelByIDJadwal,
     insertJadwal,
     updateJadwal,
-    deleteJadwalByID
+    deleteJadwalByID,
+    getJadwalByGuru
 };
