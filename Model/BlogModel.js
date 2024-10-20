@@ -18,6 +18,7 @@ const getArticleBySlug = async (slug, trx) => {
     return await trx('blog')
         .select(
             'blog.*',
+            'users.avatar',
             trx.raw('GROUP_CONCAT(JSON_OBJECT(' +
                 '"id_category", master_category.id_category, ' +
                 '"name", master_category.name' +
@@ -25,6 +26,7 @@ const getArticleBySlug = async (slug, trx) => {
         )
         .join('data_category', 'blog.id_blog', 'data_category.blog_id')
         .join('master_category', 'data_category.category_id', 'master_category.id_category')
+        .join('users', 'users.username', 'blog.uploader')
         .where('blog.slug', slug)
         .groupBy('blog.id_blog')
         .first();

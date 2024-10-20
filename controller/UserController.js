@@ -82,8 +82,9 @@ const update = async (req, res) => {
             if (!req.file.mimetype.startsWith('image/')) {
                 return response(400, null, `File yang diunggah bukan gambar!`, res)
             }
+
             const localFilePath = req.file.path
-            const remoteFilePath = `/${req.file.filename}`
+            const remoteFilePath = req.file.filename
             await uploadFileToFTP(localFilePath, remoteFilePath)
             const avatar = remoteFilePath // Update file path to remote path
             fs.unlinkSync(localFilePath) // Delete local file after upload

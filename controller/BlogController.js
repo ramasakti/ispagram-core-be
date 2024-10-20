@@ -1,6 +1,8 @@
 const response = require('../Response')
 const BlogModel = require('../Model/BlogModel')
 const CategoryModel = require('../Model/CategoryModel')
+const fs = require('fs')
+const { uploadFileToFTP } = require('../utilities/FTP')
 
 const index = async (req, res) => {
     try {
@@ -81,7 +83,6 @@ const store = async (req, res) => {
 
         if (!req.file) return response(400, null, `Wajib Upload Banner!`, res)
 
-        const banner = req.file.path
         if (!req.file.mimetype.startsWith('image/')) {
             return response(400, null, `File yang diunggah bukan gambar!`, res)
         }
@@ -89,6 +90,12 @@ const store = async (req, res) => {
         const statusArticle = BlogModel.getArticleByStatus(status, req.db)
         if (status === 'Third' && statusArticle.length > 2) return response(400, null, ``, res)
         if (status !== 'Third' && statusArticle.length > 1) return response(400, null, ``, res)
+
+        const localFilePath = req.file.path
+        const remoteFilePath = req.file.filename
+        await uploadFileToFTP(localFilePath, remoteFilePath)
+        const banner = remoteFilePath // Update file path to remote path
+        fs.unlinkSync(localFilePath) // Delete local file after upload
 
         const blog = await BlogModel.insertArticle({
             slug, banner, title, description, content, uploader, status
@@ -101,7 +108,7 @@ const store = async (req, res) => {
                 await CategoryModel.insertMasterCategory({ name: element.label }, req.db)
                 const newCategory = await CategoryModel.getCategoryByCategory(element.label, req.db)
                 await CategoryModel.insertDataCategory({ blog_id: blog, category_id: newCategory.id_category }, req.db)
-            }else{
+            } else {
                 await CategoryModel.insertDataCategory({ blog_id: blog, category_id: element.value }, req.db)
             }
         });
@@ -124,7 +131,12 @@ const update = async (req, res) => {
                 return response(400, null, `File yang diunggah bukan gambar!`, res)
             }
 
-            const banner = req.file.path
+            const localFilePath = req.file.path
+            const remoteFilePath = req.file.filename
+            await uploadFileToFTP(localFilePath, remoteFilePath)
+            const banner = remoteFilePath // Update file path to remote path
+            fs.unlinkSync(localFilePath) // Delete local file after upload
+
             await BlogModel.updateArticleBySlug(slug, {
                 banner, title, description, content, status
             }, req.db)
@@ -143,7 +155,7 @@ const update = async (req, res) => {
                 await CategoryModel.insertMasterCategory({ name: element.label }, req.db)
                 const newCategory = await CategoryModel.getCategoryByCategory(element.label, req.db)
                 await CategoryModel.insertDataCategory({ blog_id: blog.id_blog, category_id: newCategory.id_category }, req.db)
-            }else{
+            } else {
                 await CategoryModel.insertDataCategory({ blog_id: blog.id_blog, category_id: element.value }, req.db)
             }
         });
