@@ -57,14 +57,14 @@ const getCategoryByID = async (id_category, trx) => await trx('master_category')
 const getArticleInCategory = async (id_category, trx) => {
     return await trx('blog')
         .select(
-            'blog.id_blog',
-            'blog.title',
+            'blog.*',
             'master_category.name'
         )
         .join('data_category', 'blog.id_blog', 'data_category.blog_id')
         .join('master_category', 'data_category.category_id', 'master_category.id_category')
         .where('master_category.id_category', id_category)
         .orderBy('blog.hit', 'desc')
+        .limit(3);
 }
 
 const getFeaturedArticleInCategory = async (id_category, trx) => {
@@ -72,17 +72,7 @@ const getFeaturedArticleInCategory = async (id_category, trx) => {
         .join('data_category', 'blog.id_blog', 'data_category.blog_id')
         .join('master_category', 'data_category.category_id', 'master_category.id_category')
         .select(
-            'blog.id_blog',
-            'blog.slug',
-            'blog.banner',
-            'blog.title',
-            'blog.description',
-            'blog.content',
-            'blog.uploader',
-            'blog.status',
-            'blog.hit',
-            'blog.created_at',
-            'blog.updated_at',
+            'blog.*',
             'master_category.name as category_name'
         )
         .where('blog.status', '=', trx.raw('master_category.name'))
@@ -93,17 +83,7 @@ const getFeaturedArticleInCategory = async (id_category, trx) => {
 const getPopularArticleInCategoryWithLimit = async (id_category, limit, trx) => {
     return await trx('blog')
         .select(
-            'blog.id_blog',
-            'blog.slug',
-            'blog.banner',
-            'blog.title',
-            'blog.description',
-            'blog.content',
-            'blog.uploader',
-            'blog.status',
-            'blog.hit',
-            'blog.created_at',
-            'blog.updated_at',
+            'blog.*',
             'master_category.name as category_name'
         )
         .join('data_category', 'blog.id_blog', 'data_category.blog_id')
@@ -116,17 +96,7 @@ const getPopularArticleInCategoryWithLimit = async (id_category, limit, trx) => 
 const getNewestArticleInCategoryWithLimit = async (id_category, limit, trx) => {
     return await trx('blog')
         .select(
-            'blog.id_blog',
-            'blog.slug',
-            'blog.banner',
-            'blog.title',
-            'blog.description',
-            'blog.content',
-            'blog.uploader',
-            'blog.status',
-            'blog.hit',
-            'blog.created_at',
-            'blog.updated_at',
+            'blog.*',
             'master_category.name as category_name'
         )
         .join('data_category', 'blog.id_blog', 'data_category.blog_id')

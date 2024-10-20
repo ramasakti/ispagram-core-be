@@ -200,18 +200,6 @@ const category = async (req, res) => {
     }
 }
 
-const blogCategory = async (req, res) => {
-    try {
-        const id_category = req.params.id_category
-        const blogCategory = await BlogModel.getArticleInCategory(id_category, req.db)
-
-        return response(200, blogCategory, ``, res)
-    } catch (error) {
-        console.error(error)
-        return response(500, null, `Internal Server Error!`, res)
-    }
-}
-
 module.exports = {
     index,
     article,
@@ -220,5 +208,4 @@ module.exports = {
     update,
     destroy,
     category,
-    blogCategory
 };
