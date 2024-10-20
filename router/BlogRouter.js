@@ -33,7 +33,4 @@ router.route('/blog/:slug')
 router.route('/category/:id_category')
     .get(BlogController.category)
 
-router.route('/blog/category/:id_category')
-    .get(BlogController.blogCategory)
-
 module.exports = router
