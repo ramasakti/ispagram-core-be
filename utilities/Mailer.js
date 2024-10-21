@@ -1,5 +1,4 @@
 const nodemailer = require('nodemailer')
-const UserModel = require('../Model/UserModel')
 
 const transporter = nodemailer.createTransport({
     host: process.env.SMPTP_HOST,
@@ -11,7 +10,7 @@ const transporter = nodemailer.createTransport({
     }
 })
 
-const credentialInfo = (to, subject, text) => {
+const SendMail = (to, subject, text) => {
     const mailOptions = {
         from: `${process.env.SMPTP_NAME} <${process.env.SMPTP_MAIL}>`, // Alamat email pengirim
         to, // Alamat email penerima
@@ -28,10 +27,5 @@ const credentialInfo = (to, subject, text) => {
     })
 }
 
-const existingEmail = async (email, trx) => {
-    const existingEmail = await UserModel.getUserByEmail(email, trx)
-    if (!existingEmail) return null
-    return existingEmail
-}
 
-module.exports = { credentialInfo, existingEmail }
+module.exports = { SendMail }

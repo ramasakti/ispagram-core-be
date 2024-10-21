@@ -1,7 +1,5 @@
-const db = require('../Config')
 const response = require('../Response')
 const moment = require('../utilities/Moment')
-const jadwalUtils = require('../utilities/JadwalUtils')
 const JadwalModel = require('../Model/JadwalModel')
 const MapelModel = require('../Model/MapelModel')
 const KelasModel = require('../Model/KelasModel')
@@ -37,7 +35,7 @@ const store = async (req, res) => {
         // Looping jampel 
         for (const item of jam_pelajaran) {
             // Cek apakah jam sudah digunakan 
-            const existingJadwal = await jadwalUtils.existingJadwal(item.value, kelas, req.db)
+            const existingJadwal = await JadwalModel.getJadwalByJampelAndKelas(item.value, kelas, req.db)
             if (existingJadwal !== null) {
                 hasError = true
                 break
@@ -75,7 +73,7 @@ const update = async (req, res) => {
             jampel = JSON.parse(jampel)
 
             // Periksa jadwal apakah berbentrokan
-            const existingJadwal = await jadwalUtils.existingJadwal(jampel.value, kelas_id, req.db)
+            const existingJadwal = await JadwalModel.getJadwalByJampelAndKelas(jampel.value, kelas_id, req.db)
             if (existingJadwal !== null) return response(400, null, `Jam Pelajaran telah digunakan!`, res)
 
             // Update tabel jadwal

@@ -5,8 +5,6 @@ const crypto = require('crypto')
 const GuruModel = require('../Model/GuruModel')
 const UserModel = require('../Model/UserModel')
 const DetailGuruModel = require('../Model/DetailGuruModel')
-const UserUtils = require('../utilities/UserUtils')
-const GuruUtils = require('../utilities/GuruUtils')
 
 const guru = async (req, res) => {
     try {
@@ -51,11 +49,11 @@ const store = async (req, res) => {
         if (!id_guru || !email || !nama_guru || !telp) return response(400, null, `Formulir yang dikirim tidak lengkap!`, res)
 
         // Periksa apakah ID sudah digunakan
-        const existingGuru = await GuruUtils.existingGuru(id_guru, req.db)
+        const existingGuru = await GuruModel.getGuruByID(id_guru, req.db)
         if (existingGuru != null) return response(400, null, `ID guru telah digunakan!`, res)
 
         // Periksa apakah email sudah digunakan
-        const existingEmail = await UserUtils.existingEmail(email, req.db)
+        const existingEmail = await UserModel.getUserByEmail(email, req.db)
         if (existingEmail != null) return response(400, null, `Email telah digunakan!`, res)
 
         // Buatkan random password
@@ -111,7 +109,7 @@ const update = async (req, res) => {
 
         // Periksa apakah email sudah digunakan
         if (email) {
-            const existingEmail = await UserUtils.existingEmail(email, req.db)
+            const existingEmail =  await UserModel.getUserByEmail(email, req.db)
             if (existingEmail != null && existingEmail.email !== detailGuru.email) return response(400, null, `Email telah digunakan!`, res)
         }
 

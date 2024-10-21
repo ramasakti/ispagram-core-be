@@ -1,6 +1,5 @@
 const response = require('../Response')
 const moment = require('../utilities/Moment')
-const guruUtils = require('../utilities/GuruUtils')
 const HariModel = require('../Model/HariModel')
 
 const hari = async (req, res) => {

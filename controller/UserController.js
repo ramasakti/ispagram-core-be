@@ -2,12 +2,11 @@ const response = require('../Response')
 const bcrypt = require('bcryptjs')
 const faceapi = require('face-api.js')
 const crypto = require('crypto')
-const sendMail = require('../utilities/UserUtils')
 const moment = require('../utilities/Moment')
 const UserModel = require('../Model/UserModel')
 const HariModel = require('../Model/HariModel')
 const KelasModel = require('../Model/KelasModel')
-const UserUtils = require('../utilities/UserUtils')
+const Mailer = require('../utilities/Mailer')
 const fs = require('fs')
 const { uploadFileToFTP } = require('../utilities/FTP')
 
@@ -74,7 +73,7 @@ const update = async (req, res) => {
         if (!detailUser) return response(400, null, `User tidak terdaftar!`, res)
 
         if (detailUser.email != email) {
-            const existingEmail = await UserUtils.existingEmail(email, req.db)
+            const existingEmail = await UserModel.getUserByEmail(email, req.db)
             if (existingEmail != null) return response(400, null, `Email telah digunakan!`, res)
         }
 
@@ -121,7 +120,7 @@ const forgetPassword = async (req, res) => {
         await UserModel.updateUserPasswordByEmail(email, await bcrypt.hash(randomPassword, 10), req.db)
 
         const text = `Assalamualaikum Warahmatullahi Wabarakatuh! ${detailUser.nama_guru ?? detailUser.nama_siswa}\n\nSesuai dengan permintaan anda perihal reset password, berikut adalah detail akun yang digunakan untuk login di aplikasi Ispagram\nUsername: ${detailUser.username}\nPassword: ${randomPassword}\n\nNote: Segera ganti password anda agar mudah diingat`
-        sendMail.credentialInfo(email, `Informasi Reset Password`, text)
+        Mailer.SendMail(email, `Informasi Reset Password`, text)
 
         return response(200, null, `Berhasil reset password! Cek kotak masuk email untuk mengetahui password baru anda!`, res)
     } catch (error) {

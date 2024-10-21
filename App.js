@@ -45,6 +45,8 @@ const acceptedHost = [
     'smpispa.vercel.app',
     'http://smpispa.vercel.app',
     'https://smpispa.vercel.app',
+    'https://app.smaispa.sch.id',
+    'app.smaispa.sch.id'
 ]
 
 const corsOptions = {

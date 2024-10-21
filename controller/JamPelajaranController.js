@@ -1,7 +1,6 @@
 const db = require('../Config')
 const response = require('../Response')
 const moment = require('../utilities/Moment')
-const existingHari = require('../utilities/HariUtils')
 const HariModel = require('../Model/HariModel')
 const JamPelajaranModel = require('../Model/JamPelajaranModel')
 
@@ -49,7 +48,9 @@ const detailJampel = async (req, res) => {
 const storeJampel = async (req, res) => {
     const { hari, keterangan, mulai, selesai } = req.body;
     if (!hari || !keterangan || !mulai || !selesai) return response(400, null, `Semua field wajib diisi!`, res);
-    if (await existingHari.existingHari(hari, req.db) === null) return response(400, null, `Format hari tidak sesuai!`, res);
+
+    const existingHari = await HariModel.getHariByHari(hari, trx)
+    if (!existingHari) return response(400, null, `Format hari tidak sesuai!`, res);
 
     try {
         const result = await JamPelajaranModel.getJampelByTimeAndHari(mulai, selesai, hari, req.db)

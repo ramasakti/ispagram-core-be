@@ -1,5 +1,3 @@
-const db = require('../Config')
-
 const getAllHari = async (trx) => await trx('hari')
 
 const getAllHariActive = async (trx) => await trx('hari').where('status', 1)

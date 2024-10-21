@@ -105,6 +105,14 @@ const getJadwalByGuru = async (id_guru, tanggal, trx) => {
         .orderBy('jam_pelajaran.mulai', 'ASC')
 }
 
+const getJadwalByJampelAndKelas = async (id_jampel, kelas, trx) => {
+    return await trx('jadwal')
+        .join('mapel', 'mapel.id_mapel', '=', 'jadwal.mapel')
+        .where('jampel', id_jampel)
+        .where('kelas_id', kelas)
+        .first()
+}
+
 const getJadwalByHari = async (hari, trx) => {
 
 }
@@ -124,6 +132,7 @@ module.exports = {
     getJadwalByID,
     getFullJadwalByDateNow,
     getJadwalInARowByGuru,
+    getJadwalByJampelAndKelas,
     getJadwalWithJampelByIDJadwal,
     insertJadwal,
     updateJadwal,
